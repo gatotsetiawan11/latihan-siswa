@@ -2,6 +2,7 @@
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -22,6 +23,12 @@
         rel="stylesheet"
         href="css/admin-registration.css"
     >
+
+    <link
+        rel="stylesheet"
+        href="css/admin-push.css"
+    >
+
 </head>
 
 
@@ -78,7 +85,7 @@
 
 
         <!-- ================================================= -->
-        <!-- PAGE HEADING                                      -->
+        <!-- HEADING                                           -->
         <!-- ================================================= -->
 
         <section class="admin-page-heading">
@@ -108,6 +115,71 @@
             >
                 Perbarui Data
             </button>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- WEB PUSH                                          -->
+        <!-- ================================================= -->
+
+        <section
+            id="adminPushCard"
+            class="admin-push-card"
+        >
+
+            <div class="admin-push-info">
+
+                <div class="admin-push-icon">
+                    🔔
+                </div>
+
+
+                <div class="admin-push-text">
+
+                    <h3 id="adminPushStatusTitle">
+                        Memeriksa notifikasi...
+                    </h3>
+
+
+                    <p id="adminPushStatusText">
+                        Memeriksa kemampuan Web Push perangkat ini.
+                    </p>
+
+
+                    <p
+                        id="adminPushDeviceCount"
+                        class="admin-push-device-count"
+                        hidden
+                    >
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-push-actions">
+
+                <button
+                    id="enablePushButton"
+                    class="admin-push-enable"
+                    type="button"
+                >
+                    Aktifkan Notifikasi
+                </button>
+
+
+                <button
+                    id="disablePushButton"
+                    class="admin-push-disable"
+                    type="button"
+                    hidden
+                >
+                    Nonaktifkan
+                </button>
+
+            </div>
 
         </section>
 
@@ -162,9 +234,7 @@
         >
 
 
-            <!-- ================================================= -->
-            <!-- SUMMARY                                           -->
-            <!-- ================================================= -->
+            <!-- SUMMARY -->
 
             <section class="admin-summary-grid">
 
@@ -281,9 +351,7 @@
                     class="registration-empty"
                     hidden
                 >
-
                     Tidak ada pendaftaran yang menunggu persetujuan.
-
                 </div>
 
 
@@ -297,7 +365,7 @@
 
 
             <!-- ================================================= -->
-            <!-- STUDENT MONITORING                                -->
+            <!-- MONITORING                                        -->
             <!-- ================================================= -->
 
             <section class="admin-monitoring-section">
@@ -323,9 +391,7 @@
                 </div>
 
 
-                <!-- ============================================= -->
-                <!-- TOOLBAR                                       -->
-                <!-- ============================================= -->
+                <!-- TOOLBAR -->
 
                 <div class="admin-toolbar">
 
@@ -382,9 +448,7 @@
                 </div>
 
 
-                <!-- ============================================= -->
-                <!-- STUDENT TABLE                                 -->
-                <!-- ============================================= -->
+                <!-- TABLE -->
 
                 <section class="admin-table-card">
 
@@ -396,37 +460,21 @@
 
                                 <tr>
 
-                                    <th>
-                                        Nama
-                                    </th>
+                                    <th>Nama</th>
 
-                                    <th>
-                                        Status Akun
-                                    </th>
+                                    <th>Status Akun</th>
 
-                                    <th>
-                                        Sesi
-                                    </th>
+                                    <th>Sesi</th>
 
-                                    <th>
-                                        Level Dikuasai
-                                    </th>
+                                    <th>Level Dikuasai</th>
 
-                                    <th>
-                                        Akurasi
-                                    </th>
+                                    <th>Akurasi</th>
 
-                                    <th>
-                                        Rata-rata Respons
-                                    </th>
+                                    <th>Rata-rata Respons</th>
 
-                                    <th>
-                                        Terakhir Latihan
-                                    </th>
+                                    <th>Terakhir Latihan</th>
 
-                                    <th>
-                                        Aksi
-                                    </th>
+                                    <th>Aksi</th>
 
                                 </tr>
 
@@ -446,9 +494,7 @@
                         class="admin-empty-state"
                         hidden
                     >
-
                         Tidak ada siswa yang sesuai.
-
                     </div>
 
                 </section>
@@ -499,10 +545,8 @@
 
 
             <p class="admin-modal-note">
-
                 Siswa akan keluar dari semua sesi dan wajib
                 mengganti PIN ketika login berikutnya.
-
             </p>
 
 
@@ -533,7 +577,7 @@
 
 
     <!-- ================================================= -->
-    <!-- APPROVE REGISTRATION MODAL                        -->
+    <!-- APPROVE MODAL                                     -->
     <!-- ================================================= -->
 
     <div
@@ -548,11 +592,9 @@
                 ✓
             </div>
 
-
             <h2>
                 Setujui Pendaftaran?
             </h2>
-
 
             <p>
 
@@ -568,10 +610,8 @@
 
 
             <p class="admin-modal-note">
-
                 Setelah disetujui, siswa dapat langsung login
                 menggunakan PIN yang dibuat saat pendaftaran.
-
             </p>
 
 
@@ -602,7 +642,7 @@
 
 
     <!-- ================================================= -->
-    <!-- REJECT REGISTRATION MODAL                         -->
+    <!-- REJECT MODAL                                      -->
     <!-- ================================================= -->
 
     <div
@@ -617,11 +657,9 @@
                 !
             </div>
 
-
             <h2>
                 Tolak Pendaftaran?
             </h2>
-
 
             <p>
 
@@ -695,17 +733,18 @@
 
 
     <!-- ================================================= -->
-    <!-- SUPABASE                                          -->
+    <!-- SCRIPTS                                           -->
     <!-- ================================================= -->
 
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     ></script>
 
-
     <script src="js/config.js"></script>
 
     <script src="js/admin.js"></script>
+
+    <script src="js/admin-push.js"></script>
 
 
 </body>
