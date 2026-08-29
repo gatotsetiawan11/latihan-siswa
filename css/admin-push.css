@@ -1,0 +1,163 @@
+/* =========================================================
+   LATIHAN SISWA
+   ADMIN WEB PUSH UI V1
+   ========================================================= */
+
+.admin-push-card {
+    margin-top: 22px;
+    padding: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    border: 1px solid #dfe7f2;
+    border-radius: 16px;
+
+    background: #ffffff;
+}
+
+.admin-push-info {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+}
+
+.admin-push-icon {
+    width: 46px;
+    height: 46px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #eff6ff;
+
+    font-size: 21px;
+}
+
+.admin-push-text h3 {
+    margin: 0 0 5px;
+
+    color: #172033;
+
+    font-size: 15px;
+}
+
+.admin-push-text p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.admin-push-device-count {
+    margin-top: 5px !important;
+
+    color: #2563eb !important;
+
+    font-weight: 700;
+}
+
+.admin-push-actions {
+    flex: 0 0 auto;
+
+    display: flex;
+
+    gap: 8px;
+}
+
+.admin-push-enable,
+.admin-push-disable {
+    min-height: 38px;
+
+    padding: 0 14px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+
+    font-size: 11px;
+    font-weight: 750;
+
+    cursor: pointer;
+}
+
+.admin-push-enable {
+    border: 0;
+
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+.admin-push-disable {
+    border: 1px solid #d8dee8;
+
+    background: #ffffff;
+
+    color: #475569;
+}
+
+.admin-push-enable:disabled,
+.admin-push-disable:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+.admin-push-card.is-active {
+    border-color: #bbf7d0;
+
+    background: #f8fff9;
+}
+
+.admin-push-card.is-active .admin-push-icon {
+    background: #dcfce7;
+}
+
+.admin-push-card.is-error {
+    border-color: #fecaca;
+
+    background: #fffafa;
+}
+
+.admin-push-card.is-error .admin-push-icon {
+    background: #fee2e2;
+}
+
+@media (max-width: 700px) {
+
+    .admin-push-card {
+        align-items: stretch;
+
+        flex-direction: column;
+
+        padding: 15px;
+    }
+
+    .admin-push-info {
+        align-items: flex-start;
+    }
+
+    .admin-push-actions {
+        width: 100%;
+    }
+
+    .admin-push-enable,
+    .admin-push-disable {
+        flex: 1;
+    }
+
+}
