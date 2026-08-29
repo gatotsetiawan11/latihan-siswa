@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Level - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="topbar-brand">
+
+            <small id="topicName">
+                PERKALIAN
+            </small>
+
+            <strong id="stageName">
+                Memuat...
+            </strong>
+
+        </div>
+
+
+        <button
+            id="backButton"
+            class="back-button"
+            type="button"
+        >
+            Kembali
+        </button>
+
+    </header>
+
+
+    <main class="dashboard">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+
+        <section class="page-heading">
+
+            <p class="eyebrow">
+                PILIH LEVEL
+            </p>
+
+            <h1 id="headingTitle">
+                Memuat...
+            </h1>
+
+            <p>
+                Semakin tinggi level,
+                waktu menjawab semakin singkat.
+            </p>
+
+        </section>
+
+
+        <!-- =========================
+             LEVEL
+        ========================== -->
+
+        <section
+            id="levelList"
+            class="level-grid"
+        >
+
+            <div class="loading-card">
+                Memuat level...
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/levels.js"></script>
+
+</body>
+
+</html>
