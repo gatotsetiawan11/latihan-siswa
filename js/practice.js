@@ -1,5 +1,5 @@
 // ======================================================
-// DOM
+// DOM ELEMENTS
 // ======================================================
 
 const practiceLoading =
@@ -73,7 +73,9 @@ const quitButton =
     );
 
 
-// RESULT
+// ======================================================
+// RESULT ELEMENTS
+// ======================================================
 
 const resultIcon =
     document.getElementById(
@@ -132,7 +134,7 @@ const continueButton =
 
 
 // ======================================================
-// URL
+// URL PARAMETERS
 // ======================================================
 
 const params =
@@ -142,23 +144,33 @@ const params =
 
 
 const subjectCode =
-    params.get("subject");
+    params.get(
+        "subject"
+    );
 
 const topicCode =
-    params.get("topic");
+    params.get(
+        "topic"
+    );
 
 const stageNumber =
     Number(
-        params.get("stage")
+        params.get(
+            "stage"
+        )
     );
 
 const levelNumber =
     Number(
-        params.get("level")
+        params.get(
+            "level"
+        )
     );
 
 const levelId =
-    params.get("id");
+    params.get(
+        "id"
+    );
 
 
 // ======================================================
@@ -183,46 +195,35 @@ const sessionToken =
 let levelData =
     null;
 
-
 let questions =
     [];
-
 
 let answers =
     [];
 
-
 let currentQuestionIndex =
     0;
-
 
 let correctCount =
     0;
 
-
 let wrongCount =
     0;
-
 
 let timeoutCount =
     0;
 
-
 let timerInterval =
     null;
-
 
 let questionStartedAt =
     0;
 
-
 let questionDeadline =
     0;
 
-
 let answerLocked =
     false;
-
 
 let delayedSubmit =
     null;
@@ -241,6 +242,10 @@ initialize();
 
 async function initialize() {
 
+    // ==================================================
+    // VALIDASI SESSION
+    // ==================================================
+
     const validSession =
         await checkSession();
 
@@ -252,12 +257,22 @@ async function initialize() {
     }
 
 
+    // ==================================================
+    // VALIDASI PARAMETER URL
+    // ==================================================
+
     if (
         !subjectCode ||
         !topicCode ||
         !levelId ||
-        !Number.isInteger(stageNumber) ||
-        !Number.isInteger(levelNumber)
+        !Number.isInteger(
+            stageNumber
+        ) ||
+        stageNumber <= 0 ||
+        !Number.isInteger(
+            levelNumber
+        ) ||
+        levelNumber <= 0
     ) {
 
         goBackToLevels();
@@ -266,6 +281,82 @@ async function initialize() {
 
     }
 
+
+    // ==================================================
+    // STUDENT:
+    // PASTIKAN LEVEL BENAR-BENAR TERBUKA
+    // ==================================================
+
+    if (
+        loginMode === "student"
+    ) {
+
+        try {
+
+            const {
+                data: canAccess,
+                error: accessError
+            } =
+                await window.db.rpc(
+                    "student_can_access_level",
+                    {
+                        p_token:
+                            sessionToken,
+
+                        p_level_id:
+                            levelId
+                    }
+                );
+
+
+            if (accessError) {
+
+                console.error(
+                    "Level access error:",
+                    accessError
+                );
+
+
+                showLockedLevelMessage();
+
+                return;
+
+            }
+
+
+            if (
+                canAccess !== true
+            ) {
+
+                showLockedLevelMessage();
+
+                return;
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Level access error:",
+                error
+            );
+
+
+            practiceLoading.textContent =
+                "Tidak dapat memverifikasi akses level.";
+
+            return;
+
+        }
+
+    }
+
+
+    // ==================================================
+    // EVENT
+    // ==================================================
 
     quitButton.addEventListener(
         "click",
@@ -292,7 +383,71 @@ async function initialize() {
     setupAnswerEvents();
 
 
+    // ==================================================
+    // LOAD LEVEL
+    // ==================================================
+
     await loadLevel();
+
+}
+
+
+// ======================================================
+// LEVEL LOCKED MESSAGE
+// ======================================================
+
+function showLockedLevelMessage() {
+
+    practiceLoading.innerHTML = `
+        <div
+            style="
+                font-size: 34px;
+                margin-bottom: 14px;
+            "
+        >
+            🔒
+        </div>
+
+        <strong
+            style="
+                display: block;
+                margin-bottom: 8px;
+                font-size: 20px;
+                color: #172033;
+            "
+        >
+            Level masih terkunci
+        </strong>
+
+        <p
+            style="
+                margin: 0 0 22px;
+                line-height: 1.6;
+            "
+        >
+            Selesaikan level sebelumnya terlebih dahulu.
+        </p>
+
+        <button
+            id="lockedLevelBackButton"
+            class="button button-primary"
+            type="button"
+        >
+            Kembali ke Daftar Level
+        </button>
+    `;
+
+
+    const lockedLevelBackButton =
+        document.getElementById(
+            "lockedLevelBackButton"
+        );
+
+
+    lockedLevelBackButton.addEventListener(
+        "click",
+        goBackToLevels
+    );
 
 }
 
@@ -303,16 +458,25 @@ async function initialize() {
 
 async function checkSession() {
 
-    if (loginMode === "guest") {
+    // ==================================================
+    // GUEST
+    // ==================================================
+
+    if (
+        loginMode === "guest"
+    ) {
 
         return true;
 
     }
 
 
+    // ==================================================
+    // HARUS STUDENT
+    // ==================================================
+
     if (
-        loginMode !== "student" ||
-        !sessionToken
+        loginMode !== "student"
     ) {
 
         goLogin();
@@ -321,6 +485,25 @@ async function checkSession() {
 
     }
 
+
+    // ==================================================
+    // TOKEN HARUS ADA
+    // ==================================================
+
+    if (!sessionToken) {
+
+        sessionStorage.clear();
+
+        goLogin();
+
+        return false;
+
+    }
+
+
+    // ==================================================
+    // VALIDASI TOKEN KE SUPABASE
+    // ==================================================
 
     try {
 
@@ -358,7 +541,11 @@ async function checkSession() {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            "Session error:",
+            error
+        );
+
 
         sessionStorage.clear();
 
@@ -384,7 +571,9 @@ async function loadLevel() {
             error
         } =
             await window.db
-                .from("levels")
+                .from(
+                    "levels"
+                )
                 .select(`
                     id,
                     level_number,
@@ -420,6 +609,10 @@ async function loadLevel() {
             data;
 
 
+        // ==================================================
+        // VALIDASI JENIS LATIHAN
+        // ==================================================
+
         if (
             !levelData.config ||
             levelData.config.exercise_type
@@ -433,6 +626,10 @@ async function loadLevel() {
         }
 
 
+        // ==================================================
+        // HEADER
+        // ==================================================
+
         practiceTopic.textContent =
             "PERKALIAN";
 
@@ -441,11 +638,33 @@ async function loadLevel() {
             `Tingkat ${stageNumber} • ${levelData.name}`;
 
 
+        // ==================================================
+        // GENERATE SOAL
+        // ==================================================
+
         questions =
             generateBalancedQuestions(
                 levelData
             );
 
+
+        if (
+            questions.length !==
+            Number(
+                levelData.question_count
+            )
+        ) {
+
+            throw new Error(
+                "Jumlah soal gagal dibuat."
+            );
+
+        }
+
+
+        // ==================================================
+        // TAMPILKAN GAME
+        // ==================================================
 
         practiceLoading.classList.add(
             "hidden"
@@ -456,6 +675,10 @@ async function loadLevel() {
             "hidden"
         );
 
+
+        // ==================================================
+        // MULAI SOAL
+        // ==================================================
 
         startQuestion();
 
@@ -493,8 +716,14 @@ function generateBalancedQuestions(
         Array.isArray(
             config.multipliers
         )
-            ? [...config.multipliers]
-            : [1, 2, 5];
+            ? [
+                ...config.multipliers
+            ]
+            : [
+                1,
+                2,
+                5
+            ];
 
 
     const min =
@@ -516,7 +745,24 @@ function generateBalancedQuestions(
 
 
     // ==================================================
-    // BUAT POOL PER MULTIPLIER
+    // VALIDASI
+    // ==================================================
+
+    if (
+        multipliers.length === 0 ||
+        !Number.isInteger(min) ||
+        !Number.isInteger(max) ||
+        min > max ||
+        questionCount <= 0
+    ) {
+
+        return [];
+
+    }
+
+
+    // ==================================================
+    // BUAT POOL SOAL PER MULTIPLIER
     // ==================================================
 
     const pools =
@@ -524,7 +770,13 @@ function generateBalancedQuestions(
 
 
     multipliers.forEach(
-        multiplier => {
+        rawMultiplier => {
+
+            const multiplier =
+                Number(
+                    rawMultiplier
+                );
+
 
             const pool =
                 [];
@@ -537,14 +789,14 @@ function generateBalancedQuestions(
             ) {
 
                 pool.push({
-                    a: Number(
-                        multiplier
-                    ),
-                    b,
+                    a:
+                        multiplier,
+
+                    b:
+                        b,
+
                     answer:
-                        Number(
-                            multiplier
-                        ) * b
+                        multiplier * b
                 });
 
             }
@@ -556,7 +808,7 @@ function generateBalancedQuestions(
 
 
             pools.set(
-                Number(multiplier),
+                multiplier,
                 pool
             );
 
@@ -611,8 +863,13 @@ function generateBalancedQuestions(
         index++;
 
 
-        // Safety.
-        if (index > 1000) {
+        // ==================================================
+        // SAFETY LOOP
+        // ==================================================
+
+        if (
+            index > 1000
+        ) {
 
             break;
 
@@ -621,7 +878,10 @@ function generateBalancedQuestions(
     }
 
 
-    // Acak urutan akhir.
+    // ==================================================
+    // ACAK URUTAN AKHIR
+    // ==================================================
+
     shuffleArray(
         result
     );
@@ -633,10 +893,12 @@ function generateBalancedQuestions(
 
 
 // ======================================================
-// SHUFFLE
+// SHUFFLE ARRAY
 // ======================================================
 
-function shuffleArray(array) {
+function shuffleArray(
+    array
+) {
 
     for (
         let i =
@@ -650,7 +912,9 @@ function shuffleArray(array) {
         const j =
             Math.floor(
                 Math.random() *
-                (i + 1)
+                (
+                    i + 1
+                )
             );
 
 
@@ -677,12 +941,21 @@ function shuffleArray(array) {
 
 function startQuestion() {
 
+    // ==================================================
+    // BERSIHKAN TIMER LAMA
+    // ==================================================
+
     clearTimer();
+
 
     clearTimeout(
         delayedSubmit
     );
 
+
+    // ==================================================
+    // RESET STATE
+    // ==================================================
 
     answerLocked =
         false;
@@ -704,15 +977,36 @@ function startQuestion() {
         "answer-feedback";
 
 
+    // ==================================================
+    // SOAL SAAT INI
+    // ==================================================
+
     const question =
         questions[
             currentQuestionIndex
         ];
 
 
+    if (!question) {
+
+        finishPractice();
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // TAMPILKAN SOAL
+    // ==================================================
+
     questionText.textContent =
         `${question.a} × ${question.b}`;
 
+
+    // ==================================================
+    // PROGRESS
+    // ==================================================
 
     questionProgress.textContent =
         `${
@@ -729,7 +1023,8 @@ function startQuestion() {
                 /
                 questions.length
             )
-            * 100
+            *
+            100
         }%`;
 
 
@@ -762,7 +1057,9 @@ function startQuestion() {
 
 
     timerValue.textContent =
-        String(duration);
+        String(
+            duration
+        );
 
 
     timerCircle.classList.remove(
@@ -778,7 +1075,7 @@ function startQuestion() {
 
 
     // ==================================================
-    // FOCUS
+    // AUTOFOCUS
     // ==================================================
 
     setTimeout(
@@ -824,6 +1121,10 @@ function updateTimer() {
         1000;
 
 
+    // ==================================================
+    // TAMPILAN DETIK
+    // ==================================================
+
     timerValue.textContent =
         remainingSeconds
             .toFixed(1)
@@ -833,11 +1134,21 @@ function updateTimer() {
             );
 
 
-    // Warning pada 30% waktu terakhir.
+    // ==================================================
+    // WARNING
+    // ==================================================
+
+    const warningLimit =
+        Number(
+            levelData.time_limit_seconds
+        )
+        *
+        0.30;
+
+
     if (
         remainingSeconds <=
-        levelData.time_limit_seconds
-        * 0.30
+        warningLimit
     ) {
 
         timerCircle.classList.add(
@@ -847,7 +1158,13 @@ function updateTimer() {
     }
 
 
-    if (remainingMs <= 0) {
+    // ==================================================
+    // WAKTU HABIS
+    // ==================================================
+
+    if (
+        remainingMs <= 0
+    ) {
 
         handleTimerEnd();
 
@@ -857,22 +1174,29 @@ function updateTimer() {
 
 
 // ======================================================
-// INPUT EVENTS
+// SETUP ANSWER EVENTS
 // ======================================================
 
 function setupAnswerEvents() {
+
+    // ==================================================
+    // INPUT
+    // ==================================================
 
     answerInput.addEventListener(
         "input",
         () => {
 
-            if (answerLocked) {
+            if (
+                answerLocked
+            ) {
 
                 return;
 
             }
 
 
+            // Hanya angka.
             answerInput.value =
                 answerInput.value.replace(
                     /\D/g,
@@ -889,7 +1213,9 @@ function setupAnswerEvents() {
                 answerInput.value.trim();
 
 
-            if (value === "") {
+            if (
+                value === ""
+            ) {
 
                 return;
 
@@ -915,12 +1241,15 @@ function setupAnswerEvents() {
                 );
 
 
-            // ==========================================
-            // JIKA SUDAH BENAR → LANGSUNG SUBMIT
-            // ==========================================
+            // ==================================================
+            // JAWABAN SUDAH BENAR
+            //
+            // Tidak perlu menunggu tombol submit.
+            // ==================================================
 
             if (
-                value === correctText
+                value ===
+                correctText
             ) {
 
                 delayedSubmit =
@@ -933,18 +1262,22 @@ function setupAnswerEvents() {
                         80
                     );
 
+
                 return;
 
             }
 
 
-            // ==========================================
-            // SALAH DAN JUMLAH DIGIT SUDAH CUKUP
+            // ==================================================
+            // JAWABAN SALAH
             //
-            // Misal jawaban benar 14:
-            // mengetik "1" belum dianggap salah.
-            // Setelah menjadi 13 / 15 baru diproses.
-            // ==========================================
+            // Jangan langsung salah saat baru mengetik
+            // digit pertama.
+            //
+            // Contoh jawaban 14:
+            // mengetik "1" → tunggu
+            // mengetik "13" → proses salah
+            // ==================================================
 
             if (
                 value.length >=
@@ -967,22 +1300,29 @@ function setupAnswerEvents() {
     );
 
 
-    // ENTER tetap boleh digunakan.
+    // ==================================================
+    // ENTER OPSIONAL
+    // ==================================================
+
     answerInput.addEventListener(
         "keydown",
         event => {
 
             if (
-                event.key === "Enter"
+                event.key ===
+                "Enter"
             ) {
 
                 event.preventDefault();
 
 
+                const value =
+                    answerInput.value.trim();
+
+
                 if (
-                    answerInput.value
-                        .trim()
-                    !== ""
+                    value !== "" &&
+                    !answerLocked
                 ) {
 
                     submitAnswer();
@@ -1003,7 +1343,9 @@ function setupAnswerEvents() {
 
 function handleTimerEnd() {
 
-    if (answerLocked) {
+    if (
+        answerLocked
+    ) {
 
         return;
 
@@ -1014,13 +1356,24 @@ function handleTimerEnd() {
         answerInput.value.trim();
 
 
-    // Ada jawaban ketika waktu habis:
-    // tetap diperiksa.
-    if (value !== "") {
+    // ==================================================
+    // SUDAH ADA JAWABAN
+    //
+    // Walaupun timer 0,
+    // jawaban tetap diperiksa.
+    // ==================================================
+
+    if (
+        value !== ""
+    ) {
 
         submitAnswer();
 
     }
+
+    // ==================================================
+    // KOSONG = TIMEOUT
+    // ==================================================
 
     else {
 
@@ -1037,7 +1390,9 @@ function handleTimerEnd() {
 
 function submitAnswer() {
 
-    if (answerLocked) {
+    if (
+        answerLocked
+    ) {
 
         return;
 
@@ -1060,11 +1415,26 @@ function submitAnswer() {
         true;
 
 
+    // ==================================================
+    // SOAL
+    // ==================================================
+
     const question =
         questions[
             currentQuestionIndex
         ];
 
+
+    if (!question) {
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // JAWABAN USER
+    // ==================================================
 
     const userValue =
         answerInput.value.trim();
@@ -1076,6 +1446,10 @@ function submitAnswer() {
         );
 
 
+    // ==================================================
+    // RESPONSE TIME
+    // ==================================================
+
     const responseTime =
         Math.round(
             performance.now()
@@ -1084,12 +1458,22 @@ function submitAnswer() {
         );
 
 
+    // ==================================================
+    // CHECK
+    // ==================================================
+
     const isCorrect =
         userNumber ===
         question.answer;
 
 
-    if (isCorrect) {
+    // ==================================================
+    // BENAR
+    // ==================================================
+
+    if (
+        isCorrect
+    ) {
 
         correctCount++;
 
@@ -1103,15 +1487,17 @@ function submitAnswer() {
 
     }
 
+    // ==================================================
+    // SALAH
+    // ==================================================
+
     else {
 
         wrongCount++;
 
 
         answerFeedback.textContent =
-            `✕ Jawaban yang benar ${
-                question.answer
-            }`;
+            `✕ Jawaban yang benar ${question.answer}`;
 
 
         answerFeedback.className =
@@ -1119,6 +1505,10 @@ function submitAnswer() {
 
     }
 
+
+    // ==================================================
+    // SIMPAN KE STATE
+    // ==================================================
 
     answers.push({
 
@@ -1137,11 +1527,19 @@ function submitAnswer() {
     });
 
 
+    // ==================================================
+    // LIVE SCORE
+    // ==================================================
+
     liveCorrect.textContent =
         String(
             correctCount
         );
 
+
+    // ==================================================
+    // NEXT
+    // ==================================================
 
     setTimeout(
         nextQuestion,
@@ -1152,12 +1550,14 @@ function submitAnswer() {
 
 
 // ======================================================
-// TIMEOUT
+// SUBMIT TIMEOUT
 // ======================================================
 
 function submitTimeout() {
 
-    if (answerLocked) {
+    if (
+        answerLocked
+    ) {
 
         return;
 
@@ -1186,8 +1586,23 @@ function submitTimeout() {
         ];
 
 
+    if (!question) {
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // COUNT
+    // ==================================================
+
     timeoutCount++;
 
+
+    // ==================================================
+    // RESPONSE TIME
+    // ==================================================
 
     const responseTime =
         Math.round(
@@ -1196,6 +1611,10 @@ function submitTimeout() {
             questionStartedAt
         );
 
+
+    // ==================================================
+    // SIMPAN
+    // ==================================================
 
     answers.push({
 
@@ -1214,15 +1633,21 @@ function submitTimeout() {
     });
 
 
+    // ==================================================
+    // FEEDBACK
+    // ==================================================
+
     answerFeedback.textContent =
-        `Waktu habis • Jawaban ${
-            question.answer
-        }`;
+        `Waktu habis • Jawaban ${question.answer}`;
 
 
     answerFeedback.className =
         "answer-feedback feedback-timeout";
 
+
+    // ==================================================
+    // NEXT
+    // ==================================================
 
     setTimeout(
         nextQuestion,
@@ -1259,12 +1684,17 @@ function nextQuestion() {
 
 
 // ======================================================
-// FINISH
+// FINISH PRACTICE
 // ======================================================
 
 async function finishPractice() {
 
     clearTimer();
+
+
+    clearTimeout(
+        delayedSubmit
+    );
 
 
     questionProgressBar.style.width =
@@ -1298,6 +1728,7 @@ async function finishPractice() {
 
 
         showResult({
+
             ...result,
 
             best_score:
@@ -1358,6 +1789,10 @@ async function finishPractice() {
         }
 
 
+        // ==================================================
+        // RESULT
+        // ==================================================
+
         showResult(
             data[0]
         );
@@ -1372,8 +1807,48 @@ async function finishPractice() {
         );
 
 
-        practiceLoading.textContent =
-            "Hasil latihan tidak dapat disimpan. Silakan kembali dan coba lagi.";
+        practiceLoading.innerHTML = `
+
+            <strong
+                style="
+                    display: block;
+                    margin-bottom: 9px;
+                    color: #172033;
+                "
+            >
+                Hasil tidak dapat disimpan
+            </strong>
+
+            <p
+                style="
+                    margin: 0 0 20px;
+                "
+            >
+                Silakan kembali ke daftar level
+                lalu coba kembali.
+            </p>
+
+            <button
+                id="submitErrorBackButton"
+                class="button button-primary"
+                type="button"
+            >
+                Kembali ke Level
+            </button>
+
+        `;
+
+
+        const button =
+            document.getElementById(
+                "submitErrorBackButton"
+            );
+
+
+        button.addEventListener(
+            "click",
+            goBackToLevels
+        );
 
     }
 
@@ -1381,7 +1856,7 @@ async function finishPractice() {
 
 
 // ======================================================
-// GUEST RESULT
+// CALCULATE GUEST RESULT
 // ======================================================
 
 function calculateGuestResult() {
@@ -1391,12 +1866,18 @@ function calculateGuestResult() {
 
 
     const accuracy =
-        (
-            correctCount /
-            total
-        )
-        * 100;
+        total > 0
+            ? (
+                correctCount /
+                total
+            )
+            * 100
+            : 0;
 
+
+    // ==================================================
+    // RESPONSE TIMES
+    // ==================================================
 
     const responseTimes =
         answers
@@ -1416,6 +1897,10 @@ function calculateGuestResult() {
             );
 
 
+    // ==================================================
+    // AVERAGE
+    // ==================================================
+
     let average =
         null;
 
@@ -1424,26 +1909,30 @@ function calculateGuestResult() {
         responseTimes.length > 0
     ) {
 
+        const totalResponseTime =
+            responseTimes.reduce(
+                (
+                    total,
+                    value
+                ) =>
+                    total + value,
+                0
+            );
+
+
         average =
             Math.round(
-
-                responseTimes.reduce(
-                    (
-                        total,
-                        value
-                    ) =>
-                        total + value,
-                    0
-                )
-
+                totalResponseTime
                 /
-
                 responseTimes.length
-
             );
 
     }
 
+
+    // ==================================================
+    // RETURN
+    // ==================================================
 
     return {
 
@@ -1458,7 +1947,9 @@ function calculateGuestResult() {
 
         accuracy:
             Number(
-                accuracy.toFixed(2)
+                accuracy.toFixed(
+                    2
+                )
             ),
 
         average_response_time_ms:
@@ -1466,7 +1957,9 @@ function calculateGuestResult() {
 
         passed:
             accuracy >=
-            levelData.passing_score
+            Number(
+                levelData.passing_score
+            )
 
     };
 
@@ -1474,12 +1967,23 @@ function calculateGuestResult() {
 
 
 // ======================================================
-// RESULT SCREEN
+// SHOW RESULT
 // ======================================================
 
-function showResult(result) {
+function showResult(
+    result
+) {
+
+    // ==================================================
+    // SCREEN
+    // ==================================================
 
     practiceLoading.classList.add(
+        "hidden"
+    );
+
+
+    practiceGame.classList.add(
         "hidden"
     );
 
@@ -1488,6 +1992,10 @@ function showResult(result) {
         "hidden"
     );
 
+
+    // ==================================================
+    // STATUS
+    // ==================================================
 
     const passed =
         result.passed === true;
@@ -1500,10 +2008,12 @@ function showResult(result) {
 
 
     // ==================================================
-    // STATUS
+    // LULUS
     // ==================================================
 
-    if (passed) {
+    if (
+        passed
+    ) {
 
         resultIcon.textContent =
             "✓";
@@ -1517,12 +2027,27 @@ function showResult(result) {
             "Level Lulus!";
 
 
-        resultMessage.textContent =
+        if (
             loginMode === "student"
-                ? "Level berikutnya sekarang dapat dibuka."
-                : "Hasil Guest tidak disimpan.";
+        ) {
+
+            resultMessage.textContent =
+                "Level berikutnya sekarang dapat dibuka.";
+
+        }
+
+        else {
+
+            resultMessage.textContent =
+                "Hasil Guest tidak disimpan.";
+
+        }
 
     }
+
+    // ==================================================
+    // BELUM LULUS
+    // ==================================================
 
     else {
 
@@ -1539,32 +2064,44 @@ function showResult(result) {
 
 
         resultMessage.textContent =
-            `Diperlukan minimal ${
-                levelData.passing_score
-            }% untuk membuka level berikutnya.`;
+            `Diperlukan minimal ${levelData.passing_score}% untuk membuka level berikutnya.`;
 
     }
 
 
     // ==================================================
-    // VALUE
+    // ACCURACY
     // ==================================================
 
     resultAccuracy.textContent =
         `${accuracy.toFixed(0)}%`;
 
 
+    // ==================================================
+    // COUNTS
+    // ==================================================
+
     resultCorrect.textContent =
-        result.correct_count;
+        String(
+            result.correct_count
+        );
 
 
     resultWrong.textContent =
-        result.wrong_count;
+        String(
+            result.wrong_count
+        );
 
 
     resultTimeout.textContent =
-        result.timeout_count;
+        String(
+            result.timeout_count
+        );
 
+
+    // ==================================================
+    // AVERAGE RESPONSE
+    // ==================================================
 
     if (
         result.average_response_time_ms
@@ -1574,17 +2111,16 @@ function showResult(result) {
         !== undefined
     ) {
 
+        const averageSeconds =
+            Number(
+                result.average_response_time_ms
+            )
+            /
+            1000;
+
+
         resultAverage.textContent =
-            `${
-                (
-                    Number(
-                        result.average_response_time_ms
-                    )
-                    /
-                    1000
-                )
-                .toFixed(1)
-            } dtk`;
+            `${averageSeconds.toFixed(1)} dtk`;
 
     }
 
@@ -1597,13 +2133,12 @@ function showResult(result) {
 
 
     // ==================================================
-    // BEST SCORE SISWA
+    // BEST SCORE
     // ==================================================
 
     if (
         loginMode === "student" &&
-        result.best_score !== null
-        &&
+        result.best_score !== null &&
         result.best_score !== undefined
     ) {
 
@@ -1616,10 +2151,19 @@ function showResult(result) {
             `Skor terbaik: ${
                 Number(
                     result.best_score
-                ).toFixed(0)
+                )
+                .toFixed(0)
             }% • Percobaan ${
                 result.attempts
             }`;
+
+    }
+
+    else {
+
+        bestScoreBox.classList.add(
+            "hidden"
+        );
 
     }
 
@@ -1632,7 +2176,9 @@ function showResult(result) {
 
 function clearTimer() {
 
-    if (timerInterval) {
+    if (
+        timerInterval
+    ) {
 
         clearInterval(
             timerInterval
@@ -1648,13 +2194,40 @@ function clearTimer() {
 
 
 // ======================================================
-// NAVIGATION
+// GO BACK TO LEVELS
 // ======================================================
 
 function goBackToLevels() {
 
     clearTimer();
 
+
+    clearTimeout(
+        delayedSubmit
+    );
+
+
+    // ==================================================
+    // FALLBACK
+    // ==================================================
+
+    if (
+        !subjectCode ||
+        !topicCode ||
+        !stageNumber
+    ) {
+
+        window.location.href =
+            "./dashboard.html";
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // URL
+    // ==================================================
 
     const url =
         "./levels.html" +
@@ -1681,9 +2254,32 @@ function goBackToLevels() {
 }
 
 
+// ======================================================
+// LOGIN
+// ======================================================
+
 function goLogin() {
 
     window.location.href =
         "./index.html";
 
 }
+
+
+// ======================================================
+// CLEANUP
+// ======================================================
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        clearTimer();
+
+
+        clearTimeout(
+            delayedSubmit
+        );
+
+    }
+);
