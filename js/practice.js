@@ -1,159 +1,139 @@
 // ======================================================
-// PRACTICE ENGINE V3
+// PRACTICE ENGINE V4
 //
 // Mendukung:
+// - multiplication
+// - place_value_multiplication
+// - multi_digit_multiplication
 //
-// 1. multiplication
-// 2. place_value_multiplication
-// 3. multi_digit_multiplication
+// Input mode:
+// - direct
+// - column_steps
 //
 // Tingkat 1 - 13
-//
-// Fitur:
-// - balanced random
-// - random position
-// - adaptive weakness
-// - multi digit
-// - no duplicate question
-// - timer
-// - auto submit
-// - refresh-safe question set
 // ======================================================
 
 
 // ======================================================
-// DOM
+// DOM UTAMA
 // ======================================================
 
 const practiceLoading =
-    document.getElementById(
-        "practiceLoading"
-    );
+    document.getElementById("practiceLoading");
 
 const practiceGame =
-    document.getElementById(
-        "practiceGame"
-    );
+    document.getElementById("practiceGame");
 
 const resultScreen =
-    document.getElementById(
-        "resultScreen"
-    );
+    document.getElementById("resultScreen");
 
 const practiceTopic =
-    document.getElementById(
-        "practiceTopic"
-    );
+    document.getElementById("practiceTopic");
 
 const practiceLevel =
-    document.getElementById(
-        "practiceLevel"
-    );
+    document.getElementById("practiceLevel");
 
 const questionProgress =
-    document.getElementById(
-        "questionProgress"
-    );
+    document.getElementById("questionProgress");
 
 const questionProgressBar =
-    document.getElementById(
-        "questionProgressBar"
-    );
+    document.getElementById("questionProgressBar");
 
 const liveCorrect =
-    document.getElementById(
-        "liveCorrect"
-    );
+    document.getElementById("liveCorrect");
 
 const timerCircle =
-    document.getElementById(
-        "timerCircle"
-    );
+    document.getElementById("timerCircle");
 
 const timerValue =
-    document.getElementById(
-        "timerValue"
-    );
-
-const questionText =
-    document.getElementById(
-        "questionText"
-    );
-
-const answerInput =
-    document.getElementById(
-        "answerInput"
-    );
+    document.getElementById("timerValue");
 
 const answerFeedback =
-    document.getElementById(
-        "answerFeedback"
-    );
+    document.getElementById("answerFeedback");
 
 const quitButton =
-    document.getElementById(
-        "quitButton"
-    );
+    document.getElementById("quitButton");
 
 
 // ======================================================
-// RESULT DOM
+// DIRECT MODE
+// ======================================================
+
+const directQuestionArea =
+    document.getElementById("directQuestionArea");
+
+const questionText =
+    document.getElementById("questionText");
+
+const answerInput =
+    document.getElementById("answerInput");
+
+
+// ======================================================
+// COLUMN MODE
+// ======================================================
+
+const columnQuestionArea =
+    document.getElementById("columnQuestionArea");
+
+const columnTopNumber =
+    document.getElementById("columnTopNumber");
+
+const columnBottomNumber =
+    document.getElementById("columnBottomNumber");
+
+const columnStep1Label =
+    document.getElementById("columnStep1Label");
+
+const columnStep2Label =
+    document.getElementById("columnStep2Label");
+
+const columnStep1Input =
+    document.getElementById("columnStep1Input");
+
+const columnStep2Input =
+    document.getElementById("columnStep2Input");
+
+const columnFinalInput =
+    document.getElementById("columnFinalInput");
+
+
+// ======================================================
+// RESULT
 // ======================================================
 
 const resultIcon =
-    document.getElementById(
-        "resultIcon"
-    );
+    document.getElementById("resultIcon");
 
 const resultTitle =
-    document.getElementById(
-        "resultTitle"
-    );
+    document.getElementById("resultTitle");
 
 const resultMessage =
-    document.getElementById(
-        "resultMessage"
-    );
+    document.getElementById("resultMessage");
 
 const resultAccuracy =
-    document.getElementById(
-        "resultAccuracy"
-    );
+    document.getElementById("resultAccuracy");
 
 const resultCorrect =
-    document.getElementById(
-        "resultCorrect"
-    );
+    document.getElementById("resultCorrect");
 
 const resultWrong =
-    document.getElementById(
-        "resultWrong"
-    );
+    document.getElementById("resultWrong");
 
 const resultTimeout =
-    document.getElementById(
-        "resultTimeout"
-    );
+    document.getElementById("resultTimeout");
 
 const resultAverage =
-    document.getElementById(
-        "resultAverage"
-    );
+    document.getElementById("resultAverage");
 
 const bestScoreBox =
-    document.getElementById(
-        "bestScoreBox"
-    );
+    document.getElementById("bestScoreBox");
 
 const retryButton =
-    document.getElementById(
-        "retryButton"
-    );
+    document.getElementById("retryButton");
 
 const continueButton =
-    document.getElementById(
-        "continueButton"
-    );
+    document.getElementById("continueButton");
 
 
 // ======================================================
@@ -161,54 +141,30 @@ const continueButton =
 // ======================================================
 
 const params =
-    new URLSearchParams(
-        window.location.search
-    );
-
+    new URLSearchParams(window.location.search);
 
 const subjectCode =
-    params.get(
-        "subject"
-    );
-
+    params.get("subject");
 
 const topicCode =
-    params.get(
-        "topic"
-    );
-
+    params.get("topic");
 
 const stageNumber =
-    Number(
-        params.get(
-            "stage"
-        )
-    );
-
+    Number(params.get("stage"));
 
 const levelNumber =
-    Number(
-        params.get(
-            "level"
-        )
-    );
-
+    Number(params.get("level"));
 
 const levelId =
-    params.get(
-        "id"
-    );
+    params.get("id");
 
 
 // ======================================================
-// SESSION
+// LOGIN SESSION
 // ======================================================
 
 const loginMode =
-    sessionStorage.getItem(
-        "login_mode"
-    );
-
+    sessionStorage.getItem("login_mode");
 
 const sessionToken =
     sessionStorage.getItem(
@@ -217,67 +173,42 @@ const sessionToken =
 
 
 // ======================================================
-// SAVED STATE
+// PRACTICE STATE
 // ======================================================
 
 const practiceStateKey =
     levelId
-
-        ? `practice_v3_${levelId}`
-
+        ? `practice_v4_${levelId}`
         : null;
 
 
 // ======================================================
-// STATE
+// GAME STATE
 // ======================================================
 
-let levelData =
-    null;
+let levelData = null;
 
+let questions = [];
 
-let questions =
-    [];
+let answers = [];
 
+let currentQuestionIndex = 0;
 
-let answers =
-    [];
+let correctCount = 0;
 
+let wrongCount = 0;
 
-let currentQuestionIndex =
-    0;
+let timeoutCount = 0;
 
+let timerInterval = null;
 
-let correctCount =
-    0;
+let delayedSubmit = null;
 
+let questionStartedAt = 0;
 
-let wrongCount =
-    0;
+let questionDeadline = 0;
 
-
-let timeoutCount =
-    0;
-
-
-let timerInterval =
-    null;
-
-
-let delayedSubmit =
-    null;
-
-
-let questionStartedAt =
-    0;
-
-
-let questionDeadline =
-    0;
-
-
-let answerLocked =
-    false;
+let answerLocked = false;
 
 
 // ======================================================
@@ -296,11 +227,8 @@ async function initialize() {
     const validSession =
         await checkSession();
 
-
     if (!validSession) {
-
         return;
-
     }
 
 
@@ -312,20 +240,15 @@ async function initialize() {
         !subjectCode ||
         !topicCode ||
         !levelId ||
-        !Number.isInteger(
-            stageNumber
-        ) ||
+        !Number.isInteger(stageNumber) ||
         stageNumber <= 0 ||
-        !Number.isInteger(
-            levelNumber
-        ) ||
+        !Number.isInteger(levelNumber) ||
         levelNumber <= 0
     ) {
 
         goBackToLevels();
 
         return;
-
     }
 
 
@@ -333,30 +256,23 @@ async function initialize() {
     // STUDENT ACCESS
     // ==================================================
 
-    if (
-        loginMode === "student"
-    ) {
+    if (loginMode === "student") {
 
         const access =
             await checkLevelAccess();
-
 
         if (!access) {
 
             showLockedLevelMessage();
 
             return;
-
         }
-
     }
 
 
     setupEvents();
 
-
     await loadLevel();
-
 }
 
 
@@ -366,10 +282,6 @@ async function initialize() {
 
 function setupEvents() {
 
-    // ==================================================
-    // QUIT
-    // ==================================================
-
     quitButton.addEventListener(
         "click",
         () => {
@@ -377,14 +289,9 @@ function setupEvents() {
             clearSavedPracticeState();
 
             goBackToLevels();
-
         }
     );
 
-
-    // ==================================================
-    // RETRY
-    // ==================================================
 
     retryButton.addEventListener(
         "click",
@@ -393,14 +300,9 @@ function setupEvents() {
             clearSavedPracticeState();
 
             window.location.reload();
-
         }
     );
 
-
-    // ==================================================
-    // CONTINUE
-    // ==================================================
 
     continueButton.addEventListener(
         "click",
@@ -409,65 +311,160 @@ function setupEvents() {
             clearSavedPracticeState();
 
             goBackToLevels();
-
         }
     );
 
 
     // ==================================================
-    // ANSWER
+    // DIRECT INPUT
     // ==================================================
 
     answerInput.addEventListener(
         "input",
-        handleAnswerInput
+        handleDirectInput
     );
 
-
-    // ==================================================
-    // ENTER
-    // ==================================================
 
     answerInput.addEventListener(
         "keydown",
         event => {
 
-            if (
-                event.key !==
-                "Enter"
-            ) {
-
+            if (event.key !== "Enter") {
                 return;
-
             }
-
 
             event.preventDefault();
 
-
             if (answerLocked) {
-
                 return;
-
             }
-
 
             if (
-                answerInput.value
-                    .trim()
+                answerInput.value.trim()
                 === ""
             ) {
-
                 return;
-
             }
 
-
-            submitAnswer();
-
+            submitDirectAnswer();
         }
     );
 
+
+    // ==================================================
+    // COLUMN INPUT
+    // ==================================================
+
+    columnStep1Input.addEventListener(
+        "input",
+        () => {
+            handleColumnInput(
+                columnStep1Input,
+                1
+            );
+        }
+    );
+
+
+    columnStep2Input.addEventListener(
+        "input",
+        () => {
+            handleColumnInput(
+                columnStep2Input,
+                2
+            );
+        }
+    );
+
+
+    columnFinalInput.addEventListener(
+        "input",
+        () => {
+            handleColumnInput(
+                columnFinalInput,
+                3
+            );
+        }
+    );
+
+
+    // ==================================================
+    // ENTER COLUMN
+    // ==================================================
+
+    columnStep1Input.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (answerLocked) {
+                return;
+            }
+
+            if (
+                columnStep1Input.value.trim()
+                === ""
+            ) {
+                return;
+            }
+
+            columnStep2Input.focus();
+        }
+    );
+
+
+    columnStep2Input.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (answerLocked) {
+                return;
+            }
+
+            if (
+                columnStep2Input.value.trim()
+                === ""
+            ) {
+                return;
+            }
+
+            columnFinalInput.focus();
+        }
+    );
+
+
+    columnFinalInput.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (answerLocked) {
+                return;
+            }
+
+            if (!hasAnyColumnInput()) {
+                return;
+            }
+
+            submitColumnAnswer();
+        }
+    );
 }
 
 
@@ -477,12 +474,8 @@ function setupEvents() {
 
 async function checkSession() {
 
-    if (
-        loginMode === "guest"
-    ) {
-
+    if (loginMode === "guest") {
         return true;
-
     }
 
 
@@ -496,7 +489,6 @@ async function checkSession() {
         goLogin();
 
         return false;
-
     }
 
 
@@ -526,35 +518,29 @@ async function checkSession() {
             goLogin();
 
             return false;
-
         }
 
 
         return true;
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Session error:",
             error
         );
 
-
         sessionStorage.clear();
 
         goLogin();
 
         return false;
-
     }
-
 }
 
 
 // ======================================================
-// LEVEL ACCESS
+// ACCESS LEVEL
 // ======================================================
 
 async function checkLevelAccess() {
@@ -568,13 +554,11 @@ async function checkLevelAccess() {
             await window.db.rpc(
                 "student_can_access_level",
                 {
-
                     p_token:
                         sessionToken,
 
                     p_level_id:
                         levelId
-
                 }
             );
 
@@ -586,28 +570,21 @@ async function checkLevelAccess() {
                 error
             );
 
-
             return false;
-
         }
 
 
         return data === true;
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Access error:",
             error
         );
 
-
         return false;
-
     }
-
 }
 
 
@@ -656,7 +633,6 @@ function showLockedLevelMessage() {
         >
             Kembali ke Daftar Level
         </button>
-
     `;
 
 
@@ -668,7 +644,6 @@ function showLockedLevelMessage() {
             "click",
             goBackToLevels
         );
-
 }
 
 
@@ -685,9 +660,7 @@ async function loadLevel() {
             error
         } =
             await window.db
-                .from(
-                    "levels"
-                )
+                .from("levels")
                 .select(`
                     id,
                     level_number,
@@ -713,28 +686,17 @@ async function loadLevel() {
 
 
         if (error) {
-
             throw error;
-
         }
 
 
-        levelData =
-            data;
+        levelData = data;
 
-
-        // ==================================================
-        // ENGINE SUPPORT
-        // ==================================================
 
         const supportedTypes = [
-
             "multiplication",
-
             "place_value_multiplication",
-
             "multi_digit_multiplication"
-
         ];
 
 
@@ -749,13 +711,38 @@ async function loadLevel() {
             throw new Error(
                 "Jenis latihan belum didukung."
             );
-
         }
 
 
-        // ==================================================
-        // HEADER
-        // ==================================================
+        const inputMode =
+            getInputMode();
+
+
+        if (
+            ![
+                "direct",
+                "column_steps"
+            ].includes(inputMode)
+        ) {
+
+            throw new Error(
+                "Mode input belum didukung."
+            );
+        }
+
+
+        if (
+            inputMode === "column_steps" &&
+            levelData.config
+                .exercise_type !==
+                "multi_digit_multiplication"
+        ) {
+
+            throw new Error(
+                "Mode bersusun hanya dapat digunakan untuk perkalian multi-digit."
+            );
+        }
+
 
         practiceTopic.textContent =
             "PERKALIAN";
@@ -779,7 +766,6 @@ async function loadLevel() {
                 savedState
             );
 
-
             showGame();
 
 
@@ -791,7 +777,6 @@ async function loadLevel() {
                 await finishPractice();
 
                 return;
-
             }
 
 
@@ -800,9 +785,7 @@ async function loadLevel() {
                 savedState
             );
 
-
             return;
-
         }
 
 
@@ -824,43 +807,27 @@ async function loadLevel() {
             throw new Error(
                 "Jumlah soal gagal dibuat."
             );
-
         }
 
 
-        answers =
-            [];
+        answers = [];
 
+        currentQuestionIndex = 0;
 
-        currentQuestionIndex =
-            0;
+        correctCount = 0;
 
+        wrongCount = 0;
 
-        correctCount =
-            0;
-
-
-        wrongCount =
-            0;
-
-
-        timeoutCount =
-            0;
+        timeoutCount = 0;
 
 
         savePracticeState();
 
-
         showGame();
 
+        startQuestion(false);
 
-        startQuestion(
-            false
-        );
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Load practice error:",
@@ -870,9 +837,32 @@ async function loadLevel() {
 
         practiceLoading.textContent =
             "Tidak dapat menyiapkan latihan.";
-
     }
+}
 
+
+// ======================================================
+// INPUT MODE
+// ======================================================
+
+function getInputMode() {
+
+    return (
+        levelData
+            ?.config
+            ?.input_mode
+        ||
+        "direct"
+    );
+}
+
+
+function isColumnMode() {
+
+    return (
+        getInputMode() ===
+        "column_steps"
+    );
 }
 
 
@@ -882,25 +872,22 @@ async function loadLevel() {
 
 function showGame() {
 
-    practiceLoading.classList.add(
-        "hidden"
-    );
+    practiceLoading
+        .classList
+        .add("hidden");
 
+    resultScreen
+        .classList
+        .add("hidden");
 
-    resultScreen.classList.add(
-        "hidden"
-    );
-
-
-    practiceGame.classList.remove(
-        "hidden"
-    );
-
+    practiceGame
+        .classList
+        .remove("hidden");
 }
 
 
 // ======================================================
-// QUESTION DISPATCHER
+// PREPARE QUESTIONS
 // ======================================================
 
 async function prepareQuestions() {
@@ -914,17 +901,11 @@ async function prepareQuestions() {
     // BASIC MULTIPLICATION
     // ==================================================
 
-    if (
-        type ===
-        "multiplication"
-    ) {
+    if (type === "multiplication") {
 
         if (
             levelData.config
-                .adaptive === true
-
-            &&
-
+                .adaptive === true &&
             loginMode === "student"
         ) {
 
@@ -933,28 +914,19 @@ async function prepareQuestions() {
 
 
             return generateAdaptiveQuestions(
-
                 levelData,
-
                 weakFacts
-
             );
-
         }
 
 
         return generateBalancedQuestions(
-
             levelData,
-
             Number(
                 levelData.question_count
             ),
-
             new Set()
-
         );
-
     }
 
 
@@ -970,7 +942,6 @@ async function prepareQuestions() {
         return generatePlaceValueQuestions(
             levelData
         );
-
     }
 
 
@@ -986,17 +957,15 @@ async function prepareQuestions() {
         return generateMultiDigitQuestions(
             levelData
         );
-
     }
 
 
     return [];
-
 }
 
 
 // ======================================================
-// LOAD WEAK FACTS
+// WEAK FACTS
 // ======================================================
 
 async function loadWeakFacts() {
@@ -1010,49 +979,38 @@ async function loadWeakFacts() {
             await window.db.rpc(
                 "get_student_multiplication_weakness",
                 {
-
                     p_token:
                         sessionToken,
 
                     p_limit:
                         30
-
                 }
             );
 
 
         if (error) {
-
             throw error;
-
         }
 
 
-        return Array.isArray(
-            data
-        )
+        return Array.isArray(data)
             ? data
             : [];
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Weakness error:",
             error
         );
 
-
         return [];
-
     }
-
 }
 
 
 // ======================================================
-// BASIC ADAPTIVE
+// ADAPTIVE QUESTIONS
 // ======================================================
 
 function generateAdaptiveQuestions(
@@ -1063,52 +1021,37 @@ function generateAdaptiveQuestions(
     const config =
         level.config;
 
-
     const total =
         Number(
             level.question_count
         );
 
-
     const ratio =
         Math.min(
-
             1,
-
             Math.max(
-
                 0,
-
                 Number(
                     config
                         .adaptive_weak_ratio
                     ?? 0.7
                 )
-
             )
-
         );
-
 
     const weakTarget =
         Math.round(
-            total *
-            ratio
+            total * ratio
         );
 
-
-    const result =
-        [];
-
+    const result = [];
 
     const usedKeys =
         new Set();
 
 
     const candidates =
-        Array.isArray(
-            weakFacts
-        )
+        Array.isArray(weakFacts)
             ? weakFacts.slice(
                 0,
                 Math.max(
@@ -1119,9 +1062,7 @@ function generateAdaptiveQuestions(
             : [];
 
 
-    shuffleArray(
-        candidates
-    );
+    shuffleArray(candidates);
 
 
     for (
@@ -1133,22 +1074,15 @@ function generateAdaptiveQuestions(
             result.length >=
             weakTarget
         ) {
-
             break;
-
         }
 
 
         const a =
-            Number(
-                fact.a
-            );
-
+            Number(fact.a);
 
         const b =
-            Number(
-                fact.b
-            );
+            Number(fact.b);
 
 
         if (
@@ -1158,9 +1092,7 @@ function generateAdaptiveQuestions(
                 config
             )
         ) {
-
             continue;
-
         }
 
 
@@ -1172,13 +1104,9 @@ function generateAdaptiveQuestions(
 
 
         if (
-            usedKeys.has(
-                key
-            )
+            usedKeys.has(key)
         ) {
-
             continue;
-
         }
 
 
@@ -1191,21 +1119,13 @@ function generateAdaptiveQuestions(
 
 
         if (!question) {
-
             continue;
-
         }
 
 
-        usedKeys.add(
-            key
-        );
+        usedKeys.add(key);
 
-
-        result.push(
-            question
-        );
-
+        result.push(question);
     }
 
 
@@ -1214,44 +1134,34 @@ function generateAdaptiveQuestions(
         result.length;
 
 
-    if (
-        remaining > 0
-    ) {
+    if (remaining > 0) {
 
         const additional =
             generateBalancedQuestions(
-
                 level,
-
                 remaining,
-
                 usedKeys
-
             );
 
 
         result.push(
             ...additional
         );
-
     }
 
 
-    shuffleArray(
-        result
-    );
+    shuffleArray(result);
 
 
     return result.slice(
         0,
         total
     );
-
 }
 
 
 // ======================================================
-// BASIC BALANCED
+// BASIC BALANCED GENERATOR
 // ======================================================
 
 function generateBalancedQuestions(
@@ -1263,12 +1173,8 @@ function generateBalancedQuestions(
     const config =
         level.config;
 
-
     const multipliers =
-        getMultipliers(
-            config
-        );
-
+        getMultipliers(config);
 
     const min =
         Number(
@@ -1276,13 +1182,11 @@ function generateBalancedQuestions(
             ?? 1
         );
 
-
     const max =
         Number(
             config.max_operand
             ?? 10
         );
-
 
     const pools =
         new Map();
@@ -1291,8 +1195,7 @@ function generateBalancedQuestions(
     multipliers.forEach(
         multiplier => {
 
-            const pool =
-                [];
+            const pool = [];
 
 
             for (
@@ -1302,43 +1205,30 @@ function generateBalancedQuestions(
             ) {
 
                 pool.push({
-
                     multiplier,
-
                     operand
-
                 });
-
             }
 
 
-            shuffleArray(
-                pool
-            );
-
+            shuffleArray(pool);
 
             pools.set(
                 multiplier,
                 pool
             );
-
         }
     );
 
 
-    const result =
-        [];
-
+    const result = [];
 
     const used =
         new Set(
-            excludedKeys
-            || []
+            excludedKeys || []
         );
 
-
-    let safety =
-        0;
+    let safety = 0;
 
 
     while (
@@ -1346,8 +1236,7 @@ function generateBalancedQuestions(
         targetCount
     ) {
 
-        let added =
-            false;
+        let added = false;
 
 
         for (
@@ -1359,9 +1248,7 @@ function generateBalancedQuestions(
                 result.length >=
                 targetCount
             ) {
-
                 break;
-
             }
 
 
@@ -1382,55 +1269,34 @@ function generateBalancedQuestions(
 
                 const key =
                     canonicalKey(
-
                         candidate.multiplier,
-
                         candidate.operand
-
                     );
 
 
                 if (
-                    used.has(
-                        key
-                    )
+                    used.has(key)
                 ) {
-
                     continue;
-
                 }
 
 
                 const question =
                     makeBaseQuestion(
-
                         candidate.multiplier,
-
                         candidate.operand,
-
                         config
-
                     );
 
 
-                used.add(
-                    key
-                );
+                used.add(key);
 
+                result.push(question);
 
-                result.push(
-                    question
-                );
-
-
-                added =
-                    true;
-
+                added = true;
 
                 break;
-
             }
-
         }
 
 
@@ -1441,30 +1307,19 @@ function generateBalancedQuestions(
             !added ||
             safety > 100
         ) {
-
             break;
-
         }
-
     }
 
 
-    shuffleArray(
-        result
-    );
-
+    shuffleArray(result);
 
     return result;
-
 }
 
 
 // ======================================================
 // PLACE VALUE GENERATOR
-//
-// contoh:
-// 30 × 8
-// 7 × 400
 // ======================================================
 
 function generatePlaceValueQuestions(
@@ -1479,10 +1334,9 @@ function generatePlaceValueQuestions(
         Array.isArray(
             config.first_factor_values
         )
-            ? config.first_factor_values
-                .map(
-                    Number
-                )
+            ? config
+                .first_factor_values
+                .map(Number)
                 .filter(
                     Number.isFinite
                 )
@@ -1495,13 +1349,11 @@ function generatePlaceValueQuestions(
             ?? 2
         );
 
-
     const secondMax =
         Number(
             config.second_factor_max
             ?? 9
         );
-
 
     const target =
         Number(
@@ -1509,8 +1361,7 @@ function generatePlaceValueQuestions(
         );
 
 
-    const candidates =
-        [];
+    const candidates = [];
 
 
     for (
@@ -1519,36 +1370,23 @@ function generatePlaceValueQuestions(
     ) {
 
         for (
-            let second =
-                secondMin;
-
-            second <=
-                secondMax;
-
+            let second = secondMin;
+            second <= secondMax;
             second++
         ) {
 
             candidates.push({
-
                 first,
-
                 second
-
             });
-
         }
-
     }
 
 
-    shuffleArray(
-        candidates
-    );
+    shuffleArray(candidates);
 
 
-    const result =
-        [];
-
+    const result = [];
 
     const used =
         new Set();
@@ -1560,38 +1398,28 @@ function generatePlaceValueQuestions(
     ) {
 
         if (
-            result.length >=
-            target
+            result.length >= target
         ) {
-
             break;
-
         }
 
 
-        const baseKey =
+        const key =
             `${candidate.first}x${candidate.second}`;
 
 
         if (
-            used.has(
-                baseKey
-            )
+            used.has(key)
         ) {
-
             continue;
-
         }
 
 
-        used.add(
-            baseKey
-        );
+        used.add(key);
 
 
         let a =
             candidate.first;
-
 
         let b =
             candidate.second;
@@ -1599,41 +1427,25 @@ function generatePlaceValueQuestions(
 
         if (
             config.random_position
-            === true
-
-            &&
-
+                === true &&
             Math.random() < 0.5
         ) {
 
-            [
-                a,
-                b
-            ] =
-            [
-                b,
-                a
-            ];
-
+            [a, b] =
+                [b, a];
         }
 
 
         result.push({
-
             a,
-
             b,
-
             answer:
                 a * b
-
         });
-
     }
 
 
     return result;
-
 }
 
 
@@ -1650,28 +1462,16 @@ function generateMultiDigitQuestions(
 
 
     const minA =
-        Number(
-            config.min_a
-        );
-
+        Number(config.min_a);
 
     const maxA =
-        Number(
-            config.max_a
-        );
-
+        Number(config.max_a);
 
     const minB =
-        Number(
-            config.min_b
-        );
-
+        Number(config.min_b);
 
     const maxB =
-        Number(
-            config.max_b
-        );
-
+        Number(config.max_b);
 
     const target =
         Number(
@@ -1687,30 +1487,20 @@ function generateMultiDigitQuestions(
     ) {
 
         return [];
-
     }
 
 
-    const result =
-        [];
-
+    const result = [];
 
     const used =
         new Set();
 
-
-    let safety =
-        0;
+    let safety = 0;
 
 
     while (
-        result.length <
-        target
-
-        &&
-
-        safety <
-        5000
+        result.length < target &&
+        safety < 5000
     ) {
 
         safety++;
@@ -1722,7 +1512,6 @@ function generateMultiDigitQuestions(
                 maxA
             );
 
-
         let b =
             randomInteger(
                 minB,
@@ -1730,29 +1519,14 @@ function generateMultiDigitQuestions(
             );
 
 
-        // ==================================================
-        // OPTIONAL RANDOM POSITION
-        // ==================================================
-
         if (
             config.random_position
-            === true
-
-            &&
-
-            Math.random() <
-            0.5
+                === true &&
+            Math.random() < 0.5
         ) {
 
-            [
-                a,
-                b
-            ] =
-            [
-                b,
-                a
-            ];
-
+            [a, b] =
+                [b, a];
         }
 
 
@@ -1761,37 +1535,25 @@ function generateMultiDigitQuestions(
 
 
         if (
-            used.has(
-                key
-            )
+            used.has(key)
         ) {
-
             continue;
-
         }
 
 
-        used.add(
-            key
-        );
+        used.add(key);
 
 
         result.push({
-
             a,
-
             b,
-
             answer:
                 a * b
-
         });
-
     }
 
 
     return result;
-
 }
 
 
@@ -1805,23 +1567,16 @@ function randomInteger(
 ) {
 
     return Math.floor(
-
         Math.random()
-
         *
-
         (
             max -
             min +
             1
         )
-
     )
-
     +
-
     min;
-
 }
 
 
@@ -1836,50 +1591,29 @@ function makeBaseQuestion(
 ) {
 
     let a =
-        Number(
-            multiplier
-        );
-
+        Number(multiplier);
 
     let b =
-        Number(
-            operand
-        );
+        Number(operand);
 
 
     if (
         config.random_position
-        === true
-
-        &&
-
-        Math.random() <
-        0.5
+            === true &&
+        Math.random() < 0.5
     ) {
 
-        [
-            a,
-            b
-        ] =
-        [
-            b,
-            a
-        ];
-
+        [a, b] =
+            [b, a];
     }
 
 
     return {
-
         a,
-
         b,
-
         answer:
             a * b
-
     };
-
 }
 
 
@@ -1894,21 +1628,14 @@ function makeQuestionFromFact(
 ) {
 
     const multipliers =
-        getMultipliers(
-            config
-        );
+        getMultipliers(config);
 
 
     let a =
-        Number(
-            factA
-        );
-
+        Number(factA);
 
     let b =
-        Number(
-            factB
-        );
+        Number(factB);
 
 
     if (
@@ -1917,73 +1644,43 @@ function makeQuestionFromFact(
     ) {
 
         if (
-            multipliers.includes(
-                a
-            )
+            multipliers.includes(a)
         ) {
 
             // posisi sudah benar
 
-        }
-
-        else if (
-            multipliers.includes(
-                b
-            )
+        } else if (
+            multipliers.includes(b)
         ) {
 
-            [
-                a,
-                b
-            ] =
-            [
-                b,
-                a
-            ];
+            [a, b] =
+                [b, a];
 
-        }
-
-        else {
+        } else {
 
             return null;
-
         }
 
-    }
-
-    else if (
-        Math.random() <
-        0.5
+    } else if (
+        Math.random() < 0.5
     ) {
 
-        [
-            a,
-            b
-        ] =
-        [
-            b,
-            a
-        ];
-
+        [a, b] =
+            [b, a];
     }
 
 
     return {
-
         a,
-
         b,
-
         answer:
             a * b
-
     };
-
 }
 
 
 // ======================================================
-// FACT VALIDATION
+// FACT ALLOWED
 // ======================================================
 
 function factAllowedByConfig(
@@ -1993,17 +1690,13 @@ function factAllowedByConfig(
 ) {
 
     const multipliers =
-        getMultipliers(
-            config
-        );
-
+        getMultipliers(config);
 
     const min =
         Number(
             config.min_operand
             ?? 1
         );
-
 
     const max =
         Number(
@@ -2013,21 +1706,14 @@ function factAllowedByConfig(
 
 
     const aMultiplier =
-        multipliers.includes(
-            a
-        );
-
+        multipliers.includes(a);
 
     const bMultiplier =
-        multipliers.includes(
-            b
-        );
-
+        multipliers.includes(b);
 
     const aRange =
         a >= min &&
         a <= max;
-
 
     const bRange =
         b >= min &&
@@ -2035,21 +1721,14 @@ function factAllowedByConfig(
 
 
     return (
-
         aMultiplier &&
         bRange
-
     )
-
     ||
-
     (
-
         bMultiplier &&
         aRange
-
     );
-
 }
 
 
@@ -2066,25 +1745,17 @@ function getMultipliers(
             config.multipliers
         )
     ) {
-
         return [];
-
     }
 
 
-    return config.multipliers
-
-        .map(
-            Number
-        )
-
+    return config
+        .multipliers
+        .map(Number)
         .filter(
             value =>
-                Number.isInteger(
-                    value
-                )
+                Number.isInteger(value)
         );
-
 }
 
 
@@ -2103,7 +1774,6 @@ function canonicalKey(
             Number(b)
         );
 
-
     const high =
         Math.max(
             Number(a),
@@ -2112,7 +1782,6 @@ function canonicalKey(
 
 
     return `${low}x${high}`;
-
 }
 
 
@@ -2127,23 +1796,15 @@ function shuffleArray(
     for (
         let i =
             array.length - 1;
-
         i > 0;
-
         i--
     ) {
 
         const j =
             Math.floor(
-
                 Math.random()
-
                 *
-
-                (
-                    i + 1
-                )
-
+                (i + 1)
             );
 
 
@@ -2155,12 +1816,10 @@ function shuffleArray(
             array[j],
             array[i]
         ];
-
     }
 
 
     return array;
-
 }
 
 
@@ -2169,32 +1828,21 @@ function shuffleArray(
 // ======================================================
 
 function startQuestion(
-    resume,
+    resume = false,
     savedState = null
 ) {
 
     clearTimer();
-
 
     clearTimeout(
         delayedSubmit
     );
 
 
-    answerLocked =
-        false;
+    answerLocked = false;
 
 
-    answerInput.disabled =
-        false;
-
-
-    answerFeedback.textContent =
-        "";
-
-
-    answerFeedback.className =
-        "answer-feedback";
+    resetQuestionInputs();
 
 
     const question =
@@ -2208,20 +1856,7 @@ function startQuestion(
         finishPractice();
 
         return;
-
     }
-
-
-    // ==================================================
-    // TEXT
-    // ==================================================
-
-    questionText.textContent =
-        `${formatNumber(
-            question.a
-        )} × ${formatNumber(
-            question.b
-        )}`;
 
 
     // ==================================================
@@ -2240,37 +1875,48 @@ function startQuestion(
         `${
             (
                 currentQuestionIndex
-
                 /
-
                 questions.length
             )
-
             *
-
             100
         }%`;
 
 
     liveCorrect.textContent =
-        String(
-            correctCount
+        String(correctCount);
+
+
+    // ==================================================
+    // RENDER MODE
+    // ==================================================
+
+    if (isColumnMode()) {
+
+        renderColumnQuestion(
+            question
         );
 
+    } else {
+
+        renderDirectQuestion(
+            question
+        );
+    }
+
 
     // ==================================================
-    // RESTORE CURRENT QUESTION
+    // RESTORE ACTIVE QUESTION
     // ==================================================
+
+    let restoredActiveQuestion =
+        false;
+
 
     if (
         resume &&
         savedState
     ) {
-
-        answerInput.value =
-            savedState.current_input
-            || "";
-
 
         questionStartedAt =
             Number(
@@ -2278,7 +1924,6 @@ function startQuestion(
                     .question_started_at
                 || 0
             );
-
 
         questionDeadline =
             Number(
@@ -2288,33 +1933,61 @@ function startQuestion(
             );
 
 
-        // Jika refresh terjadi saat feedback
-        // setelah jawaban sebelumnya sudah disimpan,
-        // timer lama tidak boleh diwariskan.
-
         if (
-            !questionStartedAt ||
-            !questionDeadline
+            questionStartedAt > 0 &&
+            questionDeadline > 0
         ) {
 
-            answerInput.value =
-                "";
+            restoredActiveQuestion =
+                true;
 
 
-            createNewQuestionTimer();
+            if (isColumnMode()) {
 
+                const savedInputs =
+                    savedState.column_inputs
+                    || {};
+
+
+                columnStep1Input.value =
+                    sanitizeStoredValue(
+                        savedInputs.partial_1
+                    );
+
+                columnStep2Input.value =
+                    sanitizeStoredValue(
+                        savedInputs.partial_2
+                    );
+
+                columnFinalInput.value =
+                    sanitizeStoredValue(
+                        savedInputs.final
+                    );
+
+
+                refreshColumnLiveMarkers();
+
+            } else {
+
+                answerInput.value =
+                    sanitizeStoredValue(
+                        savedState
+                            .current_input
+                    );
+            }
         }
-
     }
 
-    else {
 
-        answerInput.value =
-            "";
+    // ==================================================
+    // NEW TIMER
+    // ==================================================
 
+    if (!restoredActiveQuestion) {
+
+        clearCurrentInputValues();
 
         createNewQuestionTimer();
-
     }
 
 
@@ -2336,15 +2009,12 @@ function startQuestion(
                 50
             );
 
-    }
-
-    else {
+    } else {
 
         setTimeout(
             handleTimerEnd,
             0
         );
-
     }
 
 
@@ -2356,17 +2026,208 @@ function startQuestion(
     // ==================================================
 
     setTimeout(
-        () => {
-
-            answerInput.focus({
-                preventScroll:
-                    true
-            });
-
-        },
-        30
+        focusCurrentInput,
+        40
     );
+}
 
+
+// ======================================================
+// RESET INPUTS
+// ======================================================
+
+function resetQuestionInputs() {
+
+    answerFeedback.textContent =
+        "";
+
+    answerFeedback.className =
+        "answer-feedback";
+
+
+    answerInput.disabled =
+        false;
+
+    columnStep1Input.disabled =
+        false;
+
+    columnStep2Input.disabled =
+        false;
+
+    columnFinalInput.disabled =
+        false;
+
+
+    [
+        columnStep1Input,
+        columnStep2Input,
+        columnFinalInput
+    ].forEach(
+        input => {
+
+            input.classList.remove(
+                "step-correct",
+                "step-wrong"
+            );
+        }
+    );
+}
+
+
+// ======================================================
+// CLEAR INPUT VALUES
+// ======================================================
+
+function clearCurrentInputValues() {
+
+    answerInput.value = "";
+
+    columnStep1Input.value = "";
+
+    columnStep2Input.value = "";
+
+    columnFinalInput.value = "";
+
+
+    [
+        columnStep1Input,
+        columnStep2Input,
+        columnFinalInput
+    ].forEach(
+        input => {
+
+            input.classList.remove(
+                "step-correct",
+                "step-wrong"
+            );
+        }
+    );
+}
+
+
+// ======================================================
+// DIRECT QUESTION
+// ======================================================
+
+function renderDirectQuestion(
+    question
+) {
+
+    directQuestionArea
+        .classList
+        .remove("hidden");
+
+    columnQuestionArea
+        .classList
+        .add("hidden");
+
+
+    questionText.textContent =
+        `${formatNumber(
+            question.a
+        )} × ${formatNumber(
+            question.b
+        )}`;
+}
+
+
+// ======================================================
+// COLUMN QUESTION
+// ======================================================
+
+function renderColumnQuestion(
+    question
+) {
+
+    directQuestionArea
+        .classList
+        .add("hidden");
+
+    columnQuestionArea
+        .classList
+        .remove("hidden");
+
+
+    const expected =
+        getColumnExpected(
+            question
+        );
+
+
+    columnTopNumber.textContent =
+        formatNumber(
+            question.a
+        );
+
+
+    columnBottomNumber.textContent =
+        formatNumber(
+            question.b
+        );
+
+
+    columnStep1Label.textContent =
+        `${formatNumber(
+            question.a
+        )} × ${expected.unitsDigit}`;
+
+
+    columnStep2Label.textContent =
+        `${formatNumber(
+            question.a
+        )} × ${formatNumber(
+            expected.tensValue
+        )}`;
+}
+
+
+// ======================================================
+// COLUMN EXPECTED RESULTS
+// ======================================================
+
+function getColumnExpected(
+    question
+) {
+
+    const b =
+        Number(
+            question.b
+        );
+
+
+    const unitsDigit =
+        b % 10;
+
+
+    const tensValue =
+        Math.floor(
+            b / 10
+        )
+        *
+        10;
+
+
+    return {
+
+        unitsDigit,
+
+        tensValue,
+
+        partial1:
+            Number(question.a)
+            *
+            unitsDigit,
+
+        partial2:
+            Number(question.a)
+            *
+            tensValue,
+
+        final:
+            Number(question.a)
+            *
+            Number(question.b)
+    };
 }
 
 
@@ -2378,12 +2239,10 @@ function formatNumber(
     value
 ) {
 
-    return Number(
-        value
-    ).toLocaleString(
-        "id-ID"
-    );
-
+    return Number(value)
+        .toLocaleString(
+            "id-ID"
+        );
 }
 
 
@@ -2406,9 +2265,7 @@ function createNewQuestionTimer() {
 
     questionDeadline =
         questionStartedAt
-
         +
-
         (
             duration *
             1000
@@ -2418,50 +2275,36 @@ function createNewQuestionTimer() {
     timerCircle.classList.remove(
         "timer-warning"
     );
-
 }
 
 
 // ======================================================
-// TIMER
+// UPDATE TIMER
 // ======================================================
 
 function updateTimer() {
 
-    if (
-        answerLocked
-    ) {
-
+    if (answerLocked) {
         return;
-
     }
-
-
-    const now =
-        Date.now();
 
 
     const remainingMs =
         Math.max(
-
             0,
-
-            questionDeadline -
-            now
-
+            questionDeadline
+            -
+            Date.now()
         );
 
 
     const remainingSeconds =
-        remainingMs /
-        1000;
+        remainingMs / 1000;
 
 
     timerValue.textContent =
         remainingSeconds
-
             .toFixed(1)
-
             .replace(
                 ".0",
                 ""
@@ -2473,9 +2316,7 @@ function updateTimer() {
             levelData
                 .time_limit_seconds
         )
-
         *
-
         0.30;
 
 
@@ -2488,47 +2329,33 @@ function updateTimer() {
             "timer-warning"
         );
 
-    }
-
-    else {
+    } else {
 
         timerCircle.classList.remove(
             "timer-warning"
         );
-
     }
 
 
     if (
-        remainingMs <=
-        0
+        remainingMs <= 0
     ) {
 
         handleTimerEnd();
-
     }
-
 }
 
 
 // ======================================================
-// ANSWER INPUT
+// DIRECT INPUT
 // ======================================================
 
-function handleAnswerInput() {
+function handleDirectInput() {
 
-    if (
-        answerLocked
-    ) {
-
+    if (answerLocked) {
         return;
-
     }
 
-
-    // ==================================================
-    // ANGKA SAJA
-    // ==================================================
 
     answerInput.value =
         answerInput.value
@@ -2547,16 +2374,11 @@ function handleAnswerInput() {
 
 
     const value =
-        answerInput.value
-            .trim();
+        answerInput.value.trim();
 
 
-    if (
-        value === ""
-    ) {
-
+    if (value === "") {
         return;
-
     }
 
 
@@ -2567,9 +2389,7 @@ function handleAnswerInput() {
 
 
     if (!question) {
-
         return;
-
     }
 
 
@@ -2580,8 +2400,7 @@ function handleAnswerInput() {
 
 
     // ==================================================
-    // JAWABAN TEPAT:
-    // proses cukup cepat.
+    // EXACT CORRECT
     // ==================================================
 
     if (
@@ -2591,19 +2410,16 @@ function handleAnswerInput() {
 
         delayedSubmit =
             setTimeout(
-                submitAnswer,
+                submitDirectAnswer,
                 120
             );
 
-
         return;
-
     }
 
 
     // ==================================================
-    // TERLALU BANYAK DIGIT:
-    // sudah pasti salah.
+    // TOO MANY DIGITS
     // ==================================================
 
     if (
@@ -2613,22 +2429,16 @@ function handleAnswerInput() {
 
         delayedSubmit =
             setTimeout(
-                submitAnswer,
+                submitDirectAnswer,
                 180
             );
 
-
         return;
-
     }
 
 
     // ==================================================
-    // JUMLAH DIGIT SUDAH SAMA
-    //
-    // Untuk jawaban multi-digit beri jeda
-    // lebih panjang agar siswa tidak dianggap
-    // selesai hanya karena berhenti sesaat.
+    // SAME DIGIT LENGTH
     // ==================================================
 
     if (
@@ -2636,26 +2446,306 @@ function handleAnswerInput() {
         correctText.length
     ) {
 
-        const delay =
+        let delay = 600;
+
+
+        if (
+            correctText.length === 3
+        ) {
+
+            delay = 750;
+
+        } else if (
             correctText.length >= 4
+        ) {
 
-                ? 900
-
-                : correctText.length === 3
-
-                    ? 750
-
-                    : 600;
+            delay = 900;
+        }
 
 
         delayedSubmit =
             setTimeout(
-                submitAnswer,
+                submitDirectAnswer,
                 delay
             );
+    }
+}
 
+
+// ======================================================
+// COLUMN INPUT
+// ======================================================
+
+function handleColumnInput(
+    input,
+    stepNumber
+) {
+
+    if (answerLocked) {
+        return;
     }
 
+
+    input.value =
+        input.value
+            .replace(
+                /\D/g,
+                ""
+            );
+
+
+    input.classList.remove(
+        "step-correct",
+        "step-wrong"
+    );
+
+
+    const question =
+        questions[
+            currentQuestionIndex
+        ];
+
+
+    if (!question) {
+        return;
+    }
+
+
+    const expected =
+        getColumnExpected(
+            question
+        );
+
+
+    const expectedValue =
+        stepNumber === 1
+            ? expected.partial1
+            : stepNumber === 2
+                ? expected.partial2
+                : expected.final;
+
+
+    if (
+        input.value !== "" &&
+        Number(input.value)
+        ===
+        expectedValue
+    ) {
+
+        input.classList.add(
+            "step-correct"
+        );
+    }
+
+
+    savePracticeState();
+
+
+    clearTimeout(
+        delayedSubmit
+    );
+
+
+    const inputs =
+        getColumnInputs();
+
+
+    if (
+        !inputs.partial1 ||
+        !inputs.partial2 ||
+        !inputs.final
+    ) {
+        return;
+    }
+
+
+    // ==================================================
+    // ALL CORRECT
+    // ==================================================
+
+    if (
+        columnInputsAreCorrect(
+            inputs,
+            expected
+        )
+    ) {
+
+        delayedSubmit =
+            setTimeout(
+                submitColumnAnswer,
+                180
+            );
+
+        return;
+    }
+
+
+    // ==================================================
+    // ALL APPEAR COMPLETE
+    // ==================================================
+
+    const completeLengths =
+        inputs.partial1.length >=
+            String(
+                expected.partial1
+            ).length
+        &&
+        inputs.partial2.length >=
+            String(
+                expected.partial2
+            ).length
+        &&
+        inputs.final.length >=
+            String(
+                expected.final
+            ).length;
+
+
+    if (completeLengths) {
+
+        delayedSubmit =
+            setTimeout(
+                submitColumnAnswer,
+                1000
+            );
+    }
+}
+
+
+// ======================================================
+// COLUMN INPUT HELPERS
+// ======================================================
+
+function getColumnInputs() {
+
+    return {
+
+        partial1:
+            columnStep1Input
+                .value
+                .trim(),
+
+        partial2:
+            columnStep2Input
+                .value
+                .trim(),
+
+        final:
+            columnFinalInput
+                .value
+                .trim()
+    };
+}
+
+
+function hasAnyColumnInput() {
+
+    const values =
+        getColumnInputs();
+
+
+    return (
+        values.partial1 !== "" ||
+        values.partial2 !== "" ||
+        values.final !== ""
+    );
+}
+
+
+function columnInputsAreCorrect(
+    inputs,
+    expected
+) {
+
+    return (
+        Number(inputs.partial1)
+            === expected.partial1
+        &&
+        Number(inputs.partial2)
+            === expected.partial2
+        &&
+        Number(inputs.final)
+            === expected.final
+    );
+}
+
+
+// ======================================================
+// LIVE COLUMN MARKERS
+// ======================================================
+
+function refreshColumnLiveMarkers() {
+
+    const question =
+        questions[
+            currentQuestionIndex
+        ];
+
+
+    if (!question) {
+        return;
+    }
+
+
+    const expected =
+        getColumnExpected(
+            question
+        );
+
+
+    const mapping = [
+
+        {
+            input:
+                columnStep1Input,
+            correct:
+                expected.partial1
+        },
+
+        {
+            input:
+                columnStep2Input,
+            correct:
+                expected.partial2
+        },
+
+        {
+            input:
+                columnFinalInput,
+            correct:
+                expected.final
+        }
+    ];
+
+
+    mapping.forEach(
+        item => {
+
+            item.input
+                .classList
+                .remove(
+                    "step-correct",
+                    "step-wrong"
+                );
+
+
+            if (
+                item.input.value !== "" &&
+                Number(
+                    item.input.value
+                )
+                ===
+                item.correct
+            ) {
+
+                item.input
+                    .classList
+                    .add(
+                        "step-correct"
+                    );
+            }
+        }
+    );
 }
 
 
@@ -2665,54 +2755,57 @@ function handleAnswerInput() {
 
 function handleTimerEnd() {
 
-    if (
-        answerLocked
-    ) {
-
+    if (answerLocked) {
         return;
-
     }
 
 
     clearTimer();
 
+    clearTimeout(
+        delayedSubmit
+    );
 
-    const value =
-        answerInput.value
-            .trim();
 
+    if (isColumnMode()) {
 
-    // Ada jawaban:
-    // tetap dinilai.
+        if (
+            hasAnyColumnInput()
+        ) {
 
-    if (
-        value !== ""
-    ) {
+            submitColumnAnswer();
 
-        submitAnswer();
+        } else {
+
+            submitTimeout();
+        }
 
         return;
-
     }
 
 
-    submitTimeout();
+    if (
+        answerInput.value.trim()
+        !== ""
+    ) {
 
+        submitDirectAnswer();
+
+    } else {
+
+        submitTimeout();
+    }
 }
 
 
 // ======================================================
-// SUBMIT ANSWER
+// DIRECT SUBMIT
 // ======================================================
 
-function submitAnswer() {
+function submitDirectAnswer() {
 
-    if (
-        answerLocked
-    ) {
-
+    if (answerLocked) {
         return;
-
     }
 
 
@@ -2723,18 +2816,26 @@ function submitAnswer() {
 
 
     if (!question) {
-
         return;
-
     }
 
 
-    answerLocked =
-        true;
+    const userValue =
+        answerInput.value.trim();
+
+
+    if (userValue === "") {
+
+        submitTimeout();
+
+        return;
+    }
+
+
+    answerLocked = true;
 
 
     clearTimer();
-
 
     clearTimeout(
         delayedSubmit
@@ -2745,35 +2846,22 @@ function submitAnswer() {
         true;
 
 
-    const userValue =
-        answerInput.value
-            .trim();
-
-
-    const userNumber =
-        Number(
-            userValue
-        );
-
-
     const responseTime =
-        Math.max(
-
-            0,
-
-            Date.now()
-            -
-            questionStartedAt
-
-        );
+        getResponseTime();
 
 
     const correct =
-        userNumber ===
+        Number(userValue)
+        ===
         question.answer;
 
 
+    let status;
+
+
     if (correct) {
+
+        status = "correct";
 
         correctCount++;
 
@@ -2781,13 +2869,12 @@ function submitAnswer() {
         answerFeedback.textContent =
             "✓ Benar";
 
-
         answerFeedback.className =
             "answer-feedback feedback-correct";
 
-    }
+    } else {
 
-    else {
+        status = "wrong";
 
         wrongCount++;
 
@@ -2797,10 +2884,8 @@ function submitAnswer() {
                 question.answer
             )}`;
 
-
         answerFeedback.className =
             "answer-feedback feedback-wrong";
-
     }
 
 
@@ -2816,61 +2901,37 @@ function submitAnswer() {
             userValue,
 
         response_time_ms:
-            responseTime
+            responseTime,
 
+        client_status:
+            status
     });
 
 
     liveCorrect.textContent =
-        String(
-            correctCount
-        );
+        String(correctCount);
 
 
-    // ==================================================
-    // PENTING:
-    //
-    // Jawaban sudah selesai.
-    // Jangan simpan deadline soal lama sebagai deadline
-    // soal berikutnya apabila browser direfresh
-    // saat feedback sedang tampil.
-    // ==================================================
-
-    questionStartedAt =
-        0;
-
-
-    questionDeadline =
-        0;
-
-
-    answerInput.value =
-        "";
-
+    closeCurrentQuestionState();
 
     savePracticeState();
 
 
     setTimeout(
         nextQuestion,
-        550
+        600
     );
-
 }
 
 
 // ======================================================
-// TIMEOUT
+// COLUMN SUBMIT
 // ======================================================
 
-function submitTimeout() {
+function submitColumnAnswer() {
 
-    if (
-        answerLocked
-    ) {
-
+    if (answerLocked) {
         return;
-
     }
 
 
@@ -2881,41 +2942,119 @@ function submitTimeout() {
 
 
     if (!question) {
-
         return;
-
     }
 
 
-    answerLocked =
-        true;
+    if (
+        !hasAnyColumnInput()
+    ) {
+
+        submitTimeout();
+
+        return;
+    }
+
+
+    answerLocked = true;
 
 
     clearTimer();
-
 
     clearTimeout(
         delayedSubmit
     );
 
 
-    answerInput.disabled =
-        true;
+    disableColumnInputs();
 
 
-    timeoutCount++;
+    const values =
+        getColumnInputs();
 
 
-    const responseTime =
-        Math.max(
-
-            0,
-
-            Date.now()
-            -
-            questionStartedAt
-
+    const expected =
+        getColumnExpected(
+            question
         );
+
+
+    const step1Correct =
+        values.partial1 !== ""
+        &&
+        Number(values.partial1)
+            === expected.partial1;
+
+
+    const step2Correct =
+        values.partial2 !== ""
+        &&
+        Number(values.partial2)
+            === expected.partial2;
+
+
+    const finalCorrect =
+        values.final !== ""
+        &&
+        Number(values.final)
+            === expected.final;
+
+
+    const fullyCorrect =
+        step1Correct
+        &&
+        step2Correct
+        &&
+        finalCorrect;
+
+
+    applyColumnResultClass(
+        columnStep1Input,
+        step1Correct
+    );
+
+    applyColumnResultClass(
+        columnStep2Input,
+        step2Correct
+    );
+
+    applyColumnResultClass(
+        columnFinalInput,
+        finalCorrect
+    );
+
+
+    let status;
+
+
+    if (fullyCorrect) {
+
+        status = "correct";
+
+        correctCount++;
+
+
+        answerFeedback.textContent =
+            "✓ Semua langkah benar";
+
+        answerFeedback.className =
+            "answer-feedback feedback-correct";
+
+    } else {
+
+        status = "wrong";
+
+        wrongCount++;
+
+
+        answerFeedback.textContent =
+            `Belum tepat • Hasil akhir ${formatNumber(
+                expected.final
+            )}`;
+
+        answerFeedback.className =
+            "answer-feedback feedback-wrong";
+    }
 
 
     answers.push({
@@ -2927,49 +3066,244 @@ function submitTimeout() {
             question.b,
 
         user_answer:
-            "",
+            values.final,
+
+        steps: {
+
+            partial_1:
+                values.partial1,
+
+            partial_2:
+                values.partial2,
+
+            final:
+                values.final
+        },
 
         response_time_ms:
-            responseTime
+            getResponseTime(),
 
+        client_status:
+            status
     });
 
 
-    answerFeedback.textContent =
-        `Waktu habis • Jawaban ${formatNumber(
-            question.answer
-        )}`;
+    liveCorrect.textContent =
+        String(correctCount);
 
 
-    answerFeedback.className =
-        "answer-feedback feedback-timeout";
-
-
-    questionStartedAt =
-        0;
-
-
-    questionDeadline =
-        0;
-
-
-    answerInput.value =
-        "";
-
+    closeCurrentQuestionState();
 
     savePracticeState();
 
 
     setTimeout(
         nextQuestion,
-        650
+        1000
     );
-
 }
 
 
 // ======================================================
-// NEXT QUESTION
+// COLUMN RESULT CLASS
+// ======================================================
+
+function applyColumnResultClass(
+    input,
+    correct
+) {
+
+    input.classList.remove(
+        "step-correct",
+        "step-wrong"
+    );
+
+
+    input.classList.add(
+        correct
+            ? "step-correct"
+            : "step-wrong"
+    );
+}
+
+
+// ======================================================
+// DISABLE COLUMN
+// ======================================================
+
+function disableColumnInputs() {
+
+    columnStep1Input.disabled =
+        true;
+
+    columnStep2Input.disabled =
+        true;
+
+    columnFinalInput.disabled =
+        true;
+}
+
+
+// ======================================================
+// TIMEOUT
+// ======================================================
+
+function submitTimeout() {
+
+    if (answerLocked) {
+        return;
+    }
+
+
+    const question =
+        questions[
+            currentQuestionIndex
+        ];
+
+
+    if (!question) {
+        return;
+    }
+
+
+    answerLocked = true;
+
+
+    clearTimer();
+
+    clearTimeout(
+        delayedSubmit
+    );
+
+
+    timeoutCount++;
+
+
+    if (isColumnMode()) {
+
+        disableColumnInputs();
+
+
+        answers.push({
+
+            a:
+                question.a,
+
+            b:
+                question.b,
+
+            user_answer:
+                "",
+
+            steps: {
+
+                partial_1:
+                    "",
+
+                partial_2:
+                    "",
+
+                final:
+                    ""
+            },
+
+            response_time_ms:
+                getResponseTime(),
+
+            client_status:
+                "timeout"
+        });
+
+
+        answerFeedback.textContent =
+            `Waktu habis • Hasil ${formatNumber(
+                question.answer
+            )}`;
+
+    } else {
+
+        answerInput.disabled =
+            true;
+
+
+        answers.push({
+
+            a:
+                question.a,
+
+            b:
+                question.b,
+
+            user_answer:
+                "",
+
+            response_time_ms:
+                getResponseTime(),
+
+            client_status:
+                "timeout"
+        });
+
+
+        answerFeedback.textContent =
+            `Waktu habis • Jawaban ${formatNumber(
+                question.answer
+            )}`;
+    }
+
+
+    answerFeedback.className =
+        "answer-feedback feedback-timeout";
+
+
+    closeCurrentQuestionState();
+
+    savePracticeState();
+
+
+    setTimeout(
+        nextQuestion,
+        800
+    );
+}
+
+
+// ======================================================
+// RESPONSE TIME
+// ======================================================
+
+function getResponseTime() {
+
+    if (
+        !questionStartedAt
+    ) {
+        return 0;
+    }
+
+
+    return Math.max(
+        0,
+        Date.now()
+        -
+        questionStartedAt
+    );
+}
+
+
+// ======================================================
+// CLOSE CURRENT QUESTION
+// ======================================================
+
+function closeCurrentQuestionState() {
+
+    questionStartedAt = 0;
+
+    questionDeadline = 0;
+}
+
+
+// ======================================================
+// NEXT
 // ======================================================
 
 function nextQuestion() {
@@ -2986,17 +3320,12 @@ function nextQuestion() {
         finishPractice();
 
         return;
-
     }
 
 
     savePracticeState();
 
-
-    startQuestion(
-        false
-    );
-
+    startQuestion(false);
 }
 
 
@@ -3008,25 +3337,22 @@ async function finishPractice() {
 
     clearTimer();
 
-
     clearTimeout(
         delayedSubmit
     );
 
 
-    practiceGame.classList.add(
-        "hidden"
-    );
+    practiceGame
+        .classList
+        .add("hidden");
 
+    resultScreen
+        .classList
+        .add("hidden");
 
-    resultScreen.classList.add(
-        "hidden"
-    );
-
-
-    practiceLoading.classList.remove(
-        "hidden"
-    );
+    practiceLoading
+        .classList
+        .remove("hidden");
 
 
     practiceLoading.textContent =
@@ -3038,7 +3364,8 @@ async function finishPractice() {
     // ==================================================
 
     if (
-        loginMode === "guest"
+        loginMode ===
+        "guest"
     ) {
 
         const result =
@@ -3047,14 +3374,9 @@ async function finishPractice() {
 
         clearSavedPracticeState();
 
-
-        showResult(
-            result
-        );
-
+        showResult(result);
 
         return;
-
     }
 
 
@@ -3071,7 +3393,6 @@ async function finishPractice() {
             await window.db.rpc(
                 "submit_multiplication_practice",
                 {
-
                     p_token:
                         sessionToken,
 
@@ -3080,15 +3401,12 @@ async function finishPractice() {
 
                     p_answers:
                         answers
-
                 }
             );
 
 
         if (error) {
-
             throw error;
-
         }
 
 
@@ -3100,20 +3418,16 @@ async function finishPractice() {
             throw new Error(
                 "Hasil tidak diterima server."
             );
-
         }
 
 
         clearSavedPracticeState();
 
-
         showResult(
             data[0]
         );
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Submit error:",
@@ -3141,18 +3455,37 @@ async function finishPractice() {
             >
                 Data latihan masih tersimpan
                 sementara di browser.
-                Muat ulang halaman untuk mencoba kembali.
+                Jangan tutup halaman jika ingin
+                mencoba mengirim kembali.
             </p>
+
+            <button
+                id="retrySaveButton"
+                class="button button-primary"
+                type="button"
+            >
+                Coba Simpan Lagi
+            </button>
 
             <button
                 id="submitBackButton"
                 class="button button-secondary"
                 type="button"
+                style="margin-left:8px;"
             >
-                Kembali ke Daftar Level
+                Kembali
             </button>
-
         `;
+
+
+        document
+            .getElementById(
+                "retrySaveButton"
+            )
+            .addEventListener(
+                "click",
+                finishPractice
+            );
 
 
         document
@@ -3166,12 +3499,9 @@ async function finishPractice() {
                     clearSavedPracticeState();
 
                     goBackToLevels();
-
                 }
             );
-
     }
-
 }
 
 
@@ -3187,53 +3517,38 @@ function calculateGuestResult() {
 
     const accuracy =
         total > 0
-
             ? (
-                correctCount /
+                correctCount
+                /
                 total
             )
-            * 100
-
+            *
+            100
             : 0;
 
 
     const responseTimes =
         answers
-
             .filter(
                 answer =>
-                    String(
-                        answer.user_answer
-                        ?? ""
-                    )
-                    .trim()
-                    !== ""
+                    answer.client_status
+                    !== "timeout"
             )
-
             .map(
                 answer =>
                     Number(
-                        answer
-                            .response_time_ms
+                        answer.response_time_ms
                     )
             )
-
             .filter(
                 value =>
-
-                    Number.isFinite(
-                        value
-                    )
-
+                    Number.isFinite(value)
                     &&
-
                     value > 0
-
             );
 
 
-    let average =
-        null;
+    let average = null;
 
 
     if (
@@ -3242,22 +3557,19 @@ function calculateGuestResult() {
 
         average =
             Math.round(
-
                 responseTimes.reduce(
                     (
-                        total,
+                        totalValue,
                         value
                     ) =>
-                        total + value,
+                        totalValue
+                        +
+                        value,
                     0
                 )
-
                 /
-
                 responseTimes.length
-
             );
-
     }
 
 
@@ -3274,9 +3586,7 @@ function calculateGuestResult() {
 
         accuracy:
             Number(
-                accuracy.toFixed(
-                    2
-                )
+                accuracy.toFixed(2)
             ),
 
         average_response_time_ms:
@@ -3294,33 +3604,29 @@ function calculateGuestResult() {
 
         attempts:
             null
-
     };
-
 }
 
 
 // ======================================================
-// RESULT
+// SHOW RESULT
 // ======================================================
 
 function showResult(
     result
 ) {
 
-    practiceLoading.classList.add(
-        "hidden"
-    );
+    practiceLoading
+        .classList
+        .add("hidden");
 
+    practiceGame
+        .classList
+        .add("hidden");
 
-    practiceGame.classList.add(
-        "hidden"
-    );
-
-
-    resultScreen.classList.remove(
-        "hidden"
-    );
+    resultScreen
+        .classList
+        .remove("hidden");
 
 
     const passed =
@@ -3339,34 +3645,25 @@ function showResult(
         resultIcon.textContent =
             "✓";
 
-
         resultIcon.className =
             "result-icon result-pass";
-
 
         resultTitle.textContent =
             "Level Lulus!";
 
 
         resultMessage.textContent =
-
             loginMode === "student"
-
                 ? "Level berikutnya sekarang dapat dibuka."
-
                 : "Hasil Guest tidak disimpan.";
 
-    }
-
-    else {
+    } else {
 
         resultIcon.textContent =
             "↻";
 
-
         resultIcon.className =
             "result-icon result-fail";
-
 
         resultTitle.textContent =
             "Belum Lulus";
@@ -3374,7 +3671,6 @@ function showResult(
 
         resultMessage.textContent =
             `Diperlukan minimal ${levelData.passing_score}% untuk membuka level berikutnya.`;
-
     }
 
 
@@ -3404,12 +3700,12 @@ function showResult(
 
 
     if (
-        result.average_response_time_ms
+        result
+            .average_response_time_ms
         !== null
-
         &&
-
-        result.average_response_time_ms
+        result
+            .average_response_time_ms
         !== undefined
     ) {
 
@@ -3420,41 +3716,32 @@ function showResult(
                         result
                             .average_response_time_ms
                     )
-
                     /
-
                     1000
                 )
                 .toFixed(1)
             } dtk`;
 
-    }
-
-    else {
+    } else {
 
         resultAverage.textContent =
             "-";
-
     }
 
 
     if (
         loginMode === "student"
-
         &&
-
         result.best_score
-        !== null
-
+            !== null
         &&
-
         result.best_score
-        !== undefined
+            !== undefined
     ) {
 
-        bestScoreBox.classList.remove(
-            "hidden"
-        );
+        bestScoreBox
+            .classList
+            .remove("hidden");
 
 
         bestScoreBox.textContent =
@@ -3467,16 +3754,83 @@ function showResult(
                 result.attempts
             }`;
 
+    } else {
+
+        bestScoreBox
+            .classList
+            .add("hidden");
+    }
+}
+
+
+// ======================================================
+// FOCUS
+// ======================================================
+
+function focusCurrentInput() {
+
+    if (answerLocked) {
+        return;
     }
 
-    else {
 
-        bestScoreBox.classList.add(
-            "hidden"
-        );
+    if (!isColumnMode()) {
 
+        answerInput.focus({
+            preventScroll: true
+        });
+
+        return;
     }
 
+
+    if (
+        columnStep1Input.value
+            .trim() === ""
+    ) {
+
+        columnStep1Input.focus({
+            preventScroll: true
+        });
+
+        return;
+    }
+
+
+    if (
+        columnStep2Input.value
+            .trim() === ""
+    ) {
+
+        columnStep2Input.focus({
+            preventScroll: true
+        });
+
+        return;
+    }
+
+
+    columnFinalInput.focus({
+        preventScroll: true
+    });
+}
+
+
+// ======================================================
+// SANITIZE STORED VALUE
+// ======================================================
+
+function sanitizeStoredValue(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /\D/g,
+        ""
+    );
 }
 
 
@@ -3488,74 +3842,95 @@ function savePracticeState() {
 
     if (
         !practiceStateKey ||
-        questions.length === 0
+        questions.length === 0 ||
+        !levelData
     ) {
-
         return;
-
     }
 
 
     try {
 
+        const activeQuestion =
+            questionStartedAt > 0
+            &&
+            questionDeadline > 0;
+
+
         const state = {
 
             version:
-                3,
+                4,
 
             level_id:
                 levelId,
 
             exercise_type:
                 levelData
-                    ?.config
-                    ?.exercise_type
-                || null,
+                    .config
+                    .exercise_type,
 
-            questions:
-                questions,
+            input_mode:
+                getInputMode(),
 
-            answers:
-                answers,
+            questions,
+
+            answers,
 
             current_question_index:
                 answers.length,
 
             current_input:
-                answerInput
+                activeQuestion
                     ? answerInput.value
                     : "",
+
+            column_inputs:
+                activeQuestion
+                    ? {
+                        partial_1:
+                            columnStep1Input
+                                .value,
+
+                        partial_2:
+                            columnStep2Input
+                                .value,
+
+                        final:
+                            columnFinalInput
+                                .value
+                    }
+                    : {
+                        partial_1:
+                            "",
+
+                        partial_2:
+                            "",
+
+                        final:
+                            ""
+                    },
 
             question_started_at:
                 questionStartedAt,
 
             question_deadline_at:
                 questionDeadline
-
         };
 
 
         sessionStorage.setItem(
-
             practiceStateKey,
-
-            JSON.stringify(
-                state
-            )
-
+            JSON.stringify(state)
         );
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Save state error:",
             error
         );
-
     }
-
 }
 
 
@@ -3565,12 +3940,8 @@ function savePracticeState() {
 
 function loadSavedPracticeState() {
 
-    if (
-        !practiceStateKey
-    ) {
-
+    if (!practiceStateKey) {
         return null;
-
     }
 
 
@@ -3581,22 +3952,18 @@ function loadSavedPracticeState() {
 
 
     if (!raw) {
-
         return null;
-
     }
 
 
     try {
 
         const state =
-            JSON.parse(
-                raw
-            );
+            JSON.parse(raw);
 
 
         if (
-            state.version !== 3 ||
+            state.version !== 4 ||
             state.level_id !== levelId ||
             !Array.isArray(
                 state.questions
@@ -3609,12 +3976,12 @@ function loadSavedPracticeState() {
             clearSavedPracticeState();
 
             return null;
-
         }
 
 
         if (
-            state.questions.length !==
+            state.questions.length
+            !==
             Number(
                 levelData
                     .question_count
@@ -3624,12 +3991,12 @@ function loadSavedPracticeState() {
             clearSavedPracticeState();
 
             return null;
-
         }
 
 
         if (
-            state.exercise_type !==
+            state.exercise_type
+            !==
             levelData
                 .config
                 .exercise_type
@@ -3638,15 +4005,24 @@ function loadSavedPracticeState() {
             clearSavedPracticeState();
 
             return null;
+        }
 
+
+        if (
+            state.input_mode
+            !==
+            getInputMode()
+        ) {
+
+            clearSavedPracticeState();
+
+            return null;
         }
 
 
         return state;
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Load state error:",
@@ -3656,11 +4032,8 @@ function loadSavedPracticeState() {
 
         clearSavedPracticeState();
 
-
         return null;
-
     }
-
 }
 
 
@@ -3675,18 +4048,14 @@ function restoreSavedState(
     questions =
         state.questions;
 
-
     answers =
         state.answers;
 
 
     currentQuestionIndex =
         Math.min(
-
             answers.length,
-
             questions.length
-
         );
 
 
@@ -3707,30 +4076,150 @@ function restoreSavedState(
                 .question_deadline_at
             || 0
         );
-
 }
 
 
 // ======================================================
-// LOCAL COUNTS
+// RECALCULATE COUNTS
 // ======================================================
 
 function recalculateLocalCounts() {
 
-    correctCount =
-        0;
+    correctCount = 0;
 
+    wrongCount = 0;
 
-    wrongCount =
-        0;
-
-
-    timeoutCount =
-        0;
+    timeoutCount = 0;
 
 
     answers.forEach(
         answer => {
+
+            if (
+                answer.client_status
+                === "correct"
+            ) {
+
+                correctCount++;
+
+                return;
+            }
+
+
+            if (
+                answer.client_status
+                === "wrong"
+            ) {
+
+                wrongCount++;
+
+                return;
+            }
+
+
+            if (
+                answer.client_status
+                === "timeout"
+            ) {
+
+                timeoutCount++;
+
+                return;
+            }
+
+
+            // ==========================================
+            // FALLBACK
+            // ==========================================
+
+            if (answer.steps) {
+
+                const questionAnswer =
+                    Number(answer.a)
+                    *
+                    Number(answer.b);
+
+
+                const b =
+                    Number(answer.b);
+
+                const units =
+                    b % 10;
+
+                const tens =
+                    Math.floor(
+                        b / 10
+                    )
+                    *
+                    10;
+
+
+                const step1 =
+                    Number(answer.a)
+                    *
+                    units;
+
+                const step2 =
+                    Number(answer.a)
+                    *
+                    tens;
+
+
+                const anyValue =
+                    String(
+                        answer.steps.partial_1
+                        ?? ""
+                    ).trim()
+                    !== ""
+                    ||
+                    String(
+                        answer.steps.partial_2
+                        ?? ""
+                    ).trim()
+                    !== ""
+                    ||
+                    String(
+                        answer.steps.final
+                        ?? ""
+                    ).trim()
+                    !== "";
+
+
+                if (!anyValue) {
+
+                    timeoutCount++;
+
+                    return;
+                }
+
+
+                const correct =
+                    Number(
+                        answer.steps.partial_1
+                    )
+                    === step1
+                    &&
+                    Number(
+                        answer.steps.partial_2
+                    )
+                    === step2
+                    &&
+                    Number(
+                        answer.steps.final
+                    )
+                    === questionAnswer;
+
+
+                if (correct) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+
+
+                return;
+            }
+
 
             const value =
                 String(
@@ -3740,27 +4229,18 @@ function recalculateLocalCounts() {
                 .trim();
 
 
-            if (
-                value === ""
-            ) {
+            if (value === "") {
 
                 timeoutCount++;
 
                 return;
-
             }
 
 
             const correctAnswer =
-                Number(
-                    answer.a
-                )
-
+                Number(answer.a)
                 *
-
-                Number(
-                    answer.b
-                );
+                Number(answer.b);
 
 
             if (
@@ -3771,62 +4251,55 @@ function recalculateLocalCounts() {
 
                 correctCount++;
 
-            }
-
-            else {
+            } else {
 
                 wrongCount++;
-
             }
-
         }
     );
-
 }
 
 
 // ======================================================
-// CLEAR STATE
+// CLEAR SAVED STATE
 // ======================================================
 
 function clearSavedPracticeState() {
 
-    if (
-        !practiceStateKey
-    ) {
+    if (practiceStateKey) {
 
-        return;
-
+        sessionStorage.removeItem(
+            practiceStateKey
+        );
     }
 
 
-    sessionStorage.removeItem(
-        practiceStateKey
-    );
+    // Bersihkan state lama V3 juga.
 
+    if (levelId) {
+
+        sessionStorage.removeItem(
+            `practice_v3_${levelId}`
+        );
+    }
 }
 
 
 // ======================================================
-// TIMER CLEANUP
+// CLEAR TIMER
 // ======================================================
 
 function clearTimer() {
 
-    if (
-        timerInterval
-    ) {
+    if (timerInterval) {
 
         clearInterval(
             timerInterval
         );
 
-
         timerInterval =
             null;
-
     }
-
 }
 
 
@@ -3837,7 +4310,6 @@ function clearTimer() {
 function goBackToLevels() {
 
     clearTimer();
-
 
     clearTimeout(
         delayedSubmit
@@ -3854,35 +4326,29 @@ function goBackToLevels() {
             "./dashboard.html";
 
         return;
-
     }
 
 
     window.location.href =
-
         "./levels.html"
-
         +
-
-        "?subject=" +
+        "?subject="
+        +
         encodeURIComponent(
             subjectCode
         )
-
         +
-
-        "&topic=" +
+        "&topic="
+        +
         encodeURIComponent(
             topicCode
         )
-
         +
-
-        "&stage=" +
+        "&stage="
+        +
         encodeURIComponent(
             stageNumber
         );
-
 }
 
 
@@ -3894,7 +4360,6 @@ function goLogin() {
 
     window.location.href =
         "./index.html";
-
 }
 
 
@@ -3908,13 +4373,10 @@ window.addEventListener(
 
         clearTimer();
 
-
         clearTimeout(
             delayedSubmit
         );
 
-
         savePracticeState();
-
     }
 );
