@@ -40,11 +40,6 @@ const studentName =
         "studentName"
     );
 
-const studentClass =
-    document.getElementById(
-        "studentClass"
-    );
-
 const generatedAt =
     document.getElementById(
         "generatedAt"
@@ -394,12 +389,6 @@ function renderStudent(
     studentName.textContent =
         student.full_name ||
         "Siswa";
-
-
-    studentClass.textContent =
-        student.class_name
-            ? student.class_name
-            : "Data kelompok belum diatur";
 
 
     generatedAt.textContent =
