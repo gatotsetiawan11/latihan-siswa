@@ -1,0 +1,437 @@
+/* =========================================================
+   LATIHAN SISWA
+   ADMIN REGISTRATION UI V1
+   ========================================================= */
+
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.admin-registration-section,
+.admin-monitoring-section {
+    margin-top: 28px;
+}
+
+
+.admin-section-heading {
+    margin-bottom: 14px;
+
+    display: flex;
+
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+
+.admin-section-heading h2 {
+    margin: 0;
+
+    color: #172033;
+
+    font-size: 21px;
+}
+
+
+.admin-section-heading p {
+    margin:
+        6px
+        0
+        0;
+
+    color: #7b8798;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   COUNT
+   ========================================================= */
+
+.registration-count {
+    min-width: 100px;
+
+    padding:
+        10px
+        14px;
+
+    border:
+        1px solid
+        #e5e9f0;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    text-align: center;
+}
+
+
+.registration-count strong {
+    display: block;
+
+    color: #ea580c;
+
+    font-size: 20px;
+}
+
+
+.registration-count span {
+    color: #8893a4;
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   REGISTRATION LIST
+   ========================================================= */
+
+.registration-list {
+    display: grid;
+
+    gap: 10px;
+}
+
+
+.registration-card {
+    padding: 16px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    border:
+        1px solid
+        #e5e9f0;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+}
+
+
+.registration-main {
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+
+.registration-avatar {
+    width: 42px;
+    height: 42px;
+
+    flex:
+        0
+        0
+        auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    font-size: 15px;
+
+    font-weight: 800;
+}
+
+
+.registration-name {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #23314a;
+
+    font-size: 13px;
+}
+
+
+.registration-meta {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap:
+        4px
+        14px;
+
+    color: #8792a4;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+}
+
+
+.registration-meta strong {
+    color: #5b6679;
+
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.registration-actions {
+    flex:
+        0
+        0
+        auto;
+
+    display: flex;
+
+    gap: 7px;
+}
+
+
+.registration-approve-button,
+.registration-reject-button {
+    min-height: 34px;
+
+    padding:
+        0
+        12px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 750;
+}
+
+
+.registration-approve-button {
+    border: 0;
+
+    background: #16a34a;
+
+    color: #ffffff;
+}
+
+
+.registration-reject-button {
+    border:
+        1px solid
+        #fecaca;
+
+    background: #fff7f7;
+
+    color: #dc2626;
+}
+
+
+.registration-approve-button:disabled,
+.registration-reject-button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.registration-empty {
+    padding: 28px;
+
+    border:
+        1px dashed
+        #d8dee8;
+
+    border-radius: 14px;
+
+    background: #fafbfc;
+
+    color: #8792a4;
+
+    text-align: center;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   MODAL ICON
+   ========================================================= */
+
+.registration-modal-icon {
+    width: 45px;
+    height: 45px;
+
+    margin-bottom: 16px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+
+.registration-modal-icon.approve {
+    background: #ecfdf3;
+
+    color: #15803d;
+}
+
+
+.registration-modal-icon.reject {
+    background: #fff1f2;
+
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   REJECT REASON
+   ========================================================= */
+
+.registration-reason-field {
+    margin-top: 18px;
+
+    display: grid;
+
+    gap: 7px;
+}
+
+
+.registration-reason-field > span {
+    color: #475569;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+.registration-reason-field small {
+    color: #94a3b8;
+
+    font-weight: 500;
+}
+
+
+.registration-reason-field textarea {
+    width: 100%;
+
+    min-height: 95px;
+
+    padding: 11px;
+
+    resize: vertical;
+
+    border:
+        1px solid
+        #d8dee8;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    color: #172033;
+
+    background: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+.registration-reason-field textarea:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(37, 99, 235, 0.1);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .admin-section-heading {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .registration-count {
+        width: fit-content;
+
+        min-width: 90px;
+
+        text-align: left;
+    }
+
+
+    .registration-count strong,
+    .registration-count span {
+        display: inline;
+    }
+
+
+    .registration-count strong {
+        margin-right: 3px;
+    }
+
+
+    .registration-card {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .registration-actions {
+        width: 100%;
+    }
+
+
+    .registration-approve-button,
+    .registration-reject-button {
+        flex: 1;
+    }
+
+}
