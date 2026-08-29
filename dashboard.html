@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
 
+<head>
     <meta charset="UTF-8">
 
     <meta
@@ -15,24 +15,29 @@
         rel="stylesheet"
         href="css/style.css"
     >
-
 </head>
 
 <body>
 
     <header class="topbar">
 
-        <div>
-            <small>LATIHAN SISWA</small>
+        <div class="topbar-brand">
+
+            <small>
+                LATIHAN SISWA
+            </small>
 
             <strong id="headerName">
                 Memuat...
             </strong>
+
         </div>
+
 
         <button
             id="logoutButton"
             class="logout-button"
+            type="button"
         >
             Keluar
         </button>
@@ -42,12 +47,18 @@
 
     <main class="dashboard">
 
+        <!-- =========================
+             SISWA
+        ========================== -->
+
         <section
             id="studentWelcome"
             class="welcome-card"
         >
 
-            <p>Selamat datang</p>
+            <p>
+                Selamat datang
+            </p>
 
             <h1 id="studentName">
                 Memuat...
@@ -58,26 +69,38 @@
         </section>
 
 
+        <!-- =========================
+             GUEST
+        ========================== -->
+
         <section
             id="guestNotice"
             class="guest-notice hidden"
         >
 
-            <strong>Mode Guest</strong>
+            <strong>
+                Mode Guest
+            </strong>
 
             <p>
-                Anda dapat mencoba seluruh latihan,
+                Anda dapat mencoba latihan,
                 tetapi perkembangan tidak akan disimpan.
             </p>
 
         </section>
 
 
-        <section class="dashboard-section">
+        <!-- =========================
+             MATA PELAJARAN
+        ========================== -->
+
+        <section>
 
             <div class="section-title">
 
-                <p>PEMBELAJARAN</p>
+                <p>
+                    PEMBELAJARAN
+                </p>
 
                 <h2>
                     Pilih Mata Pelajaran
@@ -88,9 +111,12 @@
 
             <div class="subject-grid">
 
+                <!-- MATEMATIKA -->
+
                 <button
                     id="mathButton"
                     class="subject-card"
+                    type="button"
                 >
 
                     <div class="subject-icon">
@@ -113,7 +139,12 @@
                 </button>
 
 
-                <div class="subject-card subject-disabled">
+                <!-- BAHASA INDONESIA -->
+
+                <div
+                    class="subject-card
+                           subject-disabled"
+                >
 
                     <div class="subject-icon">
                         A
@@ -125,14 +156,21 @@
                             Bahasa Indonesia
                         </h3>
 
-                        <p>Segera hadir</p>
+                        <p>
+                            Segera hadir
+                        </p>
 
                     </div>
 
                 </div>
 
 
-                <div class="subject-card subject-disabled">
+                <!-- BAHASA INGGRIS -->
+
+                <div
+                    class="subject-card
+                           subject-disabled"
+                >
 
                     <div class="subject-icon">
                         EN
@@ -144,14 +182,21 @@
                             Bahasa Inggris
                         </h3>
 
-                        <p>Segera hadir</p>
+                        <p>
+                            Segera hadir
+                        </p>
 
                     </div>
 
                 </div>
 
 
-                <div class="subject-card subject-disabled">
+                <!-- IPAS -->
+
+                <div
+                    class="subject-card
+                           subject-disabled"
+                >
 
                     <div class="subject-icon">
                         IP
@@ -163,7 +208,9 @@
                             IPAS
                         </h3>
 
-                        <p>Segera hadir</p>
+                        <p>
+                            Segera hadir
+                        </p>
 
                     </div>
 
@@ -176,12 +223,22 @@
     </main>
 
 
+    <!-- SUPABASE -->
+
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
 
+
+    <!-- CONFIG -->
+
     <script src="js/config.js"></script>
+
+
+    <!-- DASHBOARD -->
+
     <script src="js/dashboard.js"></script>
 
 </body>
+
 </html>
