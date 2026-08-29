@@ -30,8 +30,7 @@
 // ======================================================
 
 const VAPID_PUBLIC_KEY =
-    "BADeIj2ZxvReA6SqPbz3OgFzBLRi5P625gL6DfGoNLTbBGRJvliPOO27iwvtlmDwC34mwDvO8SHD2deS-_FvYTg
-";
+    "BADeIj2ZxvReA6SqPbz3OgFzBLRi5P625gL6DfGoNLTbBGRJvliPOO27iwvtlmDwC34mwDvO8SHD2deS-_FvYTg";
 
 
 // ======================================================
