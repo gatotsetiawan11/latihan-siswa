@@ -1,0 +1,148 @@
+/* =========================================================
+   LATIHAN SISWA
+   MOBILE PRACTICE HELP V1
+
+   Membuat petunjuk submit lebih mudah terlihat,
+   terutama pada layar HP.
+   ========================================================= */
+
+
+.practice-help {
+    width: min(
+        100%,
+        520px
+    );
+
+    margin:
+        20px
+        auto
+        0;
+
+    padding:
+        12px
+        16px;
+
+    border-radius: 12px;
+
+    background: #f1f5f9;
+
+    border:
+        1px solid
+        #dbe3ec;
+
+    color: #334155;
+
+    text-align: center;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    line-height: 1.55;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   ENTER KEY
+   ========================================================= */
+
+.practice-help .enter-key {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 28px;
+
+    margin:
+        0
+        4px;
+
+    padding:
+        2px
+        10px;
+
+    border-radius: 7px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    line-height: 1;
+}
+
+
+.practice-help-separator {
+    display: inline-block;
+
+    margin:
+        0
+        5px;
+
+    color: #94a3b8;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .practice-help {
+        width: 100%;
+
+        margin-top: 16px;
+
+        padding:
+            11px
+            12px;
+
+        border-radius: 10px;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+    }
+
+
+    .practice-help .enter-key {
+        min-height: 27px;
+
+        padding:
+            2px
+            9px;
+
+        font-size: 12px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .practice-help {
+        font-size: 12px;
+
+        padding:
+            10px;
+    }
+
+
+    .practice-help-separator {
+        display: none;
+    }
+
+}
