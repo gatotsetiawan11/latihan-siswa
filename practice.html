@@ -10,53 +10,72 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Latihan - Latihan Siswa</title>
+    <title>
+        Latihan Perkalian
+    </title>
 
     <link
         rel="stylesheet"
-        href="css/style.css"
+        href="./css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./css/column-practice.css"
     >
 
 </head>
 
-<body class="practice-body">
+
+<body class="practice-page">
 
 
     <!-- =================================================
-         TOPBAR
+         TOP BAR
     ================================================== -->
 
     <header class="topbar">
 
-        <div class="topbar-brand">
+        <div class="topbar-inner">
 
-            <small id="practiceTopic">
-                PERKALIAN
-            </small>
+            <div>
 
-            <strong id="practiceLevel">
-                Memuat...
-            </strong>
+                <div
+                    id="practiceTopic"
+                    class="topbar-label"
+                >
+                    PERKALIAN
+                </div>
+
+                <div
+                    id="practiceLevel"
+                    class="topbar-title"
+                >
+                    Memuat level...
+                </div>
+
+            </div>
+
+
+            <button
+                id="quitButton"
+                class="button button-secondary"
+                type="button"
+            >
+                Keluar
+            </button>
 
         </div>
 
-
-        <button
-            id="quitButton"
-            class="back-button"
-            type="button"
-        >
-            Keluar
-        </button>
-
     </header>
+
 
 
     <!-- =================================================
          MAIN
     ================================================== -->
 
-    <main class="practice-page">
+    <main class="practice-main">
 
 
         <!-- =============================================
@@ -67,14 +86,13 @@
             id="practiceLoading"
             class="practice-loading"
         >
-
             Menyiapkan latihan...
-
         </section>
 
 
+
         <!-- =============================================
-             GAME
+             PRACTICE GAME
         ============================================== -->
 
         <section
@@ -83,14 +101,16 @@
         >
 
 
-            <!-- PROGRESS -->
+            <!-- =========================================
+                 STATUS
+            ========================================== -->
 
-            <div class="practice-progress-row">
+            <div class="practice-status">
 
                 <div>
 
-                    <span class="practice-label">
-                        SOAL
+                    <span class="practice-status-label">
+                        Soal
                     </span>
 
                     <strong id="questionProgress">
@@ -100,9 +120,9 @@
                 </div>
 
 
-                <div class="practice-score-mini">
+                <div>
 
-                    <span>
+                    <span class="practice-status-label">
                         Benar
                     </span>
 
@@ -115,99 +135,253 @@
             </div>
 
 
-            <!-- PROGRESS BAR -->
 
-            <div class="question-progress-track">
+            <!-- =========================================
+                 PROGRESS BAR
+            ========================================== -->
+
+            <div class="practice-progress-track">
 
                 <div
                     id="questionProgressBar"
-                    class="question-progress-bar"
+                    class="practice-progress-bar"
                 ></div>
 
             </div>
 
 
-            <!-- TIMER -->
 
-            <div class="timer-wrapper">
+            <!-- =========================================
+                 TIMER
+            ========================================== -->
 
-                <div
-                    id="timerCircle"
-                    class="timer-circle"
-                >
+            <div
+                id="timerCircle"
+                class="practice-timer"
+            >
 
-                    <span class="timer-label">
-                        WAKTU
-                    </span>
+                <span id="timerValue">
+                    10
+                </span>
 
-                    <strong id="timerValue">
-                        10
-                    </strong>
-
-                    <small>
-                        detik
-                    </small>
-
-                </div>
+                <small>
+                    detik
+                </small>
 
             </div>
 
 
-            <!-- QUESTION -->
 
-            <div class="question-wrapper">
+            <!-- =========================================
+                 QUESTION CARD
+            ========================================== -->
 
-                <p class="question-instruction">
-                    Berapa hasilnya?
-                </p>
-
-
-                <div
-                    id="questionText"
-                    class="question-text"
-                >
-                    2 × 5
-                </div>
+            <div class="practice-question-card">
 
 
-                <div class="answer-wrapper">
+                <!-- =====================================
+                     DIRECT MODE
+                ====================================== -->
 
-                    <span class="equal-sign">
-                        =
-                    </span>
+                <div id="directQuestionArea">
+
+                    <div
+                        id="questionText"
+                        class="practice-question"
+                    >
+                        2 × 5
+                    </div>
 
 
                     <input
                         id="answerInput"
-                        class="answer-input"
+                        class="practice-answer-input"
                         type="text"
                         inputmode="numeric"
-                        pattern="[0-9]*"
                         autocomplete="off"
                         enterkeyhint="done"
+                        placeholder="?"
                         aria-label="Jawaban"
                     >
+
+
+                    <p class="practice-help">
+                        Ketik jawaban. Jawaban akan
+                        diperiksa secara otomatis.
+                    </p>
 
                 </div>
 
 
-                <p class="answer-help">
-                    Jawaban akan diperiksa otomatis.
-                    Tombol Enter juga dapat digunakan.
-                </p>
+
+                <!-- =====================================
+                     COLUMN MODE
+                ====================================== -->
+
+                <div
+                    id="columnQuestionArea"
+                    class="column-practice hidden"
+                >
+
+
+                    <div class="column-heading">
+
+                        <span class="column-heading-label">
+                            PERKALIAN BERSUSUN
+                        </span>
+
+                        <p>
+                            Kerjakan hasil tiap bagian,
+                            kemudian isi hasil akhirnya.
+                        </p>
+
+                    </div>
+
+
+
+                    <div
+                        id="columnEquation"
+                        class="column-equation"
+                    >
+
+                        <div
+                            id="columnTopNumber"
+                            class="column-number"
+                        >
+                            34
+                        </div>
+
+                        <div class="column-second-line">
+
+                            <span class="column-sign">
+                                ×
+                            </span>
+
+                            <span
+                                id="columnBottomNumber"
+                                class="column-number"
+                            >
+                                27
+                            </span>
+
+                        </div>
+
+                        <div class="column-rule"></div>
+
+                    </div>
+
+
+
+                    <!-- =================================
+                         STEP 1
+                    ================================== -->
+
+                    <div class="column-step">
+
+                        <label
+                            id="columnStep1Label"
+                            for="columnStep1Input"
+                        >
+                            34 × 7
+                        </label>
+
+                        <input
+                            id="columnStep1Input"
+                            class="column-step-input"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            enterkeyhint="next"
+                            placeholder="Hasil"
+                        >
+
+                    </div>
+
+
+
+                    <!-- =================================
+                         STEP 2
+                    ================================== -->
+
+                    <div class="column-step">
+
+                        <label
+                            id="columnStep2Label"
+                            for="columnStep2Input"
+                        >
+                            34 × 20
+                        </label>
+
+                        <input
+                            id="columnStep2Input"
+                            class="column-step-input"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            enterkeyhint="next"
+                            placeholder="Hasil"
+                        >
+
+                    </div>
+
+
+
+                    <!-- =================================
+                         FINAL
+                    ================================== -->
+
+                    <div
+                        class="
+                            column-step
+                            column-final-step
+                        "
+                    >
+
+                        <label
+                            for="columnFinalInput"
+                        >
+                            Hasil akhir
+                        </label>
+
+                        <input
+                            id="columnFinalInput"
+                            class="
+                                column-step-input
+                                column-final-input
+                            "
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            enterkeyhint="done"
+                            placeholder="Jawaban"
+                        >
+
+                    </div>
+
+
+                    <p class="column-help">
+                        Isi ketiga bagian. Setelah lengkap,
+                        jawaban akan diperiksa otomatis.
+                    </p>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     FEEDBACK
+                ====================================== -->
+
+                <div
+                    id="answerFeedback"
+                    class="answer-feedback"
+                    aria-live="polite"
+                ></div>
 
             </div>
 
-
-            <!-- FEEDBACK -->
-
-            <div
-                id="answerFeedback"
-                class="answer-feedback"
-            ></div>
-
-
         </section>
+
 
 
         <!-- =============================================
@@ -216,7 +390,7 @@
 
         <section
             id="resultScreen"
-            class="result-screen hidden"
+            class="practice-result hidden"
         >
 
 
@@ -228,33 +402,29 @@
             </div>
 
 
-            <p class="eyebrow">
-                LATIHAN SELESAI
-            </p>
-
-
             <h1 id="resultTitle">
-                Level Selesai
+                Level selesai
             </h1>
 
 
-            <p
-                id="resultMessage"
-                class="result-message"
-            ></p>
+            <p id="resultMessage">
+                Hasil latihan Anda.
+            </p>
 
 
-            <div class="result-score">
 
-                <strong id="resultAccuracy">
-                    0%
-                </strong>
+            <div class="result-accuracy">
 
                 <span>
                     Akurasi
                 </span>
 
+                <strong id="resultAccuracy">
+                    0%
+                </strong>
+
             </div>
+
 
 
             <div class="result-grid">
@@ -289,7 +459,7 @@
                 <div class="result-stat">
 
                     <span>
-                        Waktu Habis
+                        Kehabisan waktu
                     </span>
 
                     <strong id="resultTimeout">
@@ -302,7 +472,7 @@
                 <div class="result-stat">
 
                     <span>
-                        Rata-rata
+                        Rata-rata waktu
                     </span>
 
                     <strong id="resultAverage">
@@ -311,14 +481,15 @@
 
                 </div>
 
-
             </div>
+
 
 
             <div
                 id="bestScoreBox"
                 class="best-score-box hidden"
             ></div>
+
 
 
             <div class="result-actions">
@@ -328,7 +499,7 @@
                     class="button button-secondary"
                     type="button"
                 >
-                    Ulangi Level
+                    Coba Lagi
                 </button>
 
 
@@ -342,20 +513,24 @@
 
             </div>
 
-
         </section>
-
 
     </main>
 
 
+
+    <!-- =================================================
+         SUPABASE
+    ================================================== -->
+
     <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
 
-    <script src="js/config.js"></script>
+    <script src="./js/config.js"></script>
 
-    <script src="js/practice.js"></script>
+    <script src="./js/practice.js"></script>
+
 
 </body>
 
