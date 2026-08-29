@@ -389,7 +389,807 @@ button {
 
     font-size: 13px;
 }
+/* =========================================================
+   LEVEL PROGRESS
+========================================================= */
 
+.level-progress-info {
+    min-height: 20px;
+
+    margin-top: 15px;
+
+    padding-top: 14px;
+
+    border-top:
+        1px solid
+        var(--border);
+
+    color: var(--text-soft);
+
+    font-size: 13px;
+
+    font-weight: 650;
+}
+
+
+.level-completed {
+    border-color:
+        rgba(22, 163, 106, 0.32);
+}
+
+
+.level-completed::before {
+    transform: scaleX(1);
+
+    background:
+        linear-gradient(
+            90deg,
+            #16a36a,
+            #42c68d
+        );
+}
+
+
+.level-completed
+.level-number {
+    background:
+        linear-gradient(
+            135deg,
+            #16a36a,
+            #42c68d
+        );
+}
+
+
+.level-locked {
+    opacity: 0.52;
+
+    cursor: not-allowed;
+
+    transform: none !important;
+
+    box-shadow: none !important;
+
+    background: #f5f6f8;
+}
+
+
+.level-locked:hover {
+    border-color:
+        var(--border);
+
+    transform: none;
+}
+
+
+.level-locked
+.level-number {
+    background: #aeb6c5;
+
+    box-shadow: none;
+}
+
+
+.level-locked
+.start-label {
+    color: #8c96a8;
+}
+
+
+/* =========================================================
+   PRACTICE PAGE
+========================================================= */
+
+.practice-body {
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 50% 10%,
+            rgba(49, 94, 251, 0.10),
+            transparent 450px
+        ),
+        #f5f7fb;
+}
+
+
+.practice-page {
+    width:
+        min(
+            760px,
+            calc(100% - 32px)
+        );
+
+    margin:
+        34px
+        auto
+        70px;
+}
+
+
+.practice-loading {
+    padding: 45px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 24px;
+
+    background: white;
+
+    box-shadow: var(--shadow-md);
+
+    color: var(--text-soft);
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   GAME CARD
+========================================================= */
+
+.practice-game {
+    padding:
+        28px
+        32px
+        36px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 30px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.97
+        );
+
+    box-shadow: var(--shadow-lg);
+}
+
+
+/* =========================================================
+   PRACTICE PROGRESS
+========================================================= */
+
+.practice-progress-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+.practice-progress-row > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.practice-label {
+    color: var(--text-light);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+
+.practice-progress-row strong {
+    font-size: 17px;
+}
+
+
+.practice-score-mini {
+    text-align: right;
+}
+
+
+.practice-score-mini span {
+    color: var(--text-light);
+
+    font-size: 11px;
+}
+
+
+.practice-score-mini strong {
+    color: var(--success);
+}
+
+
+.question-progress-track {
+    width: 100%;
+
+    height: 8px;
+
+    margin-top: 14px;
+
+    border-radius: 999px;
+
+    background: #edf0f5;
+
+    overflow: hidden;
+}
+
+
+.question-progress-bar {
+    width: 0;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--primary),
+            var(--secondary)
+        );
+
+    transition:
+        width 0.3s ease;
+}
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+.timer-wrapper {
+    display: flex;
+
+    justify-content: center;
+
+    margin:
+        31px
+        0
+        19px;
+}
+
+
+.timer-circle {
+    width: 112px;
+
+    height: 112px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border:
+        7px solid
+        #e2e7ff;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #f2f5ff
+        );
+
+    box-shadow:
+        0 12px 28px
+        rgba(
+            49,
+            94,
+            251,
+            0.12
+        );
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.timer-label {
+    color: var(--text-light);
+
+    font-size: 9px;
+
+    font-weight: 850;
+
+    letter-spacing: 0.10em;
+}
+
+
+.timer-circle strong {
+    margin:
+        1px
+        0
+        -2px;
+
+    color: var(--primary);
+
+    font-size: 35px;
+
+    line-height: 1;
+}
+
+
+.timer-circle small {
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+
+.timer-warning {
+    border-color: #f3b944;
+
+    transform: scale(1.04);
+}
+
+
+.timer-warning strong {
+    color: #dc8d00;
+}
+
+
+/* =========================================================
+   QUESTION
+========================================================= */
+
+.question-wrapper {
+    text-align: center;
+}
+
+
+.question-instruction {
+    margin:
+        0
+        0
+        8px;
+
+    color: var(--text-soft);
+
+    font-size: 14px;
+}
+
+
+.question-text {
+    margin-bottom: 20px;
+
+    color: var(--text);
+
+    font-size:
+        clamp(
+            52px,
+            10vw,
+            78px
+        );
+
+    font-weight: 850;
+
+    letter-spacing: -0.055em;
+}
+
+
+.answer-wrapper {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+.equal-sign {
+    color: var(--text-light);
+
+    font-size: 37px;
+
+    font-weight: 700;
+}
+
+
+.answer-input {
+    width: 170px;
+
+    padding:
+        14px
+        15px;
+
+    border:
+        3px solid
+        #dfe4ee;
+
+    border-radius: 18px;
+
+    outline: none;
+
+    background: white;
+
+    color: var(--primary);
+
+    text-align: center;
+
+    font-size: 42px;
+
+    font-weight: 850;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+.answer-input:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 5px
+        rgba(
+            49,
+            94,
+            251,
+            0.10
+        );
+}
+
+
+.answer-input:disabled {
+    background: #f5f7fa;
+}
+
+
+.answer-help {
+    margin:
+        15px
+        0
+        0;
+
+    color: var(--text-light);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+.answer-feedback {
+    min-height: 31px;
+
+    margin-top: 20px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+
+.feedback-correct {
+    color: var(--success);
+}
+
+
+.feedback-wrong {
+    color: #d33a44;
+}
+
+
+.feedback-timeout {
+    color: #c17b00;
+}
+
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+.result-screen {
+    padding:
+        38px
+        34px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 30px;
+
+    background: white;
+
+    box-shadow: var(--shadow-lg);
+
+    text-align: center;
+}
+
+
+.result-icon {
+    width: 78px;
+
+    height: 78px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin:
+        0
+        auto
+        22px;
+
+    border-radius: 50%;
+
+    font-size: 37px;
+
+    font-weight: 850;
+}
+
+
+.result-pass {
+    background: #e5f8ef;
+
+    color: var(--success);
+}
+
+
+.result-fail {
+    background: #fff0d8;
+
+    color: #d28b00;
+}
+
+
+.result-screen h1 {
+    margin:
+        7px
+        0
+        8px;
+
+    font-size: 33px;
+}
+
+
+.result-message {
+    max-width: 500px;
+
+    margin:
+        0
+        auto
+        27px;
+
+    color: var(--text-soft);
+
+    line-height: 1.55;
+}
+
+
+.result-score {
+    width: 155px;
+
+    height: 155px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin:
+        0
+        auto
+        28px;
+
+    border:
+        9px solid
+        var(--primary-light);
+
+    border-radius: 50%;
+}
+
+
+.result-score strong {
+    color: var(--primary);
+
+    font-size: 39px;
+}
+
+
+.result-score span {
+    color: var(--text-soft);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   RESULT STATS
+========================================================= */
+
+.result-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap: 11px;
+
+    margin-bottom: 20px;
+}
+
+
+.result-stat {
+    padding:
+        16px
+        9px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 16px;
+
+    background: var(--surface-soft);
+}
+
+
+.result-stat span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--text-light);
+
+    font-size: 11px;
+}
+
+
+.result-stat strong {
+    font-size: 21px;
+}
+
+
+.best-score-box {
+    margin:
+        18px
+        0;
+
+    padding: 13px;
+
+    border-radius: 13px;
+
+    background: var(--primary-light);
+
+    color: var(--primary-dark);
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RESULT ACTIONS
+========================================================= */
+
+.result-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 12px;
+
+    margin-top: 25px;
+}
+
+
+/* =========================================================
+   MOBILE PRACTICE
+========================================================= */
+
+@media (
+    max-width: 600px
+) {
+
+    .practice-page {
+        width:
+            calc(
+                100% - 22px
+            );
+
+        margin-top: 16px;
+    }
+
+
+    .practice-game {
+        padding:
+            22px
+            18px
+            28px;
+
+        border-radius: 24px;
+    }
+
+
+    .timer-wrapper {
+        margin-top: 24px;
+    }
+
+
+    .timer-circle {
+        width: 98px;
+
+        height: 98px;
+    }
+
+
+    .timer-circle strong {
+        font-size: 30px;
+    }
+
+
+    .question-text {
+        font-size: 54px;
+    }
+
+
+    .answer-input {
+        width: 145px;
+
+        font-size: 37px;
+    }
+
+
+    .result-screen {
+        padding:
+            30px
+            19px;
+    }
+
+
+    .result-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
+    }
+
+
+    .result-actions {
+        grid-template-columns:
+            1fr;
+    }
+
+}
 
 /* =========================================================
    TOPBAR
