@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Topik - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="topbar-brand">
+
+            <small>
+                LATIHAN SISWA
+            </small>
+
+            <strong id="pageTitle">
+                Memuat...
+            </strong>
+
+        </div>
+
+
+        <a
+            href="./dashboard.html"
+            class="back-button"
+        >
+            Kembali
+        </a>
+
+    </header>
+
+
+    <main class="dashboard">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+
+        <section class="page-heading">
+
+            <p
+                id="subjectLabel"
+                class="eyebrow"
+            >
+                MATA PELAJARAN
+            </p>
+
+            <h1>
+                Pilih Topik
+            </h1>
+
+            <p>
+                Pilih materi yang ingin dilatih.
+            </p>
+
+        </section>
+
+
+        <!-- =========================
+             TOPIK
+        ========================== -->
+
+        <section
+            id="topicList"
+            class="learning-grid"
+        >
+
+            <div class="loading-card">
+                Memuat topik...
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/topics.js"></script>
+
+</body>
+
+</html>
