@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Latihan - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body class="practice-body">
+
+
+    <!-- =================================================
+         TOPBAR
+    ================================================== -->
+
+    <header class="topbar">
+
+        <div class="topbar-brand">
+
+            <small id="practiceTopic">
+                PERKALIAN
+            </small>
+
+            <strong id="practiceLevel">
+                Memuat...
+            </strong>
+
+        </div>
+
+
+        <button
+            id="quitButton"
+            class="back-button"
+            type="button"
+        >
+            Keluar
+        </button>
+
+    </header>
+
+
+    <!-- =================================================
+         MAIN
+    ================================================== -->
+
+    <main class="practice-page">
+
+
+        <!-- =============================================
+             LOADING
+        ============================================== -->
+
+        <section
+            id="practiceLoading"
+            class="practice-loading"
+        >
+
+            Menyiapkan latihan...
+
+        </section>
+
+
+        <!-- =============================================
+             GAME
+        ============================================== -->
+
+        <section
+            id="practiceGame"
+            class="practice-game hidden"
+        >
+
+
+            <!-- PROGRESS -->
+
+            <div class="practice-progress-row">
+
+                <div>
+
+                    <span class="practice-label">
+                        SOAL
+                    </span>
+
+                    <strong id="questionProgress">
+                        1 / 10
+                    </strong>
+
+                </div>
+
+
+                <div class="practice-score-mini">
+
+                    <span>
+                        Benar
+                    </span>
+
+                    <strong id="liveCorrect">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROGRESS BAR -->
+
+            <div class="question-progress-track">
+
+                <div
+                    id="questionProgressBar"
+                    class="question-progress-bar"
+                ></div>
+
+            </div>
+
+
+            <!-- TIMER -->
+
+            <div class="timer-wrapper">
+
+                <div
+                    id="timerCircle"
+                    class="timer-circle"
+                >
+
+                    <span class="timer-label">
+                        WAKTU
+                    </span>
+
+                    <strong id="timerValue">
+                        10
+                    </strong>
+
+                    <small>
+                        detik
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUESTION -->
+
+            <div class="question-wrapper">
+
+                <p class="question-instruction">
+                    Berapa hasilnya?
+                </p>
+
+
+                <div
+                    id="questionText"
+                    class="question-text"
+                >
+                    2 × 5
+                </div>
+
+
+                <div class="answer-wrapper">
+
+                    <span class="equal-sign">
+                        =
+                    </span>
+
+
+                    <input
+                        id="answerInput"
+                        class="answer-input"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        autocomplete="off"
+                        enterkeyhint="done"
+                        aria-label="Jawaban"
+                    >
+
+                </div>
+
+
+                <p class="answer-help">
+                    Jawaban akan diperiksa otomatis.
+                    Tombol Enter juga dapat digunakan.
+                </p>
+
+            </div>
+
+
+            <!-- FEEDBACK -->
+
+            <div
+                id="answerFeedback"
+                class="answer-feedback"
+            ></div>
+
+
+        </section>
+
+
+        <!-- =============================================
+             RESULT
+        ============================================== -->
+
+        <section
+            id="resultScreen"
+            class="result-screen hidden"
+        >
+
+
+            <div
+                id="resultIcon"
+                class="result-icon"
+            >
+                ✓
+            </div>
+
+
+            <p class="eyebrow">
+                LATIHAN SELESAI
+            </p>
+
+
+            <h1 id="resultTitle">
+                Level Selesai
+            </h1>
+
+
+            <p
+                id="resultMessage"
+                class="result-message"
+            ></p>
+
+
+            <div class="result-score">
+
+                <strong id="resultAccuracy">
+                    0%
+                </strong>
+
+                <span>
+                    Akurasi
+                </span>
+
+            </div>
+
+
+            <div class="result-grid">
+
+
+                <div class="result-stat">
+
+                    <span>
+                        Benar
+                    </span>
+
+                    <strong id="resultCorrect">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        Salah
+                    </span>
+
+                    <strong id="resultWrong">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        Waktu Habis
+                    </span>
+
+                    <strong id="resultTimeout">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        Rata-rata
+                    </span>
+
+                    <strong id="resultAverage">
+                        -
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <div
+                id="bestScoreBox"
+                class="best-score-box hidden"
+            ></div>
+
+
+            <div class="result-actions">
+
+                <button
+                    id="retryButton"
+                    class="button button-secondary"
+                    type="button"
+                >
+                    Ulangi Level
+                </button>
+
+
+                <button
+                    id="continueButton"
+                    class="button button-primary"
+                    type="button"
+                >
+                    Kembali ke Level
+                </button>
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/practice.js"></script>
+
+</body>
+
+</html>
