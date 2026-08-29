@@ -1,29 +1,29 @@
 // ======================================================
 // LATIHAN SISWA
-// PRACTICE FIXES V2
+// PRACTICE FIXES V3
 //
 // Memperbaiki:
 // 1. Ulangi latihan
 // 2. Keluar dari latihan
 // 3. Tombol lanjut
-// 4. Auto-submit terlalu cepat
-// 5. Prefix jawaban benar
+// 4. Prefix jawaban benar
+// 5. Jawaban salah tidak auto-submit
 //
-// Contoh bug lama:
+// ATURAN V3:
 //
-// Soal: 1 × 5
-// Anak ingin menjawab: 50
+// JAWABAN BENAR
+// - Enter          = langsung submit
+// - Tanpa Enter    = auto-submit setelah idle
 //
-// Saat mengetik:
-// 5
+// JAWABAN SALAH
+// - Tidak auto-submit
+// - Siswa masih boleh memperbaiki jawaban
+// - Baru dinilai jika:
+//      a. siswa menekan Enter
+//      b. waktu soal habis
 //
-// V4 langsung menganggap benar setelah 120ms.
-//
-// V2 FIX:
-// Jawaban baru diperiksa setelah siswa berhenti
-// mengetik selama beberapa saat.
-//
-// ENTER tetap dapat digunakan untuk submit langsung.
+// Dengan demikian siswa mendapatkan waktu maksimal
+// ketika jawabannya belum benar.
 // ======================================================
 
 
@@ -33,10 +33,11 @@
     // SETTINGS
     // ==================================================
 
-    const DIRECT_IDLE_SUBMIT_MS =
+    const DIRECT_CORRECT_IDLE_MS =
         1500;
 
-    const COLUMN_IDLE_SUBMIT_MS =
+
+    const COLUMN_CORRECT_IDLE_MS =
         1800;
 
 
@@ -56,7 +57,9 @@
                 discardPracticeStateOnUnload
                 !== true
             ) {
+
                 return;
+
             }
 
 
@@ -95,11 +98,14 @@
             );
 
 
-        if (!oldButton) {
+        if (
+            !oldButton
+        ) {
 
             console.warn(
                 `Button ${buttonId} tidak ditemukan.`
             );
+
 
             return;
 
@@ -126,6 +132,62 @@
 
 
     // ==================================================
+    // CLEANUP PRACTICE
+    // ==================================================
+
+    function cleanupPracticeBeforeNavigation() {
+
+        discardPracticeStateOnUnload =
+            true;
+
+
+        try {
+
+            clearTimer();
+
+        } catch (error) {
+
+            console.error(
+                "Timer cleanup error:",
+                error
+            );
+
+        }
+
+
+        try {
+
+            clearTimeout(
+                delayedSubmit
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Delayed submit cleanup error:",
+                error
+            );
+
+        }
+
+
+        try {
+
+            clearSavedPracticeState();
+
+        } catch (error) {
+
+            console.error(
+                "Practice state cleanup error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // ==================================================
     // RETRY
     // ==================================================
 
@@ -133,28 +195,7 @@
         "retryButton",
         () => {
 
-            discardPracticeStateOnUnload =
-                true;
-
-
-            try {
-
-                clearTimer();
-
-                clearTimeout(
-                    delayedSubmit
-                );
-
-                clearSavedPracticeState();
-
-            } catch (error) {
-
-                console.error(
-                    "Retry cleanup error:",
-                    error
-                );
-
-            }
+            cleanupPracticeBeforeNavigation();
 
 
             window.location.reload();
@@ -171,28 +212,7 @@
         "continueButton",
         () => {
 
-            discardPracticeStateOnUnload =
-                true;
-
-
-            try {
-
-                clearTimer();
-
-                clearTimeout(
-                    delayedSubmit
-                );
-
-                clearSavedPracticeState();
-
-            } catch (error) {
-
-                console.error(
-                    "Continue cleanup error:",
-                    error
-                );
-
-            }
+            cleanupPracticeBeforeNavigation();
 
 
             goBackToLevels();
@@ -209,28 +229,7 @@
         "quitButton",
         () => {
 
-            discardPracticeStateOnUnload =
-                true;
-
-
-            try {
-
-                clearTimer();
-
-                clearTimeout(
-                    delayedSubmit
-                );
-
-                clearSavedPracticeState();
-
-            } catch (error) {
-
-                console.error(
-                    "Quit cleanup error:",
-                    error
-                );
-
-            }
+            cleanupPracticeBeforeNavigation();
 
 
             goBackToLevels();
@@ -241,35 +240,32 @@
 
     // ==================================================
     // DIRECT INPUT FIX
-    //
-    // PENTING:
-    //
-    // Jangan pernah langsung submit hanya karena
-    // input sementara sama dengan jawaban benar.
-    //
-    // Kita menunggu sampai siswa berhenti mengetik.
     // ==================================================
 
     function handleSafeDirectInput(
         event
     ) {
 
-        /*
-         * Hentikan input handler lama
-         * milik Practice Engine V4.
-         */
+        // --------------------------------------------------
+        // Hentikan handler input lama dari practice.js
+        // --------------------------------------------------
 
         event.stopImmediatePropagation();
 
 
-        if (answerLocked) {
+        if (
+            answerLocked
+        ) {
 
             return;
 
         }
 
 
+        // --------------------------------------------------
         // Hanya angka
+        // --------------------------------------------------
+
         answerInput.value =
             answerInput.value
                 .replace(
@@ -278,21 +274,24 @@
                 );
 
 
-        /*
-         * Simpan state agar refresh masih aman.
-         */
+        // --------------------------------------------------
+        // Simpan state
+        // --------------------------------------------------
 
         savePracticeState();
 
 
-        /*
-         * Setiap siswa mengetik digit baru,
-         * timer submit lama dibatalkan.
-         */
+        // --------------------------------------------------
+        // Batalkan auto-submit sebelumnya
+        // --------------------------------------------------
 
         clearTimeout(
             delayedSubmit
         );
+
+
+        delayedSubmit =
+            null;
 
 
         const value =
@@ -300,38 +299,111 @@
                 .trim();
 
 
-        if (value === "") {
+        // --------------------------------------------------
+        // Kosong
+        // --------------------------------------------------
+
+        if (
+            value === ""
+        ) {
 
             return;
 
         }
 
 
-        /*
-         * Jangan lihat jawaban benar di sini.
-         *
-         * Kita hanya melihat:
-         * "apakah siswa sudah berhenti mengetik?"
-         */
+        // --------------------------------------------------
+        // Ambil soal aktif
+        // --------------------------------------------------
+
+        const question =
+            questions[
+                currentQuestionIndex
+            ];
+
+
+        if (
+            !question
+        ) {
+
+            return;
+
+        }
+
+
+        const correctText =
+            String(
+                question.answer
+            );
+
+
+        // ==================================================
+        // JAWABAN SALAH
+        //
+        // PENTING:
+        //
+        // Jangan submit.
+        //
+        // Berikan siswa seluruh sisa waktu untuk
+        // memperbaiki jawabannya.
+        //
+        // Jika siswa menekan Enter sendiri,
+        // listener keydown dari practice.js tetap
+        // akan melakukan submit.
+        //
+        // Jika tidak menekan Enter,
+        // handleTimerEnd() dari practice.js akan
+        // menilai jawaban ketika waktu habis.
+        // ==================================================
+
+        if (
+            value !==
+            correctText
+        ) {
+
+            return;
+
+        }
+
+
+        // ==================================================
+        // JAWABAN BENAR
+        //
+        // Jangan langsung submit saat digit benar muncul.
+        //
+        // Tunggu siswa berhenti mengetik agar kasus:
+        //
+        // jawaban benar = 5
+        // siswa ingin mengetik = 50
+        //
+        // tidak langsung dinilai ketika baru mengetik "5".
+        // ==================================================
 
         delayedSubmit =
-            setTimeout(
+            window.setTimeout(
                 () => {
 
-                    if (answerLocked) {
+                    if (
+                        answerLocked
+                    ) {
 
                         return;
 
                     }
 
 
-                    const finalValue =
+                    const latestValue =
                         answerInput.value
                             .trim();
 
 
+                    // ------------------------------------------
+                    // Input berubah selama menunggu
+                    // ------------------------------------------
+
                     if (
-                        finalValue === ""
+                        latestValue !==
+                        correctText
                     ) {
 
                         return;
@@ -342,45 +414,50 @@
                     submitDirectAnswer();
 
                 },
-                DIRECT_IDLE_SUBMIT_MS
+                DIRECT_CORRECT_IDLE_MS
             );
 
     }
 
 
-    /*
-     * capture = true
-     *
-     * Dengan capture listener, handler ini berjalan
-     * sebelum listener input lama dari practice.js.
-     */
+    // ==================================================
+    // DIRECT INPUT LISTENER
+    //
+    // capture=true agar berjalan sebelum handler
+    // lama dari practice.js.
+    // ==================================================
 
-    answerInput.addEventListener(
-        "input",
-        handleSafeDirectInput,
-        true
-    );
+    if (
+        answerInput
+    ) {
+
+        answerInput.addEventListener(
+            "input",
+            handleSafeDirectInput,
+            true
+        );
+
+    }
 
 
     // ==================================================
     // COLUMN INPUT FIX
-    //
-    // Risiko yang sama juga ada pada perkalian bersusun.
-    //
-    // Misalnya hasil benar 918,
-    // anak ingin mengetik 9180.
-    //
-    // Jangan submit ketika baru mencapai 918.
     // ==================================================
 
     function handleSafeColumnInput(
         event
     ) {
 
+        // --------------------------------------------------
+        // Hentikan handler lama
+        // --------------------------------------------------
+
         event.stopImmediatePropagation();
 
 
-        if (answerLocked) {
+        if (
+            answerLocked
+        ) {
 
             return;
 
@@ -391,7 +468,10 @@
             event.currentTarget;
 
 
+        // --------------------------------------------------
         // Hanya angka
+        // --------------------------------------------------
+
         input.value =
             input.value
                 .replace(
@@ -400,13 +480,12 @@
                 );
 
 
-        /*
-         * Hilangkan marker sementara.
-         *
-         * Jangan beri warna hijau hanya karena
-         * angka yang sedang diketik kebetulan
-         * sama dengan hasil benar.
-         */
+        // --------------------------------------------------
+        // Hapus indikator sementara
+        //
+        // Indikator benar/salah final baru diberikan
+        // setelah jawaban benar-benar disubmit.
+        // --------------------------------------------------
 
         [
             columnStep1Input,
@@ -414,6 +493,15 @@
             columnFinalInput
         ].forEach(
             element => {
+
+                if (
+                    !element
+                ) {
+
+                    return;
+
+                }
+
 
                 element.classList.remove(
                     "step-correct",
@@ -424,21 +512,58 @@
         );
 
 
+        // --------------------------------------------------
+        // Simpan state
+        // --------------------------------------------------
+
         savePracticeState();
 
+
+        // --------------------------------------------------
+        // Batalkan auto-submit lama
+        // --------------------------------------------------
 
         clearTimeout(
             delayedSubmit
         );
 
 
+        delayedSubmit =
+            null;
+
+
+        // --------------------------------------------------
+        // Ambil soal
+        // --------------------------------------------------
+
+        const question =
+            questions[
+                currentQuestionIndex
+            ];
+
+
+        if (
+            !question
+        ) {
+
+            return;
+
+        }
+
+
+        // --------------------------------------------------
+        // Ambil input
+        // --------------------------------------------------
+
         const values =
             getColumnInputs();
 
 
-        /*
-         * Belum semua langkah diisi.
-         */
+        // ==================================================
+        // BELUM SEMUA FIELD DIISI
+        //
+        // Jangan submit.
+        // ==================================================
 
         if (
             values.partial1 === "" ||
@@ -451,16 +576,83 @@
         }
 
 
-        /*
-         * Setelah SEMUA field terisi,
-         * tunggu siswa berhenti mengetik.
-         */
+        // --------------------------------------------------
+        // Expected
+        // --------------------------------------------------
+
+        const expected =
+            getColumnExpected(
+                question
+            );
+
+
+        // --------------------------------------------------
+        // Check masing-masing langkah
+        // --------------------------------------------------
+
+        const partial1Correct =
+            Number(
+                values.partial1
+            )
+            ===
+            expected.partial1;
+
+
+        const partial2Correct =
+            Number(
+                values.partial2
+            )
+            ===
+            expected.partial2;
+
+
+        const finalCorrect =
+            Number(
+                values.final
+            )
+            ===
+            expected.final;
+
+
+        const allCorrect =
+            partial1Correct
+            &&
+            partial2Correct
+            &&
+            finalCorrect;
+
+
+        // ==================================================
+        // ADA JAWABAN SALAH
+        //
+        // Jangan auto-submit.
+        //
+        // Siswa mendapatkan seluruh sisa waktu untuk
+        // memeriksa dan memperbaiki langkahnya.
+        // ==================================================
+
+        if (
+            !allCorrect
+        ) {
+
+            return;
+
+        }
+
+
+        // ==================================================
+        // SEMUA BENAR
+        //
+        // Tunggu sebentar sebelum auto-submit.
+        // ==================================================
 
         delayedSubmit =
-            setTimeout(
+            window.setTimeout(
                 () => {
 
-                    if (answerLocked) {
+                    if (
+                        answerLocked
+                    ) {
 
                         return;
 
@@ -482,34 +674,109 @@
                     }
 
 
+                    const latestQuestion =
+                        questions[
+                            currentQuestionIndex
+                        ];
+
+
+                    if (
+                        !latestQuestion
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const latestExpected =
+                        getColumnExpected(
+                            latestQuestion
+                        );
+
+
+                    const latestAllCorrect =
+                        Number(
+                            latestValues.partial1
+                        )
+                            ===
+                            latestExpected.partial1
+
+                        &&
+
+                        Number(
+                            latestValues.partial2
+                        )
+                            ===
+                            latestExpected.partial2
+
+                        &&
+
+                        Number(
+                            latestValues.final
+                        )
+                            ===
+                            latestExpected.final;
+
+
+                    if (
+                        !latestAllCorrect
+                    ) {
+
+                        return;
+
+                    }
+
+
                     submitColumnAnswer();
 
                 },
-                COLUMN_IDLE_SUBMIT_MS
+                COLUMN_CORRECT_IDLE_MS
             );
 
     }
 
 
-    columnStep1Input.addEventListener(
-        "input",
-        handleSafeColumnInput,
-        true
-    );
+    // ==================================================
+    // COLUMN LISTENERS
+    // ==================================================
+
+    if (
+        columnStep1Input
+    ) {
+
+        columnStep1Input.addEventListener(
+            "input",
+            handleSafeColumnInput,
+            true
+        );
+
+    }
 
 
-    columnStep2Input.addEventListener(
-        "input",
-        handleSafeColumnInput,
-        true
-    );
+    if (
+        columnStep2Input
+    ) {
+
+        columnStep2Input.addEventListener(
+            "input",
+            handleSafeColumnInput,
+            true
+        );
+
+    }
 
 
-    columnFinalInput.addEventListener(
-        "input",
-        handleSafeColumnInput,
-        true
-    );
+    if (
+        columnFinalInput
+    ) {
 
+        columnFinalInput.addEventListener(
+            "input",
+            handleSafeColumnInput,
+            true
+        );
+
+    }
 
 })();
