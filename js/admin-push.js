@@ -30,7 +30,8 @@
 // ======================================================
 
 const VAPID_PUBLIC_KEY =
-    "PASTE_VAPID_PUBLIC_KEY_DI_SINI";
+    "BADeIj2ZxvReA6SqPbz3OgFzBLRi5P625gL6DfGoNLTbBGRJvliPOO27iwvtlmDwC34mwDvO8SHD2deS-_FvYTg
+";
 
 
 // ======================================================
