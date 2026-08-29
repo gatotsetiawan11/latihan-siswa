@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dashboard - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div>
+            <small>LATIHAN SISWA</small>
+
+            <strong id="headerName">
+                Memuat...
+            </strong>
+        </div>
+
+        <button
+            id="logoutButton"
+            class="logout-button"
+        >
+            Keluar
+        </button>
+
+    </header>
+
+
+    <main class="dashboard">
+
+        <section
+            id="studentWelcome"
+            class="welcome-card"
+        >
+
+            <p>Selamat datang</p>
+
+            <h1 id="studentName">
+                Memuat...
+            </h1>
+
+            <span id="studentClass"></span>
+
+        </section>
+
+
+        <section
+            id="guestNotice"
+            class="guest-notice hidden"
+        >
+
+            <strong>Mode Guest</strong>
+
+            <p>
+                Anda dapat mencoba seluruh latihan,
+                tetapi perkembangan tidak akan disimpan.
+            </p>
+
+        </section>
+
+
+        <section class="dashboard-section">
+
+            <div class="section-title">
+
+                <p>PEMBELAJARAN</p>
+
+                <h2>
+                    Pilih Mata Pelajaran
+                </h2>
+
+            </div>
+
+
+            <div class="subject-grid">
+
+                <button
+                    id="mathButton"
+                    class="subject-card"
+                >
+
+                    <div class="subject-icon">
+                        ×
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Matematika
+                        </h3>
+
+                        <p>
+                            Latihan kemampuan matematika
+                            secara bertahap.
+                        </p>
+
+                    </div>
+
+                </button>
+
+
+                <div class="subject-card subject-disabled">
+
+                    <div class="subject-icon">
+                        A
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Bahasa Indonesia
+                        </h3>
+
+                        <p>Segera hadir</p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="subject-card subject-disabled">
+
+                    <div class="subject-icon">
+                        EN
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Bahasa Inggris
+                        </h3>
+
+                        <p>Segera hadir</p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="subject-card subject-disabled">
+
+                    <div class="subject-icon">
+                        IP
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            IPAS
+                        </h3>
+
+                        <p>Segera hadir</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
+
+</body>
+</html>
