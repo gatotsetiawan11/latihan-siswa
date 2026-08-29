@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+</head>
+
+<body>
+
+    <main class="login-page">
+
+        <section class="login-card">
+
+            <div class="logo-box">
+                L
+            </div>
+
+            <h1>Latihan Siswa</h1>
+
+            <p class="subtitle">
+                Belajar dan berlatih secara bertahap.
+            </p>
+
+
+            <div class="form-group">
+
+                <label for="nisn">
+                    NISN
+                </label>
+
+                <input
+                    id="nisn"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="10"
+                    autocomplete="off"
+                    placeholder="Masukkan 10 digit NISN"
+                >
+
+            </div>
+
+
+            <p
+                id="loginMessage"
+                class="message"
+            ></p>
+
+
+            <button
+                id="loginButton"
+                class="button button-primary"
+            >
+                Masuk
+            </button>
+
+
+            <div class="separator">
+                <span></span>
+                <p>atau</p>
+                <span></span>
+            </div>
+
+
+            <button
+                id="guestButton"
+                class="button button-secondary"
+            >
+                Lanjut sebagai Guest
+            </button>
+
+
+            <p class="guest-text">
+                Hasil latihan Guest tidak disimpan.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+
+    <script src="js/config.js"></script>
+    <script src="js/login.js"></script>
+
+</body>
+</html>
