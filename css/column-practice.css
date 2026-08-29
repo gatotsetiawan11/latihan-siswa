@@ -1,0 +1,349 @@
+/* =========================================================
+   COLUMN MULTIPLICATION
+   ========================================================= */
+
+.column-practice {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+
+.column-heading {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+
+.column-heading-label {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+
+    color: var(--primary, #4f5cff);
+}
+
+
+.column-heading p {
+    margin: 0;
+
+    color: #6b7485;
+
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+
+
+/* =========================================================
+   EQUATION
+   ========================================================= */
+
+.column-equation {
+    width: 180px;
+
+    margin:
+        0 auto
+        30px;
+
+    padding:
+        18px
+        26px
+        12px;
+
+    border-radius: 18px;
+
+    background:
+        #f7f8fc;
+
+    border:
+        1px solid
+        #e8ebf3;
+
+    text-align: right;
+}
+
+
+.column-number {
+    font-size: 38px;
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    color:
+        #172033;
+
+    font-variant-numeric:
+        tabular-nums;
+}
+
+
+.column-second-line {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 5px;
+}
+
+
+.column-sign {
+    font-size: 28px;
+
+    font-weight: 700;
+
+    color:
+        #687086;
+}
+
+
+.column-rule {
+    width: 100%;
+    height: 3px;
+
+    margin-top: 8px;
+
+    border-radius: 999px;
+
+    background:
+        #172033;
+}
+
+
+
+/* =========================================================
+   STEPS
+   ========================================================= */
+
+.column-step {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        150px;
+
+    gap: 16px;
+
+    align-items: center;
+
+    padding:
+        16px
+        18px;
+
+    margin-bottom: 12px;
+
+    border-radius: 16px;
+
+    border:
+        1px solid
+        #e3e7ef;
+
+    background:
+        #ffffff;
+}
+
+
+.column-step label {
+    font-size: 16px;
+
+    line-height: 1.4;
+
+    font-weight: 700;
+
+    color:
+        #263147;
+}
+
+
+.column-step-input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        2px solid
+        #d9deea;
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background:
+        #ffffff;
+
+    color:
+        #172033;
+
+    text-align: center;
+
+    font-family: inherit;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    font-variant-numeric:
+        tabular-nums;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+
+.column-step-input:focus {
+    border-color:
+        var(--primary, #4f5cff);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(79, 92, 255, 0.10);
+}
+
+
+.column-step-input:disabled {
+    cursor: default;
+
+    opacity: 0.78;
+
+    background:
+        #f5f6f9;
+}
+
+
+
+/* =========================================================
+   FINAL STEP
+   ========================================================= */
+
+.column-final-step {
+    margin-top: 18px;
+
+    border-color:
+        #ccd3ff;
+
+    background:
+        #f7f8ff;
+}
+
+
+.column-final-step label {
+    color:
+        #3442d9;
+}
+
+
+.column-final-input {
+    border-color:
+        #bfc7ff;
+}
+
+
+
+/* =========================================================
+   HELP
+   ========================================================= */
+
+.column-help {
+    margin:
+        16px
+        0
+        0;
+
+    text-align: center;
+
+    color:
+        #8a92a3;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+}
+
+
+
+/* =========================================================
+   FEEDBACK STATES
+   ========================================================= */
+
+.column-step-input.step-correct {
+    border-color:
+        #41a46d;
+
+    background:
+        #f1fbf5;
+}
+
+
+.column-step-input.step-wrong {
+    border-color:
+        #d95c5c;
+
+    background:
+        #fff5f5;
+}
+
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+    max-width: 600px
+) {
+
+    .column-practice {
+        max-width: 100%;
+    }
+
+
+    .column-equation {
+        width: 155px;
+
+        padding:
+            16px
+            22px
+            11px;
+
+        margin-bottom: 24px;
+    }
+
+
+    .column-number {
+        font-size: 34px;
+    }
+
+
+    .column-step {
+        grid-template-columns:
+            1fr;
+
+        gap: 10px;
+
+        padding:
+            14px;
+    }
+
+
+    .column-step label {
+        text-align: center;
+    }
+
+
+    .column-step-input {
+        min-height: 52px;
+
+        font-size: 22px;
+    }
+
+}
