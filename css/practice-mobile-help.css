@@ -1,53 +1,91 @@
 /* =========================================================
    LATIHAN SISWA
-   MOBILE PRACTICE HELP V1
+   PRACTICE HELP V2
 
-   Membuat petunjuk submit lebih mudah terlihat,
-   terutama pada layar HP.
+   Petunjuk penggunaan sekarang ditempatkan
+   DI ATAS SOAL agar mudah terlihat,
+   terutama di perangkat HP.
    ========================================================= */
 
+
+/* =========================================================
+   HELP BOX
+   ========================================================= */
 
 .practice-help {
     width: min(
         100%,
-        520px
+        620px
     );
 
     margin:
-        20px
+        14px
         auto
-        0;
+        12px;
 
     padding:
-        12px
-        16px;
-
-    border-radius: 12px;
-
-    background: #f1f5f9;
+        11px
+        15px;
 
     border:
         1px solid
-        #dbe3ec;
+        #dbe5f4;
+
+    border-radius: 12px;
+
+    background: #f8fbff;
 
     color: #334155;
 
     text-align: center;
 
-    font-size: 14px;
-
-    font-weight: 600;
-
-    line-height: 1.55;
-
     position: relative;
 
-    z-index: 2;
+    z-index: 3;
 }
 
 
 /* =========================================================
-   ENTER KEY
+   MAIN TEXT
+   ========================================================= */
+
+.practice-help-main {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   SECONDARY TEXT
+   ========================================================= */
+
+.practice-help-note {
+    margin-top: 5px;
+
+    color: #64748b;
+
+    font-size: 11px;
+
+    font-weight: 500;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   ENTER BUTTON
    ========================================================= */
 
 .practice-help .enter-key {
@@ -56,15 +94,11 @@
     align-items: center;
     justify-content: center;
 
-    min-height: 28px;
-
-    margin:
-        0
-        4px;
+    min-height: 27px;
 
     padding:
-        2px
-        10px;
+        3px
+        9px;
 
     border-radius: 7px;
 
@@ -72,22 +106,13 @@
 
     color: #ffffff;
 
-    font-size: 13px;
+    white-space: nowrap;
+
+    font-size: 11px;
 
     font-weight: 800;
 
     line-height: 1;
-}
-
-
-.practice-help-separator {
-    display: inline-block;
-
-    margin:
-        0
-        5px;
-
-    color: #94a3b8;
 }
 
 
@@ -100,28 +125,72 @@
     .practice-help {
         width: 100%;
 
-        margin-top: 16px;
+        margin:
+            10px
+            auto
+            8px;
 
         padding:
-            11px
-            12px;
+            9px
+            10px;
 
         border-radius: 10px;
+    }
 
-        font-size: 13px;
 
-        line-height: 1.5;
+    .practice-help-main {
+        gap: 4px;
+
+        font-size: 12px;
+
+        line-height: 1.4;
+    }
+
+
+    .practice-help-note {
+        margin-top: 4px;
+
+        font-size: 10px;
+
+        line-height: 1.4;
     }
 
 
     .practice-help .enter-key {
-        min-height: 27px;
+        min-height: 25px;
 
         padding:
             2px
-            9px;
+            8px;
 
-        font-size: 12px;
+        font-size: 10px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .practice-help {
+        margin-top: 8px;
+
+        padding:
+            8px
+            9px;
+    }
+
+
+    .practice-help-main {
+        font-size: 11px;
+    }
+
+
+    .practice-help-note {
+        font-size: 9.5px;
     }
 
 }
@@ -131,18 +200,22 @@
    VERY SMALL PHONE
    ========================================================= */
 
-@media (max-width: 380px) {
+@media (max-width: 360px) {
 
     .practice-help {
-        font-size: 12px;
-
         padding:
-            10px;
+            7px
+            8px;
     }
 
 
-    .practice-help-separator {
-        display: none;
+    .practice-help-main {
+        font-size: 10.5px;
+    }
+
+
+    .practice-help .enter-key {
+        font-size: 9.5px;
     }
 
 }
