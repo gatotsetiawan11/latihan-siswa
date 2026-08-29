@@ -9,13 +9,21 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Monitoring Siswa - Latihan Siswa</title>
+    <title>
+        Monitoring Siswa - Latihan Siswa
+    </title>
 
     <link
         rel="stylesheet"
         href="css/admin.css"
     >
+
+    <link
+        rel="stylesheet"
+        href="css/admin-registration.css"
+    >
 </head>
+
 
 <body class="admin-page">
 
@@ -63,15 +71,15 @@
 
 
     <!-- ================================================= -->
-    <!-- CONTENT                                           -->
+    <!-- MAIN                                              -->
     <!-- ================================================= -->
 
     <main class="admin-shell">
 
 
-        <!-- ============================================= -->
-        <!-- TITLE                                         -->
-        <!-- ============================================= -->
+        <!-- ================================================= -->
+        <!-- PAGE HEADING                                      -->
+        <!-- ================================================= -->
 
         <section class="admin-page-heading">
 
@@ -86,7 +94,8 @@
                 </h1>
 
                 <p>
-                    Pantau aktivasi akun dan hasil latihan siswa.
+                    Pantau aktivasi akun, hasil latihan,
+                    dan pendaftaran siswa.
                 </p>
 
             </div>
@@ -103,27 +112,28 @@
         </section>
 
 
-        <!-- ============================================= -->
-        <!-- LOADING                                       -->
-        <!-- ============================================= -->
+        <!-- ================================================= -->
+        <!-- LOADING                                           -->
+        <!-- ================================================= -->
 
         <section
             id="adminLoading"
             class="admin-loading"
         >
 
-            <div class="admin-spinner"></div>
+            <div class="admin-spinner">
+            </div>
 
             <p>
-                Memuat data siswa...
+                Memuat data...
             </p>
 
         </section>
 
 
-        <!-- ============================================= -->
-        <!-- ERROR                                         -->
-        <!-- ============================================= -->
+        <!-- ================================================= -->
+        <!-- ERROR                                             -->
+        <!-- ================================================= -->
 
         <section
             id="adminError"
@@ -142,9 +152,9 @@
         </section>
 
 
-        <!-- ============================================= -->
-        <!-- CONTENT                                       -->
-        <!-- ============================================= -->
+        <!-- ================================================= -->
+        <!-- CONTENT                                           -->
+        <!-- ================================================= -->
 
         <div
             id="adminContent"
@@ -152,9 +162,9 @@
         >
 
 
-            <!-- ========================================= -->
-            <!-- SUMMARY                                   -->
-            <!-- ========================================= -->
+            <!-- ================================================= -->
+            <!-- SUMMARY                                           -->
+            <!-- ================================================= -->
 
             <section class="admin-summary-grid">
 
@@ -225,131 +235,226 @@
             </section>
 
 
-            <!-- ========================================= -->
-            <!-- TOOLBAR                                   -->
-            <!-- ========================================= -->
+            <!-- ================================================= -->
+            <!-- REGISTRATION                                      -->
+            <!-- ================================================= -->
 
-            <section class="admin-toolbar">
+            <section class="admin-registration-section">
 
-                <div class="admin-search-wrap">
+                <div class="admin-section-heading">
 
-                    <input
-                        id="studentSearchInput"
-                        type="search"
-                        placeholder="Cari nama siswa..."
-                        autocomplete="off"
-                    >
+                    <div>
 
-                </div>
+                        <span class="admin-eyebrow">
+                            PENDAFTARAN
+                        </span>
 
+                        <h2>
+                            Menunggu Persetujuan
+                        </h2>
 
-                <select
-                    id="activationFilter"
-                    class="admin-filter-select"
-                >
+                        <p>
+                            Siswa yang mendaftar sendiri harus
+                            disetujui sebelum akun dapat digunakan.
+                        </p>
 
-                    <option value="all">
-                        Semua Status
-                    </option>
-
-                    <option value="Sudah aktivasi">
-                        Sudah Aktivasi
-                    </option>
-
-                    <option value="Belum aktivasi">
-                        Belum Aktivasi
-                    </option>
-
-                    <option value="PIN belum aktif">
-                        PIN Belum Aktif
-                    </option>
-
-                </select>
+                    </div>
 
 
-                <div class="admin-result-counter">
+                    <div class="registration-count">
 
-                    <strong id="visibleStudentCount">
-                        0
-                    </strong>
+                        <strong id="pendingRegistrationCount">
+                            0
+                        </strong>
 
-                    siswa
+                        <span>
+                            menunggu
+                        </span>
 
-                </div>
-
-            </section>
-
-
-            <!-- ========================================= -->
-            <!-- TABLE                                     -->
-            <!-- ========================================= -->
-
-            <section class="admin-table-card">
-
-                <div class="admin-table-scroll">
-
-                    <table class="admin-student-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Nama
-                                </th>
-
-                                <th>
-                                    Status Akun
-                                </th>
-
-                                <th>
-                                    Sesi
-                                </th>
-
-                                <th>
-                                    Level Dikuasai
-                                </th>
-
-                                <th>
-                                    Akurasi
-                                </th>
-
-                                <th>
-                                    Rata-rata Respons
-                                </th>
-
-                                <th>
-                                    Terakhir Latihan
-                                </th>
-
-                                <th>
-                                    Aksi
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="studentTableBody">
-                        </tbody>
-
-                    </table>
+                    </div>
 
                 </div>
 
 
                 <div
-                    id="emptyStudents"
-                    class="admin-empty-state"
+                    id="pendingRegistrationEmpty"
+                    class="registration-empty"
                     hidden
                 >
 
-                    Tidak ada siswa yang sesuai dengan pencarian.
+                    Tidak ada pendaftaran yang menunggu persetujuan.
 
                 </div>
 
+
+                <div
+                    id="pendingRegistrationList"
+                    class="registration-list"
+                >
+                </div>
+
             </section>
+
+
+            <!-- ================================================= -->
+            <!-- STUDENT MONITORING                                -->
+            <!-- ================================================= -->
+
+            <section class="admin-monitoring-section">
+
+                <div class="admin-section-heading">
+
+                    <div>
+
+                        <span class="admin-eyebrow">
+                            MONITORING SISWA
+                        </span>
+
+                        <h2>
+                            Hasil Latihan
+                        </h2>
+
+                        <p>
+                            Pantau aktivasi akun dan perkembangan latihan.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- TOOLBAR                                       -->
+                <!-- ============================================= -->
+
+                <div class="admin-toolbar">
+
+                    <div class="admin-search-wrap">
+
+                        <input
+                            id="studentSearchInput"
+                            type="search"
+                            placeholder="Cari nama siswa..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <select
+                        id="activationFilter"
+                        class="admin-filter-select"
+                    >
+
+                        <option value="all">
+                            Semua Status
+                        </option>
+
+                        <option value="Sudah aktivasi">
+                            Sudah Aktivasi
+                        </option>
+
+                        <option value="Belum aktivasi">
+                            Belum Aktivasi
+                        </option>
+
+                        <option value="PIN belum aktif">
+                            PIN Belum Aktif
+                        </option>
+
+                        <option value="Nonaktif">
+                            Nonaktif
+                        </option>
+
+                    </select>
+
+
+                    <div class="admin-result-counter">
+
+                        <strong id="visibleStudentCount">
+                            0
+                        </strong>
+
+                        siswa
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- STUDENT TABLE                                 -->
+                <!-- ============================================= -->
+
+                <section class="admin-table-card">
+
+                    <div class="admin-table-scroll">
+
+                        <table class="admin-student-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Nama
+                                    </th>
+
+                                    <th>
+                                        Status Akun
+                                    </th>
+
+                                    <th>
+                                        Sesi
+                                    </th>
+
+                                    <th>
+                                        Level Dikuasai
+                                    </th>
+
+                                    <th>
+                                        Akurasi
+                                    </th>
+
+                                    <th>
+                                        Rata-rata Respons
+                                    </th>
+
+                                    <th>
+                                        Terakhir Latihan
+                                    </th>
+
+                                    <th>
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="studentTableBody">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                    <div
+                        id="emptyStudents"
+                        class="admin-empty-state"
+                        hidden
+                    >
+
+                        Tidak ada siswa yang sesuai.
+
+                    </div>
+
+                </section>
+
+            </section>
+
 
         </div>
 
@@ -394,8 +499,10 @@
 
 
             <p class="admin-modal-note">
+
                 Siswa akan keluar dari semua sesi dan wajib
-                membuat PIN baru saat login berikutnya.
+                mengganti PIN ketika login berikutnya.
+
             </p>
 
 
@@ -426,6 +533,155 @@
 
 
     <!-- ================================================= -->
+    <!-- APPROVE REGISTRATION MODAL                        -->
+    <!-- ================================================= -->
+
+    <div
+        id="approveRegistrationModal"
+        class="admin-modal-backdrop"
+        hidden
+    >
+
+        <section class="admin-modal">
+
+            <div class="registration-modal-icon approve">
+                ✓
+            </div>
+
+
+            <h2>
+                Setujui Pendaftaran?
+            </h2>
+
+
+            <p>
+
+                Akun
+
+                <strong id="approveRegistrationName">
+                    siswa
+                </strong>
+
+                akan diaktifkan.
+
+            </p>
+
+
+            <p class="admin-modal-note">
+
+                Setelah disetujui, siswa dapat langsung login
+                menggunakan PIN yang dibuat saat pendaftaran.
+
+            </p>
+
+
+            <div class="admin-modal-actions">
+
+                <button
+                    id="cancelApproveButton"
+                    class="admin-secondary-button"
+                    type="button"
+                >
+                    Batal
+                </button>
+
+
+                <button
+                    id="confirmApproveButton"
+                    class="registration-approve-button"
+                    type="button"
+                >
+                    Setujui
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- REJECT REGISTRATION MODAL                         -->
+    <!-- ================================================= -->
+
+    <div
+        id="rejectRegistrationModal"
+        class="admin-modal-backdrop"
+        hidden
+    >
+
+        <section class="admin-modal">
+
+            <div class="registration-modal-icon reject">
+                !
+            </div>
+
+
+            <h2>
+                Tolak Pendaftaran?
+            </h2>
+
+
+            <p>
+
+                Pendaftaran
+
+                <strong id="rejectRegistrationName">
+                    siswa
+                </strong>
+
+                akan ditolak.
+
+            </p>
+
+
+            <label class="registration-reason-field">
+
+                <span>
+                    Alasan
+                    <small>
+                        (opsional)
+                    </small>
+                </span>
+
+
+                <textarea
+                    id="rejectReason"
+                    maxlength="500"
+                    placeholder="Contoh: Data siswa belum dapat diverifikasi."
+                ></textarea>
+
+            </label>
+
+
+            <div class="admin-modal-actions">
+
+                <button
+                    id="cancelRejectButton"
+                    class="admin-secondary-button"
+                    type="button"
+                >
+                    Batal
+                </button>
+
+
+                <button
+                    id="confirmRejectButton"
+                    class="admin-danger-button"
+                    type="button"
+                >
+                    Tolak
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- ================================================= -->
     <!-- TOAST                                             -->
     <!-- ================================================= -->
 
@@ -438,13 +694,19 @@
     </div>
 
 
+    <!-- ================================================= -->
+    <!-- SUPABASE                                          -->
+    <!-- ================================================= -->
+
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     ></script>
 
+
     <script src="js/config.js"></script>
 
     <script src="js/admin.js"></script>
+
 
 </body>
 
