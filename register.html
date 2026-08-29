@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Aktivasi Akun - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/auth.css"
+    >
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-shell">
+
+        <section class="auth-card">
+
+            <div class="auth-brand">
+                <div class="auth-logo">
+                    ✕
+                </div>
+
+                <div>
+                    <h1>Latihan Siswa</h1>
+
+                    <p>
+                        Belajar dan berlatih sesuai kemampuanmu.
+                    </p>
+                </div>
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- ACTIVATION FORM                           -->
+            <!-- Untuk akun hasil import Excel             -->
+            <!-- ========================================= -->
+
+            <section
+                id="activationSection"
+                class="auth-section"
+                hidden
+            >
+
+                <div class="auth-heading">
+                    <span class="auth-badge">
+                        Aktivasi Akun
+                    </span>
+
+                    <h2>
+                        Ganti PIN Awal
+                    </h2>
+
+                    <p>
+                        Untuk keamanan akun, buat PIN baru sebelum
+                        melanjutkan latihan.
+                    </p>
+                </div>
+
+
+                <div class="identity-box">
+
+                    <div class="identity-item">
+                        <span class="identity-label">
+                            NISN
+                        </span>
+
+                        <strong
+                            id="activationNisn"
+                            class="identity-value"
+                        >
+                            -
+                        </strong>
+                    </div>
+
+                    <div
+                        id="activationNameRow"
+                        class="identity-item"
+                        hidden
+                    >
+                        <span class="identity-label">
+                            Nama
+                        </span>
+
+                        <strong
+                            id="activationName"
+                            class="identity-value"
+                        >
+                            -
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="activationForm"
+                    autocomplete="off"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="activationPin">
+                            PIN Baru
+                        </label>
+
+                        <input
+                            id="activationPin"
+                            name="activationPin"
+                            class="auth-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            placeholder="6 angka"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <p class="field-help">
+                            Gunakan 6 angka. PIN baru tidak boleh
+                            menggunakan 123456.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="activationPinConfirm">
+                            Konfirmasi PIN Baru
+                        </label>
+
+                        <input
+                            id="activationPinConfirm"
+                            name="activationPinConfirm"
+                            class="auth-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            placeholder="Ulangi PIN baru"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="activationWhatsapp">
+                            Nomor WhatsApp
+                            <span class="optional-label">
+                                Opsional
+                            </span>
+                        </label>
+
+                        <input
+                            id="activationWhatsapp"
+                            name="activationWhatsapp"
+                            class="auth-input"
+                            type="tel"
+                            inputmode="tel"
+                            maxlength="20"
+                            placeholder="Contoh: 081234567890"
+                            autocomplete="tel"
+                        >
+
+                        <p class="field-help">
+                            Digunakan untuk pemulihan akun jika
+                            Anda lupa PIN.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        id="activationMessage"
+                        class="auth-message"
+                        hidden
+                    ></div>
+
+
+                    <button
+                        id="activationButton"
+                        class="auth-primary-button"
+                        type="submit"
+                    >
+                        Simpan dan Lanjut
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- ========================================= -->
+            <!-- SELF REGISTRATION                         -->
+            <!-- Untuk NISN yang belum terdaftar           -->
+            <!-- ========================================= -->
+
+            <section
+                id="registrationSection"
+                class="auth-section"
+                hidden
+            >
+
+                <div class="auth-heading">
+
+                    <span class="auth-badge">
+                        Registrasi
+                    </span>
+
+                    <h2>
+                        Daftar Akun
+                    </h2>
+
+                    <p>
+                        Isi data berikut untuk mengajukan
+                        pendaftaran akun.
+                    </p>
+
+                </div>
+
+
+                <form
+                    id="registrationForm"
+                    autocomplete="off"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="registrationNisn">
+                            NISN
+                        </label>
+
+                        <input
+                            id="registrationNisn"
+                            name="registrationNisn"
+                            class="auth-input"
+                            type="text"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="10"
+                            placeholder="Masukkan 10 digit NISN"
+                            autocomplete="off"
+                            required
+                        >
+
+                        <p class="field-help">
+                            NISN harus terdiri dari tepat 10 angka.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="registrationName">
+                            Nama Lengkap
+                        </label>
+
+                        <input
+                            id="registrationName"
+                            name="registrationName"
+                            class="auth-input"
+                            type="text"
+                            maxlength="120"
+                            placeholder="Nama lengkap siswa"
+                            autocomplete="name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="registrationPin">
+                            Buat PIN
+                        </label>
+
+                        <input
+                            id="registrationPin"
+                            name="registrationPin"
+                            class="auth-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            placeholder="6 angka"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <p class="field-help">
+                            PIN digunakan untuk masuk ke akun.
+                            Jangan gunakan 123456.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="registrationPinConfirm">
+                            Konfirmasi PIN
+                        </label>
+
+                        <input
+                            id="registrationPinConfirm"
+                            name="registrationPinConfirm"
+                            class="auth-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            placeholder="Ulangi PIN"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="registrationWhatsapp">
+                            Nomor WhatsApp
+                            <span class="optional-label">
+                                Opsional
+                            </span>
+                        </label>
+
+                        <input
+                            id="registrationWhatsapp"
+                            name="registrationWhatsapp"
+                            class="auth-input"
+                            type="tel"
+                            inputmode="tel"
+                            maxlength="20"
+                            placeholder="Contoh: 081234567890"
+                            autocomplete="tel"
+                        >
+
+                        <p class="field-help">
+                            Digunakan untuk pemulihan akun jika
+                            Anda lupa PIN.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        id="registrationMessage"
+                        class="auth-message"
+                        hidden
+                    ></div>
+
+
+                    <button
+                        id="registrationButton"
+                        class="auth-primary-button"
+                        type="submit"
+                    >
+                        Ajukan Pendaftaran
+                    </button>
+
+                </form>
+
+
+                <div class="auth-secondary-action">
+
+                    <a href="index.html">
+                        Kembali ke halaman masuk
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ========================================= -->
+            <!-- PENDING RESULT                            -->
+            <!-- ========================================= -->
+
+            <section
+                id="pendingSection"
+                class="auth-section"
+                hidden
+            >
+
+                <div class="pending-icon">
+                    ✓
+                </div>
+
+                <div class="auth-heading pending-heading">
+
+                    <span class="auth-badge">
+                        Pendaftaran Terkirim
+                    </span>
+
+                    <h2>
+                        Menunggu Persetujuan
+                    </h2>
+
+                    <p>
+                        Permintaan pendaftaran Anda sudah diterima.
+                        Akun dapat digunakan setelah disetujui admin.
+                    </p>
+
+                </div>
+
+
+                <div class="pending-info">
+
+                    <span>
+                        NISN
+                    </span>
+
+                    <strong id="pendingNisn">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <a
+                    href="index.html"
+                    class="auth-primary-button auth-link-button"
+                >
+                    Kembali ke Halaman Masuk
+                </a>
+
+            </section>
+
+
+            <!-- ========================================= -->
+            <!-- INVALID PAGE STATE                        -->
+            <!-- ========================================= -->
+
+            <section
+                id="invalidSection"
+                class="auth-section"
+                hidden
+            >
+
+                <div class="auth-heading">
+
+                    <h2>
+                        Sesi Tidak Tersedia
+                    </h2>
+
+                    <p>
+                        Silakan kembali ke halaman masuk dan
+                        mulai kembali prosesnya.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="index.html"
+                    class="auth-primary-button auth-link-button"
+                >
+                    Kembali ke Halaman Masuk
+                </a>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/register.js"></script>
+
+</body>
+</html>
