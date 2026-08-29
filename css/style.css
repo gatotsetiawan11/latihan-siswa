@@ -2403,3 +2403,154 @@ button.subject-card:hover
     }
 
 }
+/* =========================================================
+   STAGE PROGRESSION
+========================================================= */
+
+.stage-progress {
+    margin-top: 10px;
+
+    color: var(--primary);
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+.stage-completed {
+    border-color:
+        rgba(
+            22,
+            163,
+            106,
+            0.35
+        );
+}
+
+
+.stage-completed
+.stage-number {
+    background:
+        linear-gradient(
+            135deg,
+            #16a36a,
+            #43c78e
+        );
+
+    color: white;
+}
+
+
+.stage-completed
+.stage-progress {
+    color: var(--success);
+}
+
+
+.stage-locked {
+    opacity: 0.52;
+
+    background: #f5f6f8;
+
+    cursor: not-allowed;
+
+    transform: none !important;
+
+    box-shadow: none !important;
+}
+
+
+.stage-locked:hover {
+    border-color:
+        var(--border);
+
+    transform: none;
+}
+
+
+.stage-locked
+.stage-number {
+    background: #d7dce5;
+
+    color: #8c95a4;
+}
+
+
+.stage-locked
+.stage-progress {
+    color: #8c95a4;
+}
+
+
+/* =========================================================
+   LOCKED STAGE MESSAGE
+========================================================= */
+
+.stage-locked-message {
+    grid-column: 1 / -1;
+
+    max-width: 520px;
+
+    margin: 20px auto;
+
+    padding:
+        38px
+        32px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 24px;
+
+    background: white;
+
+    box-shadow: var(--shadow-md);
+
+    text-align: center;
+}
+
+
+.stage-lock-icon {
+    width: 70px;
+
+    height: 70px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin:
+        0
+        auto
+        18px;
+
+    border-radius: 50%;
+
+    background: #f0f2f6;
+
+    font-size: 29px;
+}
+
+
+.stage-locked-message h3 {
+    margin:
+        0
+        0
+        9px;
+
+    font-size: 23px;
+}
+
+
+.stage-locked-message p {
+    margin:
+        0
+        0
+        24px;
+
+    color: var(--text-soft);
+
+    line-height: 1.6;
+}
