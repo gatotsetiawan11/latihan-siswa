@@ -29,7 +29,7 @@ const backButton =
 
 
 // ======================================================
-// URL PARAMETER
+// URL
 // ======================================================
 
 const params =
@@ -51,6 +51,22 @@ const topicCode =
 
 
 // ======================================================
+// SESSION
+// ======================================================
+
+const loginMode =
+    sessionStorage.getItem(
+        "login_mode"
+    );
+
+
+const sessionToken =
+    sessionStorage.getItem(
+        "student_session_token"
+    );
+
+
+// ======================================================
 // START
 // ======================================================
 
@@ -63,10 +79,6 @@ initialize();
 
 async function initialize() {
 
-    // ------------------------------
-    // SESSION
-    // ------------------------------
-
     const validSession =
         await checkSession();
 
@@ -77,10 +89,6 @@ async function initialize() {
 
     }
 
-
-    // ------------------------------
-    // PARAMETER
-    // ------------------------------
 
     if (
         !subjectCode ||
@@ -94,10 +102,6 @@ async function initialize() {
 
     }
 
-
-    // ------------------------------
-    // BACK BUTTON
-    // ------------------------------
 
     backButton.addEventListener(
         "click",
@@ -113,10 +117,6 @@ async function initialize() {
     );
 
 
-    // ------------------------------
-    // LOAD
-    // ------------------------------
-
     await loadStages();
 
 }
@@ -128,40 +128,31 @@ async function initialize() {
 
 async function checkSession() {
 
-    const mode =
-        sessionStorage.getItem(
-            "login_mode"
-        );
-
-
-    // Guest boleh.
-    if (mode === "guest") {
+    if (
+        loginMode === "guest"
+    ) {
 
         return true;
 
     }
 
 
-    if (mode !== "student") {
+    if (
+        loginMode !== "student"
+    ) {
 
-        goToLogin();
+        goLogin();
 
         return false;
 
     }
 
 
-    const token =
-        sessionStorage.getItem(
-            "student_session_token"
-        );
-
-
-    if (!token) {
+    if (!sessionToken) {
 
         sessionStorage.clear();
 
-        goToLogin();
+        goLogin();
 
         return false;
 
@@ -177,7 +168,8 @@ async function checkSession() {
             await window.db.rpc(
                 "get_student_session",
                 {
-                    p_token: token
+                    p_token:
+                        sessionToken
                 }
             );
 
@@ -190,7 +182,7 @@ async function checkSession() {
 
             sessionStorage.clear();
 
-            goToLogin();
+            goLogin();
 
             return false;
 
@@ -211,7 +203,7 @@ async function checkSession() {
 
         sessionStorage.clear();
 
-        goToLogin();
+        goLogin();
 
         return false;
 
@@ -228,9 +220,9 @@ async function loadStages() {
 
     try {
 
-        // ------------------------------
+        // ==================================================
         // SUBJECT
-        // ------------------------------
+        // ==================================================
 
         const {
             data: subject,
@@ -261,9 +253,9 @@ async function loadStages() {
         }
 
 
-        // ------------------------------
+        // ==================================================
         // TOPIC
-        // ------------------------------
+        // ==================================================
 
         const {
             data: topic,
@@ -298,9 +290,9 @@ async function loadStages() {
         }
 
 
-        // ------------------------------
-        // PAGE HEADER
-        // ------------------------------
+        // ==================================================
+        // HEADER
+        // ==================================================
 
         subjectName.textContent =
             subject.name.toUpperCase();
@@ -314,9 +306,9 @@ async function loadStages() {
             topic.name;
 
 
-        // ------------------------------
+        // ==================================================
         // STAGES
-        // ------------------------------
+        // ==================================================
 
         const {
             data: stages,
@@ -354,8 +346,52 @@ async function loadStages() {
         }
 
 
+        // ==================================================
+        // STUDENT PROGRESS
+        // ==================================================
+
+        let progress =
+            [];
+
+
+        if (
+            loginMode === "student"
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await window.db.rpc(
+                    "get_student_topic_progress",
+                    {
+
+                        p_token:
+                            sessionToken,
+
+                        p_topic_id:
+                            topic.id
+
+                    }
+                );
+
+
+            if (error) {
+
+                throw error;
+
+            }
+
+
+            progress =
+                data || [];
+
+        }
+
+
         renderStages(
-            stages
+            stages,
+            progress
         );
 
     }
@@ -383,7 +419,10 @@ async function loadStages() {
 // RENDER STAGES
 // ======================================================
 
-function renderStages(stages) {
+function renderStages(
+    stages,
+    progress
+) {
 
     stageList.innerHTML =
         "";
@@ -405,152 +444,121 @@ function renderStages(stages) {
     }
 
 
+    // ==================================================
+    // PROGRESS MAP
+    // ==================================================
+
+    const progressMap =
+        new Map();
+
+
+    progress.forEach(
+        item => {
+
+            progressMap.set(
+                item.stage_id,
+                item
+            );
+
+        }
+    );
+
+
+    // ==================================================
+    // STAGE LOOP
+    // ==================================================
+
     stages.forEach(
-        stage => {
+        (
+            stage,
+            index
+        ) => {
 
-            const button =
-                document.createElement(
-                    "button"
+            const currentProgress =
+                progressMap.get(
+                    stage.id
                 );
 
 
-            button.type =
-                "button";
+            const completed =
+                currentProgress
+                    ?.is_completed
+                === true;
 
 
-            button.className =
-                "learning-card";
+            let unlocked =
+                false;
 
 
-            // ------------------------------
-            // NUMBER
-            // ------------------------------
+            // ==========================================
+            // GUEST
+            // ==========================================
 
-            const number =
-                document.createElement(
-                    "div"
-                );
+            if (
+                loginMode === "guest"
+            ) {
 
+                unlocked =
+                    true;
 
-            number.className =
-                "stage-number";
-
-
-            number.textContent =
-                stage.stage_number;
+            }
 
 
-            // ------------------------------
-            // CONTENT
-            // ------------------------------
+            // ==========================================
+            // TINGKAT PERTAMA
+            // ==========================================
 
-            const content =
-                document.createElement(
-                    "div"
-                );
+            else if (
+                index === 0
+            ) {
 
+                unlocked =
+                    true;
 
-            const title =
-                document.createElement(
-                    "h3"
-                );
+            }
 
 
-            title.textContent =
-                stage.name;
+            // ==========================================
+            // TINGKAT BERIKUTNYA
+            // ==========================================
+
+            else {
+
+                const previousStage =
+                    stages[
+                        index - 1
+                    ];
 
 
-            const description =
-                document.createElement(
-                    "p"
-                );
+                const previousProgress =
+                    progressMap.get(
+                        previousStage.id
+                    );
 
 
-            description.textContent =
-                stage.description ||
-                "Mulai tingkat ini.";
+                unlocked =
+                    previousProgress
+                        ?.is_completed
+                    === true;
+
+            }
 
 
-            content.appendChild(
-                title
-            );
+            // Tingkat yang sudah selesai
+            // tetap dapat dibuka.
+            if (completed) {
+
+                unlocked =
+                    true;
+
+            }
 
 
-            content.appendChild(
-                description
-            );
-
-
-            // ------------------------------
-            // ARROW
-            // ------------------------------
-
-            const arrow =
-                document.createElement(
-                    "div"
-                );
-
-
-            arrow.className =
-                "card-arrow";
-
-
-            arrow.textContent =
-                "›";
-
-
-            // ------------------------------
-            // APPEND
-            // ------------------------------
-
-            button.appendChild(
-                number
-            );
-
-
-            button.appendChild(
-                content
-            );
-
-
-            button.appendChild(
-                arrow
-            );
-
-
-            // ------------------------------
-            // CLICK
-            // ------------------------------
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const url =
-                        "./levels.html" +
-                        "?subject=" +
-                        encodeURIComponent(
-                            subjectCode
-                        ) +
-                        "&topic=" +
-                        encodeURIComponent(
-                            topicCode
-                        ) +
-                        "&stage=" +
-                        encodeURIComponent(
-                            stage.stage_number
-                        );
-
-
-                    window.location.href =
-                        url;
-
-                }
-            );
-
-
-            stageList.appendChild(
-                button
+            createStageCard(
+                stage,
+                currentProgress,
+                unlocked,
+                completed
             );
 
         }
@@ -560,10 +568,266 @@ function renderStages(stages) {
 
 
 // ======================================================
-// NAVIGATION
+// CREATE STAGE CARD
 // ======================================================
 
-function goToLogin() {
+function createStageCard(
+    stage,
+    progress,
+    unlocked,
+    completed
+) {
+
+    const button =
+        document.createElement(
+            "button"
+        );
+
+
+    button.type =
+        "button";
+
+
+    button.className =
+        "learning-card stage-card";
+
+
+    if (completed) {
+
+        button.classList.add(
+            "stage-completed"
+        );
+
+    }
+
+
+    if (!unlocked) {
+
+        button.classList.add(
+            "stage-locked"
+        );
+
+
+        button.disabled =
+            true;
+
+    }
+
+
+    // ==================================================
+    // NUMBER
+    // ==================================================
+
+    const number =
+        document.createElement(
+            "div"
+        );
+
+
+    number.className =
+        "stage-number";
+
+
+    number.textContent =
+        stage.stage_number;
+
+
+    // ==================================================
+    // CONTENT
+    // ==================================================
+
+    const content =
+        document.createElement(
+            "div"
+        );
+
+
+    const title =
+        document.createElement(
+            "h3"
+        );
+
+
+    title.textContent =
+        stage.name;
+
+
+    const description =
+        document.createElement(
+            "p"
+        );
+
+
+    description.textContent =
+        stage.description ||
+        "Mulai tingkat ini.";
+
+
+    const progressText =
+        document.createElement(
+            "div"
+        );
+
+
+    progressText.className =
+        "stage-progress";
+
+
+    // ==================================================
+    // PROGRESS TEXT
+    // ==================================================
+
+    if (
+        loginMode === "guest"
+    ) {
+
+        progressText.textContent =
+            "Mode Guest • semua level terbuka";
+
+    }
+
+    else if (completed) {
+
+        progressText.textContent =
+            "✓ Semua level telah lulus";
+
+    }
+
+    else if (!unlocked) {
+
+        progressText.textContent =
+            "🔒 Selesaikan tingkat sebelumnya";
+
+    }
+
+    else if (
+        progress &&
+        Number(
+            progress.total_levels
+        ) > 0
+    ) {
+
+        progressText.textContent =
+            `${
+                progress.completed_levels
+            } dari ${
+                progress.total_levels
+            } level selesai`;
+
+    }
+
+    else {
+
+        progressText.textContent =
+            "Belum dimulai";
+
+    }
+
+
+    content.appendChild(
+        title
+    );
+
+
+    content.appendChild(
+        description
+    );
+
+
+    content.appendChild(
+        progressText
+    );
+
+
+    // ==================================================
+    // ARROW
+    // ==================================================
+
+    const arrow =
+        document.createElement(
+            "div"
+        );
+
+
+    arrow.className =
+        "card-arrow";
+
+
+    arrow.textContent =
+        unlocked
+            ? "›"
+            : "🔒";
+
+
+    // ==================================================
+    // APPEND
+    // ==================================================
+
+    button.appendChild(
+        number
+    );
+
+
+    button.appendChild(
+        content
+    );
+
+
+    button.appendChild(
+        arrow
+    );
+
+
+    // ==================================================
+    // CLICK
+    // ==================================================
+
+    if (unlocked) {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const url =
+                    "./levels.html" +
+
+                    "?subject=" +
+                    encodeURIComponent(
+                        subjectCode
+                    ) +
+
+                    "&topic=" +
+                    encodeURIComponent(
+                        topicCode
+                    ) +
+
+                    "&stage=" +
+                    encodeURIComponent(
+                        stage.stage_number
+                    );
+
+
+                window.location.href =
+                    url;
+
+            }
+        );
+
+    }
+
+
+    stageList.appendChild(
+        button
+    );
+
+}
+
+
+// ======================================================
+// LOGIN
+// ======================================================
+
+function goLogin() {
 
     window.location.href =
         "./index.html";
