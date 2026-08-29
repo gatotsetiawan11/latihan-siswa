@@ -1,12 +1,23 @@
 // ======================================================
-// PRACTICE ENGINE V2
+// PRACTICE ENGINE V3
 //
 // Mendukung:
-// - Tingkat 1–5 balanced multiplication
-// - Tingkat 6 random position
-// - Tingkat 7 adaptive weakness
-// - Tingkat 8 mastery
-// - freeze/resume soal ketika refresh
+//
+// 1. multiplication
+// 2. place_value_multiplication
+// 3. multi_digit_multiplication
+//
+// Tingkat 1 - 13
+//
+// Fitur:
+// - balanced random
+// - random position
+// - adaptive weakness
+// - multi digit
+// - no duplicate question
+// - timer
+// - auto submit
+// - refresh-safe question set
 // ======================================================
 
 
@@ -211,7 +222,9 @@ const sessionToken =
 
 const practiceStateKey =
     levelId
-        ? `practice_v2_${levelId}`
+
+        ? `practice_v3_${levelId}`
+
         : null;
 
 
@@ -280,10 +293,6 @@ initialize();
 
 async function initialize() {
 
-    // ==================================================
-    // SESSION
-    // ==================================================
-
     const validSession =
         await checkSession();
 
@@ -343,16 +352,8 @@ async function initialize() {
     }
 
 
-    // ==================================================
-    // EVENTS
-    // ==================================================
-
     setupEvents();
 
-
-    // ==================================================
-    // LOAD LEVEL
-    // ==================================================
 
     await loadLevel();
 
@@ -360,7 +361,7 @@ async function initialize() {
 
 
 // ======================================================
-// SETUP EVENTS
+// EVENTS
 // ======================================================
 
 function setupEvents() {
@@ -398,7 +399,7 @@ function setupEvents() {
 
 
     // ==================================================
-    // RESULT → LEVEL LIST
+    // CONTINUE
     // ==================================================
 
     continueButton.addEventListener(
@@ -414,7 +415,7 @@ function setupEvents() {
 
 
     // ==================================================
-    // ANSWER INPUT
+    // ANSWER
     // ==================================================
 
     answerInput.addEventListener(
@@ -444,9 +445,7 @@ function setupEvents() {
             event.preventDefault();
 
 
-            if (
-                answerLocked
-            ) {
+            if (answerLocked) {
 
                 return;
 
@@ -473,14 +472,10 @@ function setupEvents() {
 
 
 // ======================================================
-// CHECK SESSION
+// SESSION
 // ======================================================
 
 async function checkSession() {
-
-    // ==================================================
-    // GUEST
-    // ==================================================
 
     if (
         loginMode === "guest"
@@ -490,10 +485,6 @@ async function checkSession() {
 
     }
 
-
-    // ==================================================
-    // STUDENT
-    // ==================================================
 
     if (
         loginMode !== "student" ||
@@ -563,7 +554,7 @@ async function checkSession() {
 
 
 // ======================================================
-// CHECK LEVEL ACCESS
+// LEVEL ACCESS
 // ======================================================
 
 async function checkLevelAccess() {
@@ -621,7 +612,7 @@ async function checkLevelAccess() {
 
 
 // ======================================================
-// LOCKED MESSAGE
+// LOCKED
 // ======================================================
 
 function showLockedLevelMessage() {
@@ -630,8 +621,8 @@ function showLockedLevelMessage() {
 
         <div
             style="
-                font-size: 36px;
-                margin-bottom: 15px;
+                font-size:36px;
+                margin-bottom:15px;
             "
         >
             🔒
@@ -639,10 +630,10 @@ function showLockedLevelMessage() {
 
         <strong
             style="
-                display: block;
-                font-size: 20px;
-                margin-bottom: 8px;
-                color: #172033;
+                display:block;
+                margin-bottom:8px;
+                color:#172033;
+                font-size:20px;
             "
         >
             Level masih terkunci
@@ -650,8 +641,8 @@ function showLockedLevelMessage() {
 
         <p
             style="
-                margin: 0 0 22px;
-                line-height: 1.6;
+                margin:0 0 22px;
+                line-height:1.6;
             "
         >
             Selesaikan level sebelumnya
@@ -733,18 +724,30 @@ async function loadLevel() {
 
 
         // ==================================================
-        // ENGINE TYPE
+        // ENGINE SUPPORT
         // ==================================================
+
+        const supportedTypes = [
+
+            "multiplication",
+
+            "place_value_multiplication",
+
+            "multi_digit_multiplication"
+
+        ];
+
 
         if (
             !levelData.config ||
-            levelData.config
-                .exercise_type
-            !== "multiplication"
+            !supportedTypes.includes(
+                levelData.config
+                    .exercise_type
+            )
         ) {
 
             throw new Error(
-                "Engine latihan ini belum didukung."
+                "Jenis latihan belum didukung."
             );
 
         }
@@ -763,7 +766,7 @@ async function loadLevel() {
 
 
         // ==================================================
-        // COBA RESTORE
+        // RESTORE
         // ==================================================
 
         const savedState =
@@ -804,7 +807,7 @@ async function loadLevel() {
 
 
         // ==================================================
-        // SESSION BARU
+        // NEW SESSION
         // ==================================================
 
         questions =
@@ -819,7 +822,7 @@ async function loadLevel() {
         ) {
 
             throw new Error(
-                "Jumlah soal tidak sesuai."
+                "Jumlah soal gagal dibuat."
             );
 
         }
@@ -897,55 +900,97 @@ function showGame() {
 
 
 // ======================================================
-// PREPARE QUESTIONS
+// QUESTION DISPATCHER
 // ======================================================
 
 async function prepareQuestions() {
 
-    const config =
-        levelData.config;
-
-
-    const adaptive =
-        config.adaptive === true;
+    const type =
+        levelData.config
+            .exercise_type;
 
 
     // ==================================================
-    // ADAPTIVE
+    // BASIC MULTIPLICATION
     // ==================================================
 
     if (
-        adaptive &&
-        loginMode === "student"
+        type ===
+        "multiplication"
     ) {
 
-        const weakFacts =
-            await loadWeakFacts();
+        if (
+            levelData.config
+                .adaptive === true
+
+            &&
+
+            loginMode === "student"
+        ) {
+
+            const weakFacts =
+                await loadWeakFacts();
 
 
-        return generateAdaptiveQuestions(
+            return generateAdaptiveQuestions(
+
+                levelData,
+
+                weakFacts
+
+            );
+
+        }
+
+
+        return generateBalancedQuestions(
+
             levelData,
-            weakFacts
+
+            Number(
+                levelData.question_count
+            ),
+
+            new Set()
+
         );
 
     }
 
 
     // ==================================================
-    // NORMAL / GUEST
+    // PLACE VALUE
     // ==================================================
 
-    return generateBalancedQuestions(
+    if (
+        type ===
+        "place_value_multiplication"
+    ) {
 
-        levelData,
+        return generatePlaceValueQuestions(
+            levelData
+        );
 
-        Number(
-            levelData.question_count
-        ),
+    }
 
-        new Set()
 
-    );
+    // ==================================================
+    // MULTI DIGIT
+    // ==================================================
+
+    if (
+        type ===
+        "multi_digit_multiplication"
+    ) {
+
+        return generateMultiDigitQuestions(
+            levelData
+        );
+
+    }
+
+
+    return [];
 
 }
 
@@ -993,11 +1038,8 @@ async function loadWeakFacts() {
 
     catch (error) {
 
-        // Adaptive gagal tidak boleh
-        // membuat latihan gagal total.
-
         console.error(
-            "Weakness analysis error:",
+            "Weakness error:",
             error
         );
 
@@ -1010,7 +1052,7 @@ async function loadWeakFacts() {
 
 
 // ======================================================
-// GENERATE ADAPTIVE QUESTIONS
+// BASIC ADAPTIVE
 // ======================================================
 
 function generateAdaptiveQuestions(
@@ -1039,7 +1081,7 @@ function generateAdaptiveQuestions(
 
                 Number(
                     config
-                    .adaptive_weak_ratio
+                        .adaptive_weak_ratio
                     ?? 0.7
                 )
 
@@ -1063,39 +1105,28 @@ function generateAdaptiveQuestions(
         new Set();
 
 
-    // ==================================================
-    // AMBIL FAKTA LEMAH
-    // ==================================================
-
     const candidates =
         Array.isArray(
             weakFacts
         )
-            ? [...weakFacts]
+            ? weakFacts.slice(
+                0,
+                Math.max(
+                    weakTarget * 2,
+                    10
+                )
+            )
             : [];
 
 
-    // Jangan sepenuhnya urut agar sesi
-    // tidak selalu identik.
-
-    const topCandidates =
-        candidates.slice(
-            0,
-            Math.max(
-                weakTarget * 2,
-                10
-            )
-        );
-
-
     shuffleArray(
-        topCandidates
+        candidates
     );
 
 
     for (
         const fact
-        of topCandidates
+        of candidates
     ) {
 
         if (
@@ -1178,10 +1209,6 @@ function generateAdaptiveQuestions(
     }
 
 
-    // ==================================================
-    // ISI SISANYA DENGAN BALANCED RANDOM
-    // ==================================================
-
     const remaining =
         total -
         result.length;
@@ -1203,71 +1230,12 @@ function generateAdaptiveQuestions(
             );
 
 
-        additional.forEach(
-            question => {
-
-                usedKeys.add(
-                    canonicalKey(
-                        question.a,
-                        question.b
-                    )
-                );
-
-
-                result.push(
-                    question
-                );
-
-            }
+        result.push(
+            ...additional
         );
 
     }
 
-
-    // ==================================================
-    // FALLBACK JIKA DATA WEAK BELUM CUKUP
-    // ==================================================
-
-    if (
-        result.length <
-        total
-    ) {
-
-        const additional =
-            generateBalancedQuestions(
-
-                level,
-
-                total -
-                result.length,
-
-                usedKeys
-
-            );
-
-
-        additional.forEach(
-            question => {
-
-                usedKeys.add(
-                    canonicalKey(
-                        question.a,
-                        question.b
-                    )
-                );
-
-
-                result.push(
-                    question
-                );
-
-            }
-        );
-
-    }
-
-
-    // Campur soal lemah dan soal umum.
 
     shuffleArray(
         result
@@ -1283,7 +1251,7 @@ function generateAdaptiveQuestions(
 
 
 // ======================================================
-// BALANCED GENERATOR
+// BASIC BALANCED
 // ======================================================
 
 function generateBalancedQuestions(
@@ -1320,10 +1288,6 @@ function generateBalancedQuestions(
         new Map();
 
 
-    // ==================================================
-    // BUAT POOL SETIAP MULTIPLIER
-    // ==================================================
-
     multipliers.forEach(
         multiplier => {
 
@@ -1339,11 +1303,9 @@ function generateBalancedQuestions(
 
                 pool.push({
 
-                    multiplier:
-                        multiplier,
+                    multiplier,
 
-                    operand:
-                        operand
+                    operand
 
                 });
 
@@ -1375,10 +1337,6 @@ function generateBalancedQuestions(
         );
 
 
-    // ==================================================
-    // ROUND ROBIN MULTIPLIERS
-    // ==================================================
-
     let safety =
         0;
 
@@ -1388,7 +1346,7 @@ function generateBalancedQuestions(
         targetCount
     ) {
 
-        let addedSomething =
+        let added =
             false;
 
 
@@ -1455,13 +1413,6 @@ function generateBalancedQuestions(
                     );
 
 
-                if (!question) {
-
-                    continue;
-
-                }
-
-
                 used.add(
                     key
                 );
@@ -1472,7 +1423,7 @@ function generateBalancedQuestions(
                 );
 
 
-                addedSomething =
+                added =
                     true;
 
 
@@ -1487,7 +1438,7 @@ function generateBalancedQuestions(
 
 
         if (
-            !addedSomething ||
+            !added ||
             safety > 100
         ) {
 
@@ -1509,7 +1460,373 @@ function generateBalancedQuestions(
 
 
 // ======================================================
-// BASE QUESTION
+// PLACE VALUE GENERATOR
+//
+// contoh:
+// 30 × 8
+// 7 × 400
+// ======================================================
+
+function generatePlaceValueQuestions(
+    level
+) {
+
+    const config =
+        level.config;
+
+
+    const values =
+        Array.isArray(
+            config.first_factor_values
+        )
+            ? config.first_factor_values
+                .map(
+                    Number
+                )
+                .filter(
+                    Number.isFinite
+                )
+            : [];
+
+
+    const secondMin =
+        Number(
+            config.second_factor_min
+            ?? 2
+        );
+
+
+    const secondMax =
+        Number(
+            config.second_factor_max
+            ?? 9
+        );
+
+
+    const target =
+        Number(
+            level.question_count
+        );
+
+
+    const candidates =
+        [];
+
+
+    for (
+        const first
+        of values
+    ) {
+
+        for (
+            let second =
+                secondMin;
+
+            second <=
+                secondMax;
+
+            second++
+        ) {
+
+            candidates.push({
+
+                first,
+
+                second
+
+            });
+
+        }
+
+    }
+
+
+    shuffleArray(
+        candidates
+    );
+
+
+    const result =
+        [];
+
+
+    const used =
+        new Set();
+
+
+    for (
+        const candidate
+        of candidates
+    ) {
+
+        if (
+            result.length >=
+            target
+        ) {
+
+            break;
+
+        }
+
+
+        const baseKey =
+            `${candidate.first}x${candidate.second}`;
+
+
+        if (
+            used.has(
+                baseKey
+            )
+        ) {
+
+            continue;
+
+        }
+
+
+        used.add(
+            baseKey
+        );
+
+
+        let a =
+            candidate.first;
+
+
+        let b =
+            candidate.second;
+
+
+        if (
+            config.random_position
+            === true
+
+            &&
+
+            Math.random() < 0.5
+        ) {
+
+            [
+                a,
+                b
+            ] =
+            [
+                b,
+                a
+            ];
+
+        }
+
+
+        result.push({
+
+            a,
+
+            b,
+
+            answer:
+                a * b
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+// ======================================================
+// MULTI DIGIT GENERATOR
+// ======================================================
+
+function generateMultiDigitQuestions(
+    level
+) {
+
+    const config =
+        level.config;
+
+
+    const minA =
+        Number(
+            config.min_a
+        );
+
+
+    const maxA =
+        Number(
+            config.max_a
+        );
+
+
+    const minB =
+        Number(
+            config.min_b
+        );
+
+
+    const maxB =
+        Number(
+            config.max_b
+        );
+
+
+    const target =
+        Number(
+            level.question_count
+        );
+
+
+    if (
+        !Number.isInteger(minA) ||
+        !Number.isInteger(maxA) ||
+        !Number.isInteger(minB) ||
+        !Number.isInteger(maxB)
+    ) {
+
+        return [];
+
+    }
+
+
+    const result =
+        [];
+
+
+    const used =
+        new Set();
+
+
+    let safety =
+        0;
+
+
+    while (
+        result.length <
+        target
+
+        &&
+
+        safety <
+        5000
+    ) {
+
+        safety++;
+
+
+        let a =
+            randomInteger(
+                minA,
+                maxA
+            );
+
+
+        let b =
+            randomInteger(
+                minB,
+                maxB
+            );
+
+
+        // ==================================================
+        // OPTIONAL RANDOM POSITION
+        // ==================================================
+
+        if (
+            config.random_position
+            === true
+
+            &&
+
+            Math.random() <
+            0.5
+        ) {
+
+            [
+                a,
+                b
+            ] =
+            [
+                b,
+                a
+            ];
+
+        }
+
+
+        const key =
+            `${a}x${b}`;
+
+
+        if (
+            used.has(
+                key
+            )
+        ) {
+
+            continue;
+
+        }
+
+
+        used.add(
+            key
+        );
+
+
+        result.push({
+
+            a,
+
+            b,
+
+            answer:
+                a * b
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+// ======================================================
+// RANDOM INTEGER
+// ======================================================
+
+function randomInteger(
+    min,
+    max
+) {
+
+    return Math.floor(
+
+        Math.random()
+
+        *
+
+        (
+            max -
+            min +
+            1
+        )
+
+    )
+
+    +
+
+    min;
+
+}
+
+
+// ======================================================
+// BASIC QUESTION
 // ======================================================
 
 function makeBaseQuestion(
@@ -1530,41 +1847,33 @@ function makeBaseQuestion(
         );
 
 
-    // ==================================================
-    // RANDOM POSITION
-    // ==================================================
-
     if (
         config.random_position
         === true
+
+        &&
+
+        Math.random() <
+        0.5
     ) {
 
-        if (
-            Math.random()
-            < 0.5
-        ) {
-
-            [
-                a,
-                b
-            ] =
-            [
-                b,
-                a
-            ];
-
-        }
+        [
+            a,
+            b
+        ] =
+        [
+            b,
+            a
+        ];
 
     }
 
 
     return {
 
-        a:
-            a,
+        a,
 
-        b:
-            b,
+        b,
 
         answer:
             a * b
@@ -1575,7 +1884,7 @@ function makeBaseQuestion(
 
 
 // ======================================================
-// QUESTION FROM WEAK FACT
+// WEAK FACT QUESTION
 // ======================================================
 
 function makeQuestionFromFact(
@@ -1602,13 +1911,6 @@ function makeQuestionFromFact(
         );
 
 
-    // ==================================================
-    // POSISI NORMAL
-    //
-    // Jika random_position false,
-    // multiplier harus di depan.
-    // ==================================================
-
     if (
         config.random_position
         !== true
@@ -1620,7 +1922,7 @@ function makeQuestionFromFact(
             )
         ) {
 
-            // sudah benar
+            // posisi sudah benar
 
         }
 
@@ -1649,39 +1951,28 @@ function makeQuestionFromFact(
 
     }
 
+    else if (
+        Math.random() <
+        0.5
+    ) {
 
-    // ==================================================
-    // RANDOM POSITION
-    // ==================================================
-
-    else {
-
-        if (
-            Math.random()
-            < 0.5
-        ) {
-
-            [
-                a,
-                b
-            ] =
-            [
-                b,
-                a
-            ];
-
-        }
+        [
+            a,
+            b
+        ] =
+        [
+            b,
+            a
+        ];
 
     }
 
 
     return {
 
-        a:
-            a,
+        a,
 
-        b:
-            b,
+        b,
 
         answer:
             a * b
@@ -1692,7 +1983,7 @@ function makeQuestionFromFact(
 
 
 // ======================================================
-// FACT ALLOWED
+// FACT VALIDATION
 // ======================================================
 
 function factAllowedByConfig(
@@ -1743,30 +2034,6 @@ function factAllowedByConfig(
         b <= max;
 
 
-    if (
-        config.random_position
-        === true
-    ) {
-
-        return (
-
-            (
-                aMultiplier &&
-                bRange
-            )
-
-            ||
-
-            (
-                bMultiplier &&
-                aRange
-            )
-
-        );
-
-    }
-
-
     return (
 
         aMultiplier &&
@@ -1800,23 +2067,17 @@ function getMultipliers(
         )
     ) {
 
-        return [
-            1,
-            2,
-            5
-        ];
+        return [];
 
     }
 
 
-    return config
-        .multipliers
+    return config.multipliers
+
         .map(
-            value =>
-                Number(
-                    value
-                )
+            Number
         )
+
         .filter(
             value =>
                 Number.isInteger(
@@ -1829,9 +2090,6 @@ function getMultipliers(
 
 // ======================================================
 // CANONICAL KEY
-//
-// 2 × 7 dan 7 × 2
-// memiliki key yang sama.
 // ======================================================
 
 function canonicalKey(
@@ -1879,7 +2137,9 @@ function shuffleArray(
             Math.floor(
 
                 Math.random()
+
                 *
+
                 (
                     i + 1
                 )
@@ -1953,12 +2213,20 @@ function startQuestion(
 
 
     // ==================================================
-    // QUESTION
+    // TEXT
     // ==================================================
 
     questionText.textContent =
-        `${question.a} × ${question.b}`;
+        `${formatNumber(
+            question.a
+        )} × ${formatNumber(
+            question.b
+        )}`;
 
+
+    // ==================================================
+    // PROGRESS
+    // ==================================================
 
     questionProgress.textContent =
         `${
@@ -1972,10 +2240,14 @@ function startQuestion(
         `${
             (
                 currentQuestionIndex
+
                 /
+
                 questions.length
             )
+
             *
+
             100
         }%`;
 
@@ -1987,7 +2259,7 @@ function startQuestion(
 
 
     // ==================================================
-    // RESUME SETELAH REFRESH
+    // RESTORE CURRENT QUESTION
     // ==================================================
 
     if (
@@ -2016,20 +2288,24 @@ function startQuestion(
             );
 
 
+        // Jika refresh terjadi saat feedback
+        // setelah jawaban sebelumnya sudah disimpan,
+        // timer lama tidak boleh diwariskan.
+
         if (
             !questionStartedAt ||
             !questionDeadline
         ) {
+
+            answerInput.value =
+                "";
+
 
             createNewQuestionTimer();
 
         }
 
     }
-
-    // ==================================================
-    // SOAL BARU
-    // ==================================================
 
     else {
 
@@ -2043,7 +2319,7 @@ function startQuestion(
 
 
     // ==================================================
-    // TIMER UI
+    // TIMER
     // ==================================================
 
     updateTimer();
@@ -2072,10 +2348,6 @@ function startQuestion(
     }
 
 
-    // ==================================================
-    // SAVE
-    // ==================================================
-
     savePracticeState();
 
 
@@ -2093,6 +2365,23 @@ function startQuestion(
 
         },
         30
+    );
+
+}
+
+
+// ======================================================
+// FORMAT NUMBER
+// ======================================================
+
+function formatNumber(
+    value
+) {
+
+    return Number(
+        value
+    ).toLocaleString(
+        "id-ID"
     );
 
 }
@@ -2117,7 +2406,9 @@ function createNewQuestionTimer() {
 
     questionDeadline =
         questionStartedAt
+
         +
+
         (
             duration *
             1000
@@ -2152,9 +2443,12 @@ function updateTimer() {
 
     const remainingMs =
         Math.max(
+
             0,
+
             questionDeadline -
             now
+
         );
 
 
@@ -2174,14 +2468,7 @@ function updateTimer() {
             );
 
 
-    // ==================================================
-    // WARNING
-    // ==================================================
-
-    if (
-
-        remainingSeconds <=
-
+    const warningLimit =
         Number(
             levelData
                 .time_limit_seconds
@@ -2189,8 +2476,12 @@ function updateTimer() {
 
         *
 
-        0.30
+        0.30;
 
+
+    if (
+        remainingSeconds <=
+        warningLimit
     ) {
 
         timerCircle.classList.add(
@@ -2208,12 +2499,9 @@ function updateTimer() {
     }
 
 
-    // ==================================================
-    // TIMEOUT
-    // ==================================================
-
     if (
-        remainingMs <= 0
+        remainingMs <=
+        0
     ) {
 
         handleTimerEnd();
@@ -2239,7 +2527,7 @@ function handleAnswerInput() {
 
 
     // ==================================================
-    // NUMERIC ONLY
+    // ANGKA SAJA
     // ==================================================
 
     answerInput.value =
@@ -2292,37 +2580,13 @@ function handleAnswerInput() {
 
 
     // ==================================================
-    // BENAR:
-    // proses cepat.
+    // JAWABAN TEPAT:
+    // proses cukup cepat.
     // ==================================================
 
     if (
         value ===
         correctText
-    ) {
-
-        delayedSubmit =
-            setTimeout(
-                submitAnswer,
-                90
-            );
-
-
-        return;
-
-    }
-
-
-    // ==================================================
-    // SALAH:
-    //
-    // Jangan langsung submit hanya
-    // karena anak baru mengetik digit pertama.
-    // ==================================================
-
-    if (
-        value.length >
-        correctText.length
     ) {
 
         delayedSubmit =
@@ -2337,15 +2601,57 @@ function handleAnswerInput() {
     }
 
 
+    // ==================================================
+    // TERLALU BANYAK DIGIT:
+    // sudah pasti salah.
+    // ==================================================
+
     if (
-        value.length ===
+        value.length >
         correctText.length
     ) {
 
         delayedSubmit =
             setTimeout(
                 submitAnswer,
-                450
+                180
+            );
+
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // JUMLAH DIGIT SUDAH SAMA
+    //
+    // Untuk jawaban multi-digit beri jeda
+    // lebih panjang agar siswa tidak dianggap
+    // selesai hanya karena berhenti sesaat.
+    // ==================================================
+
+    if (
+        value.length ===
+        correctText.length
+    ) {
+
+        const delay =
+            correctText.length >= 4
+
+                ? 900
+
+                : correctText.length === 3
+
+                    ? 750
+
+                    : 600;
+
+
+        delayedSubmit =
+            setTimeout(
+                submitAnswer,
+                delay
             );
 
     }
@@ -2376,9 +2682,8 @@ function handleTimerEnd() {
             .trim();
 
 
-    // ==================================================
-    // ADA INPUT → TETAP DINILAI
-    // ==================================================
+    // Ada jawaban:
+    // tetap dinilai.
 
     if (
         value !== ""
@@ -2390,10 +2695,6 @@ function handleTimerEnd() {
 
     }
 
-
-    // ==================================================
-    // KOSONG → TIMEOUT
-    // ==================================================
 
     submitTimeout();
 
@@ -2472,10 +2773,6 @@ function submitAnswer() {
         question.answer;
 
 
-    // ==================================================
-    // RESULT
-    // ==================================================
-
     if (correct) {
 
         correctCount++;
@@ -2496,7 +2793,9 @@ function submitAnswer() {
 
 
         answerFeedback.textContent =
-            `✕ Jawaban yang benar ${question.answer}`;
+            `✕ Jawaban yang benar ${formatNumber(
+                question.answer
+            )}`;
 
 
         answerFeedback.className =
@@ -2504,10 +2803,6 @@ function submitAnswer() {
 
     }
 
-
-    // ==================================================
-    // STORE
-    // ==================================================
 
     answers.push({
 
@@ -2532,6 +2827,27 @@ function submitAnswer() {
         );
 
 
+    // ==================================================
+    // PENTING:
+    //
+    // Jawaban sudah selesai.
+    // Jangan simpan deadline soal lama sebagai deadline
+    // soal berikutnya apabila browser direfresh
+    // saat feedback sedang tampil.
+    // ==================================================
+
+    questionStartedAt =
+        0;
+
+
+    questionDeadline =
+        0;
+
+
+    answerInput.value =
+        "";
+
+
     savePracticeState();
 
 
@@ -2544,7 +2860,7 @@ function submitAnswer() {
 
 
 // ======================================================
-// SUBMIT TIMEOUT
+// TIMEOUT
 // ======================================================
 
 function submitTimeout() {
@@ -2620,11 +2936,25 @@ function submitTimeout() {
 
 
     answerFeedback.textContent =
-        `Waktu habis • Jawaban ${question.answer}`;
+        `Waktu habis • Jawaban ${formatNumber(
+            question.answer
+        )}`;
 
 
     answerFeedback.className =
         "answer-feedback feedback-timeout";
+
+
+    questionStartedAt =
+        0;
+
+
+    questionDeadline =
+        0;
+
+
+    answerInput.value =
+        "";
 
 
     savePracticeState();
@@ -2644,18 +2974,8 @@ function submitTimeout() {
 
 function nextQuestion() {
 
-    currentQuestionIndex++;
-
-
-    questionStartedAt =
-        0;
-
-
-    questionDeadline =
-        0;
-
-
-    savePracticeState();
+    currentQuestionIndex =
+        answers.length;
 
 
     if (
@@ -2670,6 +2990,9 @@ function nextQuestion() {
     }
 
 
+    savePracticeState();
+
+
     startQuestion(
         false
     );
@@ -2678,7 +3001,7 @@ function nextQuestion() {
 
 
 // ======================================================
-// FINISH PRACTICE
+// FINISH
 // ======================================================
 
 async function finishPractice() {
@@ -2816,10 +3139,9 @@ async function finishPractice() {
                     line-height:1.6;
                 "
             >
-                Data latihan masih disimpan
+                Data latihan masih tersimpan
                 sementara di browser.
-                Muat ulang halaman untuk mencoba
-                mengirimkannya kembali.
+                Muat ulang halaman untuk mencoba kembali.
             </p>
 
             <button
@@ -2880,7 +3202,11 @@ function calculateGuestResult() {
 
             .filter(
                 answer =>
-                    answer.user_answer
+                    String(
+                        answer.user_answer
+                        ?? ""
+                    )
+                    .trim()
                     !== ""
             )
 
@@ -2975,7 +3301,7 @@ function calculateGuestResult() {
 
 
 // ======================================================
-// SHOW RESULT
+// RESULT
 // ======================================================
 
 function showResult(
@@ -3008,10 +3334,6 @@ function showResult(
         );
 
 
-    // ==================================================
-    // PASS
-    // ==================================================
-
     if (passed) {
 
         resultIcon.textContent =
@@ -3026,27 +3348,15 @@ function showResult(
             "Level Lulus!";
 
 
-        if (
+        resultMessage.textContent =
+
             loginMode === "student"
-        ) {
 
-            resultMessage.textContent =
-                "Level berikutnya sekarang dapat dibuka.";
+                ? "Level berikutnya sekarang dapat dibuka."
 
-        }
-
-        else {
-
-            resultMessage.textContent =
-                "Hasil Guest tidak disimpan.";
-
-        }
+                : "Hasil Guest tidak disimpan.";
 
     }
-
-    // ==================================================
-    // FAIL
-    // ==================================================
 
     else {
 
@@ -3067,10 +3377,6 @@ function showResult(
 
     }
 
-
-    // ==================================================
-    // STATS
-    // ==================================================
 
     resultAccuracy.textContent =
         `${accuracy.toFixed(0)}%`;
@@ -3114,7 +3420,9 @@ function showResult(
                         result
                             .average_response_time_ms
                     )
+
                     /
+
                     1000
                 )
                 .toFixed(1)
@@ -3129,10 +3437,6 @@ function showResult(
 
     }
 
-
-    // ==================================================
-    // BEST SCORE
-    // ==================================================
 
     if (
         loginMode === "student"
@@ -3177,7 +3481,7 @@ function showResult(
 
 
 // ======================================================
-// SAVE PRACTICE STATE
+// SAVE STATE
 // ======================================================
 
 function savePracticeState() {
@@ -3197,10 +3501,16 @@ function savePracticeState() {
         const state = {
 
             version:
-                2,
+                3,
 
             level_id:
                 levelId,
+
+            exercise_type:
+                levelData
+                    ?.config
+                    ?.exercise_type
+                || null,
 
             questions:
                 questions,
@@ -3209,7 +3519,7 @@ function savePracticeState() {
                 answers,
 
             current_question_index:
-                currentQuestionIndex,
+                answers.length,
 
             current_input:
                 answerInput
@@ -3240,7 +3550,7 @@ function savePracticeState() {
     catch (error) {
 
         console.error(
-            "Save practice state error:",
+            "Save state error:",
             error
         );
 
@@ -3250,12 +3560,14 @@ function savePracticeState() {
 
 
 // ======================================================
-// LOAD PRACTICE STATE
+// LOAD STATE
 // ======================================================
 
 function loadSavedPracticeState() {
 
-    if (!practiceStateKey) {
+    if (
+        !practiceStateKey
+    ) {
 
         return null;
 
@@ -3284,7 +3596,7 @@ function loadSavedPracticeState() {
 
 
         if (
-            state.version !== 2 ||
+            state.version !== 3 ||
             state.level_id !== levelId ||
             !Array.isArray(
                 state.questions
@@ -3316,6 +3628,20 @@ function loadSavedPracticeState() {
         }
 
 
+        if (
+            state.exercise_type !==
+            levelData
+                .config
+                .exercise_type
+        ) {
+
+            clearSavedPracticeState();
+
+            return null;
+
+        }
+
+
         return state;
 
     }
@@ -3323,7 +3649,7 @@ function loadSavedPracticeState() {
     catch (error) {
 
         console.error(
-            "Restore state error:",
+            "Load state error:",
             error
         );
 
@@ -3339,7 +3665,7 @@ function loadSavedPracticeState() {
 
 
 // ======================================================
-// RESTORE
+// RESTORE STATE
 // ======================================================
 
 function restoreSavedState(
@@ -3353,10 +3679,6 @@ function restoreSavedState(
     answers =
         state.answers;
 
-
-    // Jangan percaya index browser secara buta.
-    // Jumlah jawaban yang sudah tersimpan
-    // menjadi referensi utama.
 
     currentQuestionIndex =
         Math.min(
@@ -3373,14 +3695,16 @@ function restoreSavedState(
 
     questionStartedAt =
         Number(
-            state.question_started_at
+            state
+                .question_started_at
             || 0
         );
 
 
     questionDeadline =
         Number(
-            state.question_deadline_at
+            state
+                .question_deadline_at
             || 0
         );
 
@@ -3388,7 +3712,7 @@ function restoreSavedState(
 
 
 // ======================================================
-// RECALCULATE COUNTS
+// LOCAL COUNTS
 // ======================================================
 
 function recalculateLocalCounts() {
@@ -3427,11 +3751,13 @@ function recalculateLocalCounts() {
             }
 
 
-            const correct =
+            const correctAnswer =
                 Number(
                     answer.a
                 )
+
                 *
+
                 Number(
                     answer.b
                 );
@@ -3439,7 +3765,8 @@ function recalculateLocalCounts() {
 
             if (
                 Number(value)
-                === correct
+                ===
+                correctAnswer
             ) {
 
                 correctCount++;
@@ -3459,12 +3786,14 @@ function recalculateLocalCounts() {
 
 
 // ======================================================
-// CLEAR SAVED STATE
+// CLEAR STATE
 // ======================================================
 
 function clearSavedPracticeState() {
 
-    if (!practiceStateKey) {
+    if (
+        !practiceStateKey
+    ) {
 
         return;
 
@@ -3479,7 +3808,7 @@ function clearSavedPracticeState() {
 
 
 // ======================================================
-// CLEAR TIMER
+// TIMER CLEANUP
 // ======================================================
 
 function clearTimer() {
@@ -3571,9 +3900,6 @@ function goLogin() {
 
 // ======================================================
 // REFRESH / CLOSE
-//
-// Jangan hapus state.
-// Simpan agar set soal tidak berubah.
 // ======================================================
 
 window.addEventListener(
