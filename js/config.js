@@ -1,5 +1,5 @@
 const SUPABASE_URL =
-    "https://rvstyakujwbthjkadiwk.supabase.co/rest/v1/";
+    "https://rvstyakujwbthjkadiwk.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_HR6BBVA64HvmRvDaq68RJQ_ma2VgEW3";
