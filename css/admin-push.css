@@ -1,32 +1,70 @@
 /* =========================================================
    LATIHAN SISWA
-   ADMIN WEB PUSH UI V1
+   ADMIN WEB PUSH UI V2
+   MOBILE CLICK FIX
+   ========================================================= */
+
+
+/* =========================================================
+   PENTING:
+   Loading dashboard tidak boleh menutup tombol Web Push.
+   ========================================================= */
+
+#adminLoading {
+    pointer-events: none !important;
+}
+
+
+/* =========================================================
+   PUSH CARD
    ========================================================= */
 
 .admin-push-card {
+    position: relative;
+
+    z-index: 50;
+
+    width: 100%;
+
     margin-top: 22px;
+
     padding: 18px;
 
     display: flex;
+
     align-items: center;
     justify-content: space-between;
 
     gap: 20px;
 
     border: 1px solid #dfe7f2;
+
     border-radius: 16px;
 
     background: #ffffff;
+
+    pointer-events: auto !important;
+
+    isolation: isolate;
 }
+
+
+/* =========================================================
+   INFO
+   ========================================================= */
 
 .admin-push-info {
     min-width: 0;
 
     display: flex;
+
     align-items: center;
 
     gap: 14px;
+
+    pointer-events: none;
 }
+
 
 .admin-push-icon {
     width: 46px;
@@ -35,6 +73,7 @@
     flex: 0 0 auto;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -45,6 +84,12 @@
     font-size: 21px;
 }
 
+
+.admin-push-text {
+    min-width: 0;
+}
+
+
 .admin-push-text h3 {
     margin: 0 0 5px;
 
@@ -53,14 +98,17 @@
     font-size: 15px;
 }
 
+
 .admin-push-text p {
     margin: 0;
 
     color: #64748b;
 
     font-size: 11px;
+
     line-height: 1.55;
 }
+
 
 .admin-push-device-count {
     margin-top: 5px !important;
@@ -70,29 +118,69 @@
     font-weight: 700;
 }
 
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
 .admin-push-actions {
+    position: relative;
+
+    z-index: 60;
+
     flex: 0 0 auto;
 
     display: flex;
 
     gap: 8px;
+
+    pointer-events: auto !important;
 }
+
+
+/* =========================================================
+   BUTTON
+   ========================================================= */
 
 .admin-push-enable,
 .admin-push-disable {
-    min-height: 38px;
+    position: relative;
 
-    padding: 0 14px;
+    z-index: 70;
+
+    min-height: 42px;
+
+    padding:
+        0
+        16px;
 
     border-radius: 9px;
 
     font-family: inherit;
 
     font-size: 11px;
+
     font-weight: 750;
 
     cursor: pointer;
+
+    pointer-events: auto !important;
+
+    touch-action: manipulation;
+
+    -webkit-tap-highlight-color:
+        rgba(
+            37,
+            99,
+            235,
+            0.12
+        );
+
+    user-select: none;
+
+    -webkit-user-select: none;
 }
+
 
 .admin-push-enable {
     border: 0;
@@ -102,6 +190,7 @@
     color: #ffffff;
 }
 
+
 .admin-push-disable {
     border: 1px solid #d8dee8;
 
@@ -110,12 +199,40 @@
     color: #475569;
 }
 
+
+/* =========================================================
+   PRESSED
+   ========================================================= */
+
+.admin-push-enable:active {
+    transform: scale(0.98);
+
+    background: #1d4ed8;
+}
+
+
+.admin-push-disable:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================================================
+   DISABLED
+   ========================================================= */
+
 .admin-push-enable:disabled,
 .admin-push-disable:disabled {
     opacity: 0.55;
 
     cursor: not-allowed;
+
+    pointer-events: none;
 }
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
 
 .admin-push-card.is-active {
     border-color: #bbf7d0;
@@ -123,9 +240,16 @@
     background: #f8fff9;
 }
 
-.admin-push-card.is-active .admin-push-icon {
+
+.admin-push-card.is-active
+.admin-push-icon {
     background: #dcfce7;
 }
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
 
 .admin-push-card.is-error {
     border-color: #fecaca;
@@ -133,31 +257,102 @@
     background: #fffafa;
 }
 
-.admin-push-card.is-error .admin-push-icon {
+
+.admin-push-card.is-error
+.admin-push-icon {
     background: #fee2e2;
 }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 700px) {
 
     .admin-push-card {
+        position: relative;
+
+        z-index: 100;
+
         align-items: stretch;
 
         flex-direction: column;
 
         padding: 15px;
+
+        gap: 14px;
     }
+
 
     .admin-push-info {
         align-items: flex-start;
     }
 
+
     .admin-push-actions {
+        position: relative;
+
+        z-index: 110;
+
         width: 100%;
     }
 
+
     .admin-push-enable,
     .admin-push-disable {
+        position: relative;
+
+        z-index: 120;
+
+        width: 100%;
+
+        min-height: 46px;
+
         flex: 1;
+
+        font-size: 12px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .admin-push-card {
+        margin-top: 16px;
+
+        padding: 13px;
+    }
+
+
+    .admin-push-icon {
+        width: 40px;
+        height: 40px;
+
+        font-size: 18px;
+    }
+
+
+    .admin-push-text h3 {
+        font-size: 13px;
+    }
+
+
+    .admin-push-text p {
+        font-size: 10px;
+    }
+
+
+    .admin-push-enable,
+    .admin-push-disable {
+        min-height: 48px;
+
+        font-size: 12px;
     }
 
 }
