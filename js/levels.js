@@ -39,16 +39,22 @@ const params =
 
 
 const subjectCode =
-    params.get("subject");
+    params.get(
+        "subject"
+    );
 
 
 const topicCode =
-    params.get("topic");
+    params.get(
+        "topic"
+    );
 
 
 const stageNumber =
     Number(
-        params.get("stage")
+        params.get(
+            "stage"
+        )
     );
 
 
@@ -95,7 +101,9 @@ async function initialize() {
     if (
         !subjectCode ||
         !topicCode ||
-        !Number.isInteger(stageNumber) ||
+        !Number.isInteger(
+            stageNumber
+        ) ||
         stageNumber <= 0
     ) {
 
@@ -109,20 +117,7 @@ async function initialize() {
 
     backButton.addEventListener(
         "click",
-        () => {
-
-            window.location.href =
-                "./stages.html" +
-                "?subject=" +
-                encodeURIComponent(
-                    subjectCode
-                ) +
-                "&topic=" +
-                encodeURIComponent(
-                    topicCode
-                );
-
-        }
+        goBack
     );
 
 
@@ -137,14 +132,18 @@ async function initialize() {
 
 async function checkSession() {
 
-    if (loginMode === "guest") {
+    if (
+        loginMode === "guest"
+    ) {
 
         return true;
 
     }
 
 
-    if (loginMode !== "student") {
+    if (
+        loginMode !== "student"
+    ) {
 
         goLogin();
 
@@ -308,7 +307,8 @@ async function loadLevels() {
                 .select(`
                     id,
                     stage_number,
-                    name
+                    name,
+                    sort_order
                 `)
                 .eq(
                     "topic_id",
@@ -332,10 +332,6 @@ async function loadLevels() {
         }
 
 
-        // ==================================================
-        // HEADER
-        // ==================================================
-
         topicName.textContent =
             topic.name.toUpperCase();
 
@@ -349,7 +345,7 @@ async function loadLevels() {
 
 
         // ==================================================
-        // LEVEL
+        // LEVELS
         // ==================================================
 
         const {
@@ -392,10 +388,56 @@ async function loadLevels() {
 
 
         // ==================================================
-        // PROGRESS
+        // STUDENT: CEK APAKAH TINGKAT INI TERBUKA
         // ==================================================
 
-        let progress = [];
+        if (
+            loginMode === "student" &&
+            levels.length > 0
+        ) {
+
+            const {
+                data: canAccess,
+                error: accessError
+            } =
+                await window.db.rpc(
+                    "student_can_access_level",
+                    {
+
+                        p_token:
+                            sessionToken,
+
+                        p_level_id:
+                            levels[0].id
+
+                    }
+                );
+
+
+            if (accessError) {
+
+                throw accessError;
+
+            }
+
+
+            if (canAccess !== true) {
+
+                renderLockedStage();
+
+                return;
+
+            }
+
+        }
+
+
+        // ==================================================
+        // LEVEL PROGRESS
+        // ==================================================
+
+        let progress =
+            [];
 
 
         if (
@@ -409,11 +451,13 @@ async function loadLevels() {
                 await window.db.rpc(
                     "get_student_level_progress",
                     {
+
                         p_token:
                             sessionToken,
 
                         p_stage_id:
                             stage.id
+
                     }
                 );
 
@@ -458,7 +502,55 @@ async function loadLevels() {
 
 
 // ======================================================
-// RENDER LEVEL
+// LOCKED STAGE
+// ======================================================
+
+function renderLockedStage() {
+
+    levelList.innerHTML = `
+
+        <div class="stage-locked-message">
+
+            <div class="stage-lock-icon">
+                🔒
+            </div>
+
+            <h3>
+                Tingkat masih terkunci
+            </h3>
+
+            <p>
+                Selesaikan seluruh level pada
+                tingkat sebelumnya terlebih dahulu.
+            </p>
+
+            <button
+                id="lockedBackButton"
+                class="button button-primary"
+                type="button"
+            >
+                Kembali ke Daftar Tingkat
+            </button>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "lockedBackButton"
+        )
+        .addEventListener(
+            "click",
+            goBack
+        );
+
+}
+
+
+// ======================================================
+// RENDER LEVELS
 // ======================================================
 
 function renderLevels(
@@ -486,10 +578,6 @@ function renderLevels(
     }
 
 
-    // ==================================================
-    // MAP PROGRESS
-    // ==================================================
-
     const progressMap =
         new Map();
 
@@ -505,10 +593,6 @@ function renderLevels(
         }
     );
 
-
-    // ==================================================
-    // LOOP LEVEL
-    // ==================================================
 
     levels.forEach(
         (
@@ -528,15 +612,11 @@ function renderLevels(
                 === true;
 
 
-            // ==================================================
-            // UNLOCK LOGIC
-            // ==================================================
-
             let unlocked =
                 false;
 
 
-            // Guest semua level terbuka.
+            // Guest.
             if (
                 loginMode === "guest"
             ) {
@@ -546,7 +626,8 @@ function renderLevels(
 
             }
 
-            // Level pertama selalu terbuka.
+
+            // Level pertama.
             else if (
                 index === 0
             ) {
@@ -556,12 +637,14 @@ function renderLevels(
 
             }
 
-            // Level selanjutnya:
-            // previous level harus completed.
+
+            // Level berikutnya.
             else {
 
                 const previousLevel =
-                    levels[index - 1];
+                    levels[
+                        index - 1
+                    ];
 
 
                 const previousProgress =
@@ -578,8 +661,7 @@ function renderLevels(
             }
 
 
-            // Level yang sudah selesai
-            // harus selalu bisa dibuka kembali.
+            // Pernah lulus.
             if (completed) {
 
                 unlocked =
@@ -626,10 +708,6 @@ function createLevelCard(
         "level-card";
 
 
-    // ==================================================
-    // STATUS CLASS
-    // ==================================================
-
     if (completed) {
 
         card.classList.add(
@@ -645,15 +723,14 @@ function createLevelCard(
             "level-locked"
         );
 
+
         card.disabled =
             true;
 
     }
 
 
-    // ==================================================
     // HEADER
-    // ==================================================
 
     const header =
         document.createElement(
@@ -703,9 +780,7 @@ function createLevelCard(
     );
 
 
-    // ==================================================
     // TITLE
-    // ==================================================
 
     const title =
         document.createElement(
@@ -717,9 +792,7 @@ function createLevelCard(
         level.name;
 
 
-    // ==================================================
     // INFO
-    // ==================================================
 
     const info =
         document.createElement(
@@ -731,39 +804,37 @@ function createLevelCard(
         "level-info";
 
 
-    const questionInfo =
+    const questions =
         document.createElement(
             "span"
         );
 
 
-    questionInfo.textContent =
+    questions.textContent =
         `${level.question_count} soal`;
 
 
-    const passingInfo =
+    const passing =
         document.createElement(
             "span"
         );
 
 
-    passingInfo.textContent =
+    passing.textContent =
         `Lulus ${level.passing_score}%`;
 
 
     info.appendChild(
-        questionInfo
+        questions
     );
 
 
     info.appendChild(
-        passingInfo
+        passing
     );
 
 
-    // ==================================================
-    // PROGRESS INFO
-    // ==================================================
+    // PROGRESS
 
     const progressInfo =
         document.createElement(
@@ -822,9 +893,7 @@ function createLevelCard(
     }
 
 
-    // ==================================================
-    // START LABEL
-    // ==================================================
+    // START
 
     const start =
         document.createElement(
@@ -858,9 +927,7 @@ function createLevelCard(
     }
 
 
-    // ==================================================
     // APPEND
-    // ==================================================
 
     card.appendChild(
         header
@@ -887,9 +954,7 @@ function createLevelCard(
     );
 
 
-    // ==================================================
     // CLICK
-    // ==================================================
 
     if (unlocked) {
 
@@ -943,8 +1008,26 @@ function createLevelCard(
 
 
 // ======================================================
-// LOGIN
+// NAVIGATION
 // ======================================================
+
+function goBack() {
+
+    window.location.href =
+        "./stages.html" +
+
+        "?subject=" +
+        encodeURIComponent(
+            subjectCode
+        ) +
+
+        "&topic=" +
+        encodeURIComponent(
+            topicCode
+        );
+
+}
+
 
 function goLogin() {
 
