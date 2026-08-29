@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
 
@@ -35,6 +36,8 @@
         href="css/practice-mobile-help.css"
     >
 </head>
+
+
 <body class="practice-page">
 
 
@@ -47,7 +50,8 @@
         class="practice-loading"
     >
 
-        <div class="practice-loading-spinner"></div>
+        <div class="practice-loading-spinner">
+        </div>
 
         <p>
             Menyiapkan latihan...
@@ -102,6 +106,7 @@
                         Soal 1 / 10
                     </strong>
 
+
                     <span class="correct-counter">
 
                         Benar
@@ -149,7 +154,38 @@
             <div
                 id="questionProgressBar"
                 class="practice-progress-bar"
-            ></div>
+            >
+            </div>
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PETUNJUK PENGGUNAAN                           -->
+        <!-- SEKARANG BERADA DI ATAS SOAL                  -->
+        <!-- ============================================= -->
+
+        <div class="practice-help">
+
+            <div class="practice-help-main">
+
+                Tekan
+
+                <strong class="enter-key">
+                    Enter / Selesai
+                </strong>
+
+                untuk mengirim jawaban.
+
+            </div>
+
+
+            <div class="practice-help-note">
+
+                Jika belum benar, jawaban masih dapat
+                diperbaiki sampai waktu habis.
+
+            </div>
 
         </div>
 
@@ -161,7 +197,9 @@
         <section class="practice-stage">
 
 
-            <!-- DIRECT -->
+            <!-- ========================================= -->
+            <!-- DIRECT QUESTION                           -->
+            <!-- ========================================= -->
 
             <div
                 id="directQuestionArea"
@@ -194,7 +232,9 @@
             </div>
 
 
-            <!-- COLUMN -->
+            <!-- ========================================= -->
+            <!-- COLUMN QUESTION                           -->
+            <!-- ========================================= -->
 
             <div
                 id="columnQuestionArea"
@@ -234,10 +274,13 @@
                         </div>
 
 
-                        <div class="column-rule"></div>
+                        <div class="column-rule">
+                        </div>
 
                     </div>
 
+
+                    <!-- STEP 1 -->
 
                     <div class="column-step">
 
@@ -261,6 +304,8 @@
                     </div>
 
 
+                    <!-- STEP 2 -->
+
                     <div class="column-step">
 
                         <label
@@ -282,6 +327,8 @@
 
                     </div>
 
+
+                    <!-- FINAL -->
 
                     <div class="column-final-step">
 
@@ -311,32 +358,17 @@
             </div>
 
 
-            <!-- FEEDBACK -->
+            <!-- ========================================= -->
+            <!-- FEEDBACK                                  -->
+            <!-- ========================================= -->
 
             <div
                 id="answerFeedback"
                 class="answer-feedback"
                 aria-live="polite"
-            ></div>
+            >
+            </div>
 
-
-            <p class="practice-help">
-
-    Tekan
-
-    <strong class="enter-key">
-        Enter
-    </strong>
-
-    untuk menjawab
-
-    <span class="practice-help-separator">
-        •
-    </span>
-
-    atau tunggu sebentar untuk diperiksa otomatis.
-
-</p>
         </section>
 
 
@@ -409,6 +441,7 @@
 
             <div class="result-grid">
 
+
                 <div class="result-stat">
 
                     <span>
@@ -460,13 +493,15 @@
 
                 </div>
 
+
             </div>
 
 
             <div
                 id="bestScoreBox"
                 class="best-score-box hidden"
-            ></div>
+            >
+            </div>
 
 
             <!-- ========================================= -->
@@ -475,7 +510,7 @@
 
             <div
                 style="
-                    margin-top:25px;
+                    margin-top: 25px;
                 "
             >
 
@@ -485,7 +520,7 @@
                     type="button"
                     hidden
                     style="
-                        width:100%;
+                        width: 100%;
                     "
                 >
                     Lihat Analisis Belajar
@@ -495,7 +530,7 @@
 
 
             <!-- ========================================= -->
-            <!-- NORMAL ACTION                            -->
+            <!-- RESULT ACTIONS                            -->
             <!-- ========================================= -->
 
             <div class="result-actions">
@@ -525,12 +560,13 @@
 
 
     <!-- ================================================= -->
-    <!-- SCRIPT                                            -->
+    <!-- SCRIPTS                                           -->
     <!-- ================================================= -->
 
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     ></script>
+
 
     <script src="js/config.js"></script>
 
@@ -542,5 +578,7 @@
 
     <script src="js/practice-report-link.js"></script>
 
+
 </body>
+
 </html>
