@@ -30,6 +30,7 @@
         href="css/practice-color-cue.css"
     >
 </head>
+
 <body class="practice-page">
 
 
@@ -41,11 +42,13 @@
         id="practiceLoading"
         class="practice-loading"
     >
+
         <div class="practice-loading-spinner"></div>
 
         <p>
             Menyiapkan latihan...
         </p>
+
     </section>
 
 
@@ -57,6 +60,7 @@
         id="practiceGame"
         class="practice-shell hidden"
     >
+
 
         <!-- ============================================= -->
         <!-- HEADER                                        -->
@@ -95,10 +99,13 @@
                     </strong>
 
                     <span class="correct-counter">
+
                         Benar
+
                         <strong id="liveCorrect">
                             0
                         </strong>
+
                     </span>
 
                 </div>
@@ -106,9 +113,7 @@
             </div>
 
 
-            <!-- ========================================= -->
-            <!-- TIMER POJOK KANAN                         -->
-            <!-- ========================================= -->
+            <!-- TIMER -->
 
             <div
                 id="timerCircle"
@@ -132,7 +137,7 @@
 
 
         <!-- ============================================= -->
-        <!-- PROGRESS BAR                                  -->
+        <!-- PROGRESS                                      -->
         <!-- ============================================= -->
 
         <div class="practice-progress-track">
@@ -146,15 +151,13 @@
 
 
         <!-- ============================================= -->
-        <!-- QUESTION AREA                                 -->
+        <!-- QUESTION                                      -->
         <!-- ============================================= -->
 
         <section class="practice-stage">
 
 
-            <!-- ========================================= -->
-            <!-- DIRECT MODE                               -->
-            <!-- ========================================= -->
+            <!-- DIRECT -->
 
             <div
                 id="directQuestionArea"
@@ -187,9 +190,7 @@
             </div>
 
 
-            <!-- ========================================= -->
-            <!-- COLUMN MODE                               -->
-            <!-- ========================================= -->
+            <!-- COLUMN -->
 
             <div
                 id="columnQuestionArea"
@@ -306,9 +307,7 @@
             </div>
 
 
-            <!-- ========================================= -->
-            <!-- FEEDBACK                                  -->
-            <!-- ========================================= -->
+            <!-- FEEDBACK -->
 
             <div
                 id="answerFeedback"
@@ -318,8 +317,18 @@
 
 
             <p class="practice-help">
-                Ketik jawaban, lalu tekan <strong>Enter</strong> untuk menjawab.
-                Jika tidak menekan Enter, jawaban akan diperiksa otomatis setelah Anda berhenti mengetik.
+
+                Ketik jawaban, lalu tekan
+
+                <strong>
+                    Enter
+                </strong>
+
+                untuk menjawab.
+
+                Jika tidak menekan Enter, jawaban akan
+                diperiksa otomatis setelah Anda berhenti mengetik.
+
             </p>
 
         </section>
@@ -345,7 +354,7 @@
 
 
     <!-- ================================================= -->
-    <!-- RESULT SCREEN                                     -->
+    <!-- RESULT                                            -->
     <!-- ================================================= -->
 
     <section
@@ -454,6 +463,35 @@
             ></div>
 
 
+            <!-- ========================================= -->
+            <!-- ANALYSIS                                  -->
+            <!-- ========================================= -->
+
+            <div
+                style="
+                    margin-top:25px;
+                "
+            >
+
+                <button
+                    id="analysisButton"
+                    class="result-primary-button"
+                    type="button"
+                    hidden
+                    style="
+                        width:100%;
+                    "
+                >
+                    Lihat Analisis Belajar
+                </button>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- NORMAL ACTION                            -->
+            <!-- ========================================= -->
+
             <div class="result-actions">
 
                 <button
@@ -491,8 +529,12 @@
     <script src="js/config.js"></script>
 
     <script src="js/practice.js"></script>
+
     <script src="js/practice-navigation-fix.js"></script>
+
     <script src="js/practice-color-cue.js"></script>
+
+    <script src="js/practice-report-link.js"></script>
 
 </body>
 </html>
