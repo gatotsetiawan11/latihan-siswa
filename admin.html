@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Monitoring Siswa - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/admin.css"
+    >
+</head>
+
+<body class="admin-page">
+
+
+    <!-- ================================================= -->
+    <!-- HEADER                                            -->
+    <!-- ================================================= -->
+
+    <header class="admin-topbar">
+
+        <div class="admin-topbar-inner">
+
+            <div>
+
+                <span class="admin-brand-small">
+                    LATIHAN SISWA
+                </span>
+
+                <strong class="admin-brand-title">
+                    Monitoring
+                </strong>
+
+            </div>
+
+
+            <div class="admin-user-area">
+
+                <span id="adminDisplayName">
+                    Administrator
+                </span>
+
+                <button
+                    id="adminLogoutButton"
+                    class="admin-logout-button"
+                    type="button"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================================================= -->
+    <!-- CONTENT                                           -->
+    <!-- ================================================= -->
+
+    <main class="admin-shell">
+
+
+        <!-- ============================================= -->
+        <!-- TITLE                                         -->
+        <!-- ============================================= -->
+
+        <section class="admin-page-heading">
+
+            <div>
+
+                <span class="admin-eyebrow">
+                    DASHBOARD GURU / ADMIN
+                </span>
+
+                <h1>
+                    Perkembangan Siswa
+                </h1>
+
+                <p>
+                    Pantau aktivasi akun dan hasil latihan siswa.
+                </p>
+
+            </div>
+
+
+            <button
+                id="refreshButton"
+                class="admin-secondary-button"
+                type="button"
+            >
+                Perbarui Data
+            </button>
+
+        </section>
+
+
+        <!-- ============================================= -->
+        <!-- LOADING                                       -->
+        <!-- ============================================= -->
+
+        <section
+            id="adminLoading"
+            class="admin-loading"
+        >
+
+            <div class="admin-spinner"></div>
+
+            <p>
+                Memuat data siswa...
+            </p>
+
+        </section>
+
+
+        <!-- ============================================= -->
+        <!-- ERROR                                         -->
+        <!-- ============================================= -->
+
+        <section
+            id="adminError"
+            class="admin-error-card"
+            hidden
+        >
+
+            <strong>
+                Data tidak dapat dimuat
+            </strong>
+
+            <p id="adminErrorMessage">
+                Silakan coba kembali.
+            </p>
+
+        </section>
+
+
+        <!-- ============================================= -->
+        <!-- CONTENT                                       -->
+        <!-- ============================================= -->
+
+        <div
+            id="adminContent"
+            hidden
+        >
+
+
+            <!-- ========================================= -->
+            <!-- SUMMARY                                   -->
+            <!-- ========================================= -->
+
+            <section class="admin-summary-grid">
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Total Siswa
+                    </span>
+
+                    <strong id="summaryTotalStudents">
+                        0
+                    </strong>
+
+                </article>
+
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Sudah Aktivasi
+                    </span>
+
+                    <strong id="summaryActivated">
+                        0
+                    </strong>
+
+                </article>
+
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Belum Aktivasi
+                    </span>
+
+                    <strong id="summaryNotActivated">
+                        0
+                    </strong>
+
+                </article>
+
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Sudah Berlatih
+                    </span>
+
+                    <strong id="summaryPracticed">
+                        0
+                    </strong>
+
+                </article>
+
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Rata-rata Akurasi
+                    </span>
+
+                    <strong id="summaryAccuracy">
+                        -
+                    </strong>
+
+                </article>
+
+            </section>
+
+
+            <!-- ========================================= -->
+            <!-- TOOLBAR                                   -->
+            <!-- ========================================= -->
+
+            <section class="admin-toolbar">
+
+                <div class="admin-search-wrap">
+
+                    <input
+                        id="studentSearchInput"
+                        type="search"
+                        placeholder="Cari nama siswa..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <select
+                    id="activationFilter"
+                    class="admin-filter-select"
+                >
+
+                    <option value="all">
+                        Semua Status
+                    </option>
+
+                    <option value="Sudah aktivasi">
+                        Sudah Aktivasi
+                    </option>
+
+                    <option value="Belum aktivasi">
+                        Belum Aktivasi
+                    </option>
+
+                    <option value="PIN belum aktif">
+                        PIN Belum Aktif
+                    </option>
+
+                </select>
+
+
+                <div class="admin-result-counter">
+
+                    <strong id="visibleStudentCount">
+                        0
+                    </strong>
+
+                    siswa
+
+                </div>
+
+            </section>
+
+
+            <!-- ========================================= -->
+            <!-- TABLE                                     -->
+            <!-- ========================================= -->
+
+            <section class="admin-table-card">
+
+                <div class="admin-table-scroll">
+
+                    <table class="admin-student-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Nama
+                                </th>
+
+                                <th>
+                                    Status Akun
+                                </th>
+
+                                <th>
+                                    Sesi
+                                </th>
+
+                                <th>
+                                    Level Dikuasai
+                                </th>
+
+                                <th>
+                                    Akurasi
+                                </th>
+
+                                <th>
+                                    Rata-rata Respons
+                                </th>
+
+                                <th>
+                                    Terakhir Latihan
+                                </th>
+
+                                <th>
+                                    Aksi
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="studentTableBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div
+                    id="emptyStudents"
+                    class="admin-empty-state"
+                    hidden
+                >
+
+                    Tidak ada siswa yang sesuai dengan pencarian.
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================================================= -->
+    <!-- RESET PIN MODAL                                   -->
+    <!-- ================================================= -->
+
+    <div
+        id="resetPinModal"
+        class="admin-modal-backdrop"
+        hidden
+    >
+
+        <section class="admin-modal">
+
+            <div class="admin-modal-icon">
+                !
+            </div>
+
+            <h2>
+                Reset PIN Siswa?
+            </h2>
+
+            <p>
+
+                PIN
+
+                <strong id="resetStudentName">
+                    siswa
+                </strong>
+
+                akan dikembalikan menjadi
+
+                <strong>
+                    123456
+                </strong>.
+
+            </p>
+
+
+            <p class="admin-modal-note">
+                Siswa akan keluar dari semua sesi dan wajib
+                membuat PIN baru saat login berikutnya.
+            </p>
+
+
+            <div class="admin-modal-actions">
+
+                <button
+                    id="cancelResetButton"
+                    class="admin-secondary-button"
+                    type="button"
+                >
+                    Batal
+                </button>
+
+
+                <button
+                    id="confirmResetButton"
+                    class="admin-danger-button"
+                    type="button"
+                >
+                    Reset PIN
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- TOAST                                             -->
+    <!-- ================================================= -->
+
+    <div
+        id="adminToast"
+        class="admin-toast"
+        hidden
+    >
+        Berhasil
+    </div>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/admin.js"></script>
+
+</body>
+
+</html>
