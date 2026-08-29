@@ -1,8 +1,8 @@
 const SUPABASE_URL =
-    "MASUKKAN_PROJECT_URL_ANDA";
+    "https://rvstyakujwbthjkadiwk.supabase.co/rest/v1/";
 
 const SUPABASE_KEY =
-    "MASUKKAN_PUBLISHABLE_KEY_ANDA";
+    "sb_publishable_HR6BBVA64HvmRvDaq68RJQ_ma2VgEW3";
 
 
 window.db =
