@@ -29,7 +29,7 @@ const backButton =
 
 
 // ======================================================
-// URL PARAMETERS
+// URL
 // ======================================================
 
 const params =
@@ -39,22 +39,32 @@ const params =
 
 
 const subjectCode =
-    params.get(
-        "subject"
-    );
+    params.get("subject");
 
 
 const topicCode =
-    params.get(
-        "topic"
-    );
+    params.get("topic");
 
 
 const stageNumber =
     Number(
-        params.get(
-            "stage"
-        )
+        params.get("stage")
+    );
+
+
+// ======================================================
+// SESSION
+// ======================================================
+
+const loginMode =
+    sessionStorage.getItem(
+        "login_mode"
+    );
+
+
+const sessionToken =
+    sessionStorage.getItem(
+        "student_session_token"
     );
 
 
@@ -71,24 +81,16 @@ initialize();
 
 async function initialize() {
 
-    // ------------------------------
-    // SESSION
-    // ------------------------------
-
-    const validSession =
+    const valid =
         await checkSession();
 
 
-    if (!validSession) {
+    if (!valid) {
 
         return;
 
     }
 
-
-    // ------------------------------
-    // PARAMETER
-    // ------------------------------
 
     if (
         !subjectCode ||
@@ -105,15 +107,11 @@ async function initialize() {
     }
 
 
-    // ------------------------------
-    // BACK
-    // ------------------------------
-
     backButton.addEventListener(
         "click",
         () => {
 
-            const url =
+            window.location.href =
                 "./stages.html" +
                 "?subject=" +
                 encodeURIComponent(
@@ -124,17 +122,9 @@ async function initialize() {
                     topicCode
                 );
 
-
-            window.location.href =
-                url;
-
         }
     );
 
-
-    // ------------------------------
-    // LOAD
-    // ------------------------------
 
     await loadLevels();
 
@@ -147,39 +137,27 @@ async function initialize() {
 
 async function checkSession() {
 
-    const mode =
-        sessionStorage.getItem(
-            "login_mode"
-        );
-
-
-    if (mode === "guest") {
+    if (loginMode === "guest") {
 
         return true;
 
     }
 
 
-    if (mode !== "student") {
+    if (loginMode !== "student") {
 
-        goToLogin();
+        goLogin();
 
         return false;
 
     }
 
 
-    const token =
-        sessionStorage.getItem(
-            "student_session_token"
-        );
-
-
-    if (!token) {
+    if (!sessionToken) {
 
         sessionStorage.clear();
 
-        goToLogin();
+        goLogin();
 
         return false;
 
@@ -196,7 +174,7 @@ async function checkSession() {
                 "get_student_session",
                 {
                     p_token:
-                        token
+                        sessionToken
                 }
             );
 
@@ -209,7 +187,7 @@ async function checkSession() {
 
             sessionStorage.clear();
 
-            goToLogin();
+            goLogin();
 
             return false;
 
@@ -230,7 +208,7 @@ async function checkSession() {
 
         sessionStorage.clear();
 
-        goToLogin();
+        goLogin();
 
         return false;
 
@@ -247,9 +225,9 @@ async function loadLevels() {
 
     try {
 
-        // ------------------------------
+        // ==================================================
         // SUBJECT
-        // ------------------------------
+        // ==================================================
 
         const {
             data: subject,
@@ -280,9 +258,9 @@ async function loadLevels() {
         }
 
 
-        // ------------------------------
+        // ==================================================
         // TOPIC
-        // ------------------------------
+        // ==================================================
 
         const {
             data: topic,
@@ -317,9 +295,9 @@ async function loadLevels() {
         }
 
 
-        // ------------------------------
+        // ==================================================
         // STAGE
-        // ------------------------------
+        // ==================================================
 
         const {
             data: stage,
@@ -354,9 +332,9 @@ async function loadLevels() {
         }
 
 
-        // ------------------------------
+        // ==================================================
         // HEADER
-        // ------------------------------
+        // ==================================================
 
         topicName.textContent =
             topic.name.toUpperCase();
@@ -370,9 +348,9 @@ async function loadLevels() {
             stage.name;
 
 
-        // ------------------------------
+        // ==================================================
         // LEVEL
-        // ------------------------------
+        // ==================================================
 
         const {
             data: levels,
@@ -413,8 +391,49 @@ async function loadLevels() {
         }
 
 
+        // ==================================================
+        // PROGRESS
+        // ==================================================
+
+        let progress = [];
+
+
+        if (
+            loginMode === "student"
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await window.db.rpc(
+                    "get_student_level_progress",
+                    {
+                        p_token:
+                            sessionToken,
+
+                        p_stage_id:
+                            stage.id
+                    }
+                );
+
+
+            if (error) {
+
+                throw error;
+
+            }
+
+
+            progress =
+                data || [];
+
+        }
+
+
         renderLevels(
-            levels
+            levels,
+            progress
         );
 
     }
@@ -439,18 +458,17 @@ async function loadLevels() {
 
 
 // ======================================================
-// RENDER LEVELS
+// RENDER LEVEL
 // ======================================================
 
-function renderLevels(levels) {
+function renderLevels(
+    levels,
+    progress
+) {
 
     levelList.innerHTML =
         "";
 
-
-    // ------------------------------
-    // EMPTY
-    // ------------------------------
 
     if (
         !levels ||
@@ -468,236 +486,113 @@ function renderLevels(levels) {
     }
 
 
-    // ------------------------------
-    // LOOP
-    // ------------------------------
+    // ==================================================
+    // MAP PROGRESS
+    // ==================================================
+
+    const progressMap =
+        new Map();
+
+
+    progress.forEach(
+        item => {
+
+            progressMap.set(
+                item.level_id,
+                item
+            );
+
+        }
+    );
+
+
+    // ==================================================
+    // LOOP LEVEL
+    // ==================================================
 
     levels.forEach(
-        level => {
+        (
+            level,
+            index
+        ) => {
 
-            const card =
-                document.createElement(
-                    "button"
+            const currentProgress =
+                progressMap.get(
+                    level.id
                 );
 
 
-            card.type =
-                "button";
+            const completed =
+                currentProgress
+                    ?.is_completed
+                === true;
 
 
-            card.className =
-                "level-card";
+            // ==================================================
+            // UNLOCK LOGIC
+            // ==================================================
 
+            let unlocked =
+                false;
 
-            // ------------------------------
-            // HEADER
-            // ------------------------------
 
-            const header =
-                document.createElement(
-                    "div"
-                );
+            // Guest semua level terbuka.
+            if (
+                loginMode === "guest"
+            ) {
 
+                unlocked =
+                    true;
 
-            header.className =
-                "level-header";
+            }
 
+            // Level pertama selalu terbuka.
+            else if (
+                index === 0
+            ) {
 
-            const number =
-                document.createElement(
-                    "div"
-                );
+                unlocked =
+                    true;
 
+            }
 
-            number.className =
-                "level-number";
+            // Level selanjutnya:
+            // previous level harus completed.
+            else {
 
+                const previousLevel =
+                    levels[index - 1];
 
-            number.textContent =
-                level.level_number;
 
-
-            const time =
-                document.createElement(
-                    "span"
-                );
-
-
-            time.className =
-                "time-badge";
-
-
-            time.textContent =
-                `${level.time_limit_seconds} detik`;
-
-
-            header.appendChild(
-                number
-            );
-
-
-            header.appendChild(
-                time
-            );
-
-
-            // ------------------------------
-            // TITLE
-            // ------------------------------
-
-            const title =
-                document.createElement(
-                    "h3"
-                );
-
-
-            title.textContent =
-                level.name;
-
-
-            // ------------------------------
-            // INFO
-            // ------------------------------
-
-            const info =
-                document.createElement(
-                    "div"
-                );
-
-
-            info.className =
-                "level-info";
-
-
-            const questionInfo =
-                document.createElement(
-                    "span"
-                );
-
-
-            questionInfo.textContent =
-                `${level.question_count} soal`;
-
-
-            const passingInfo =
-                document.createElement(
-                    "span"
-                );
-
-
-            passingInfo.textContent =
-                `Lulus ${level.passing_score}%`;
-
-
-            info.appendChild(
-                questionInfo
-            );
-
-
-            info.appendChild(
-                passingInfo
-            );
-
-
-            // ------------------------------
-            // START
-            // ------------------------------
-
-            const start =
-                document.createElement(
-                    "div"
-                );
-
-
-            start.className =
-                "start-label";
-
-
-            start.textContent =
-                "Mulai →";
-
-
-            // ------------------------------
-            // CARD
-            // ------------------------------
-
-            card.appendChild(
-                header
-            );
-
-
-            card.appendChild(
-                title
-            );
-
-
-            card.appendChild(
-                info
-            );
-
-
-            card.appendChild(
-                start
-            );
-
-
-            // ------------------------------
-            // CLICK
-            // ------------------------------
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    // Simpan data level untuk
-                    // tahap practice berikutnya.
-
-                    sessionStorage.setItem(
-                        "selected_level_id",
-                        level.id
+                const previousProgress =
+                    progressMap.get(
+                        previousLevel.id
                     );
 
 
-                    sessionStorage.setItem(
-                        "selected_level_number",
-                        String(
-                            level.level_number
-                        )
-                    );
+                unlocked =
+                    previousProgress
+                        ?.is_completed
+                    === true;
+
+            }
 
 
-                    sessionStorage.setItem(
-                        "selected_stage_number",
-                        String(
-                            stageNumber
-                        )
-                    );
+            // Level yang sudah selesai
+            // harus selalu bisa dibuka kembali.
+            if (completed) {
+
+                unlocked =
+                    true;
+
+            }
 
 
-                    sessionStorage.setItem(
-                        "selected_subject_code",
-                        subjectCode
-                    );
-
-
-                    sessionStorage.setItem(
-                        "selected_topic_code",
-                        topicCode
-                    );
-
-
-                    alert(
-                        `${level.name} siap. ` +
-                        `Engine latihan akan dibuat ` +
-                        `pada tahap berikutnya.`
-                    );
-
-                }
-            );
-
-
-            levelList.appendChild(
-                card
+            createLevelCard(
+                level,
+                currentProgress,
+                unlocked,
+                completed
             );
 
         }
@@ -707,10 +602,351 @@ function renderLevels(levels) {
 
 
 // ======================================================
-// NAVIGATION
+// CREATE LEVEL CARD
 // ======================================================
 
-function goToLogin() {
+function createLevelCard(
+    level,
+    progress,
+    unlocked,
+    completed
+) {
+
+    const card =
+        document.createElement(
+            "button"
+        );
+
+
+    card.type =
+        "button";
+
+
+    card.className =
+        "level-card";
+
+
+    // ==================================================
+    // STATUS CLASS
+    // ==================================================
+
+    if (completed) {
+
+        card.classList.add(
+            "level-completed"
+        );
+
+    }
+
+
+    if (!unlocked) {
+
+        card.classList.add(
+            "level-locked"
+        );
+
+        card.disabled =
+            true;
+
+    }
+
+
+    // ==================================================
+    // HEADER
+    // ==================================================
+
+    const header =
+        document.createElement(
+            "div"
+        );
+
+
+    header.className =
+        "level-header";
+
+
+    const number =
+        document.createElement(
+            "div"
+        );
+
+
+    number.className =
+        "level-number";
+
+
+    number.textContent =
+        level.level_number;
+
+
+    const time =
+        document.createElement(
+            "span"
+        );
+
+
+    time.className =
+        "time-badge";
+
+
+    time.textContent =
+        `${level.time_limit_seconds} detik`;
+
+
+    header.appendChild(
+        number
+    );
+
+
+    header.appendChild(
+        time
+    );
+
+
+    // ==================================================
+    // TITLE
+    // ==================================================
+
+    const title =
+        document.createElement(
+            "h3"
+        );
+
+
+    title.textContent =
+        level.name;
+
+
+    // ==================================================
+    // INFO
+    // ==================================================
+
+    const info =
+        document.createElement(
+            "div"
+        );
+
+
+    info.className =
+        "level-info";
+
+
+    const questionInfo =
+        document.createElement(
+            "span"
+        );
+
+
+    questionInfo.textContent =
+        `${level.question_count} soal`;
+
+
+    const passingInfo =
+        document.createElement(
+            "span"
+        );
+
+
+    passingInfo.textContent =
+        `Lulus ${level.passing_score}%`;
+
+
+    info.appendChild(
+        questionInfo
+    );
+
+
+    info.appendChild(
+        passingInfo
+    );
+
+
+    // ==================================================
+    // PROGRESS INFO
+    // ==================================================
+
+    const progressInfo =
+        document.createElement(
+            "div"
+        );
+
+
+    progressInfo.className =
+        "level-progress-info";
+
+
+    if (
+        loginMode === "guest"
+    ) {
+
+        progressInfo.textContent =
+            "Mode Guest";
+
+    }
+
+    else if (completed) {
+
+        progressInfo.textContent =
+            `✓ Lulus • Skor terbaik ${
+                Number(
+                    progress.best_score
+                ).toFixed(0)
+            }%`;
+
+    }
+
+    else if (
+        progress &&
+        progress.attempts > 0
+    ) {
+
+        progressInfo.textContent =
+            `${
+                progress.attempts
+            } percobaan • belum lulus`;
+
+    }
+
+    else if (!unlocked) {
+
+        progressInfo.textContent =
+            "🔒 Selesaikan level sebelumnya";
+
+    }
+
+    else {
+
+        progressInfo.textContent =
+            "Siap dimainkan";
+
+    }
+
+
+    // ==================================================
+    // START LABEL
+    // ==================================================
+
+    const start =
+        document.createElement(
+            "div"
+        );
+
+
+    start.className =
+        "start-label";
+
+
+    if (!unlocked) {
+
+        start.textContent =
+            "Terkunci";
+
+    }
+
+    else if (completed) {
+
+        start.textContent =
+            "Main Lagi →";
+
+    }
+
+    else {
+
+        start.textContent =
+            "Mulai →";
+
+    }
+
+
+    // ==================================================
+    // APPEND
+    // ==================================================
+
+    card.appendChild(
+        header
+    );
+
+
+    card.appendChild(
+        title
+    );
+
+
+    card.appendChild(
+        info
+    );
+
+
+    card.appendChild(
+        progressInfo
+    );
+
+
+    card.appendChild(
+        start
+    );
+
+
+    // ==================================================
+    // CLICK
+    // ==================================================
+
+    if (unlocked) {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const url =
+                    "./practice.html" +
+
+                    "?subject=" +
+                    encodeURIComponent(
+                        subjectCode
+                    ) +
+
+                    "&topic=" +
+                    encodeURIComponent(
+                        topicCode
+                    ) +
+
+                    "&stage=" +
+                    encodeURIComponent(
+                        stageNumber
+                    ) +
+
+                    "&level=" +
+                    encodeURIComponent(
+                        level.level_number
+                    ) +
+
+                    "&id=" +
+                    encodeURIComponent(
+                        level.id
+                    );
+
+
+                window.location.href =
+                    url;
+
+            }
+        );
+
+    }
+
+
+    levelList.appendChild(
+        card
+    );
+
+}
+
+
+// ======================================================
+// LOGIN
+// ======================================================
+
+function goLogin() {
 
     window.location.href =
         "./index.html";
