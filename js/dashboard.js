@@ -1,4 +1,16 @@
 // ======================================================
+// LATIHAN SISWA
+// DASHBOARD V2
+//
+// Perubahan:
+// - Tidak menampilkan class_name / "Kelas 2"
+// - Menambahkan tombol Laporan Belajar
+// - Laporan hanya tersedia untuk siswa
+// - Guest tetap dapat mencoba latihan
+// ======================================================
+
+
+// ======================================================
 // ELEMENT
 // ======================================================
 
@@ -7,30 +19,42 @@ const headerName =
         "headerName"
     );
 
+
 const studentWelcome =
     document.getElementById(
         "studentWelcome"
     );
+
 
 const studentName =
     document.getElementById(
         "studentName"
     );
 
-const studentClass =
-    document.getElementById(
-        "studentClass"
-    );
 
 const guestNotice =
     document.getElementById(
         "guestNotice"
     );
 
+
+const studentReportSection =
+    document.getElementById(
+        "studentReportSection"
+    );
+
+
+const reportButton =
+    document.getElementById(
+        "reportButton"
+    );
+
+
 const logoutButton =
     document.getElementById(
         "logoutButton"
     );
+
 
 const mathButton =
     document.getElementById(
@@ -46,6 +70,7 @@ const loginMode =
     sessionStorage.getItem(
         "login_mode"
     );
+
 
 const sessionToken =
     sessionStorage.getItem(
@@ -66,7 +91,10 @@ initializeDashboard();
 
 async function initializeDashboard() {
 
-    // Tidak ada session.
+    // ==================================================
+    // TIDAK ADA SESSION
+    // ==================================================
+
     if (!loginMode) {
 
         goToLogin();
@@ -76,11 +104,13 @@ async function initializeDashboard() {
     }
 
 
-    // ------------------------------
+    // ==================================================
     // GUEST
-    // ------------------------------
+    // ==================================================
 
-    if (loginMode === "guest") {
+    if (
+        loginMode === "guest"
+    ) {
 
         showGuestDashboard();
 
@@ -89,11 +119,13 @@ async function initializeDashboard() {
     }
 
 
-    // ------------------------------
+    // ==================================================
     // STUDENT
-    // ------------------------------
+    // ==================================================
 
-    if (loginMode === "student") {
+    if (
+        loginMode === "student"
+    ) {
 
         await validateStudentSession();
 
@@ -102,7 +134,10 @@ async function initializeDashboard() {
     }
 
 
-    // Mode tidak dikenal.
+    // ==================================================
+    // MODE TIDAK DIKENAL
+    // ==================================================
+
     sessionStorage.clear();
 
     goToLogin();
@@ -149,6 +184,7 @@ async function validateStudentSession() {
                 error
             );
 
+
             sessionStorage.clear();
 
             goToLogin();
@@ -176,40 +212,38 @@ async function validateStudentSession() {
             data[0];
 
 
-        // ------------------------------
-        // TAMPILKAN DATA SISWA
-        // ------------------------------
+        // ==================================================
+        // NAMA SISWA
+        //
+        // class_name sengaja TIDAK ditampilkan.
+        // ==================================================
 
         headerName.textContent =
-            student.full_name;
+            student.full_name ||
+            "Siswa";
 
 
         studentName.textContent =
-            student.full_name;
+            student.full_name ||
+            "Siswa";
 
 
-        if (student.class_name) {
+        // ==================================================
+        // TAMPILKAN LAPORAN
+        // ==================================================
 
-            studentClass.textContent =
-                `Kelas ${student.class_name}`;
+        studentReportSection.classList.remove(
+            "hidden"
+        );
 
-        }
 
-        else {
-
-            studentClass.textContent =
-                "";
-
-        }
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Dashboard error:",
             error
         );
+
 
         sessionStorage.clear();
 
@@ -221,7 +255,7 @@ async function validateStudentSession() {
 
 
 // ======================================================
-// GUEST
+// GUEST DASHBOARD
 // ======================================================
 
 function showGuestDashboard() {
@@ -236,6 +270,16 @@ function showGuestDashboard() {
 
 
     guestNotice.classList.remove(
+        "hidden"
+    );
+
+
+    /*
+     * Guest tidak memiliki data progress
+     * sehingga tombol laporan tidak ditampilkan.
+     */
+
+    studentReportSection.classList.add(
         "hidden"
     );
 
@@ -258,6 +302,53 @@ mathButton.addEventListener(
 
 
 // ======================================================
+// LAPORAN BELAJAR
+// ======================================================
+
+if (reportButton) {
+
+    reportButton.addEventListener(
+        "click",
+        () => {
+
+            /*
+             * Guard tambahan.
+             * Hanya siswa dengan session aktif
+             * yang boleh masuk halaman laporan.
+             */
+
+            const currentMode =
+                sessionStorage.getItem(
+                    "login_mode"
+                );
+
+
+            const currentToken =
+                sessionStorage.getItem(
+                    "student_session_token"
+                );
+
+
+            if (
+                currentMode !== "student" ||
+                !currentToken
+            ) {
+
+                return;
+
+            }
+
+
+            window.location.href =
+                "./report.html";
+
+        }
+    );
+
+}
+
+
+// ======================================================
 // LOGOUT
 // ======================================================
 
@@ -266,6 +357,10 @@ logoutButton.addEventListener(
     logout
 );
 
+
+// ======================================================
+// LOGOUT FUNCTION
+// ======================================================
 
 async function logout() {
 
@@ -281,9 +376,9 @@ async function logout() {
         );
 
 
-    // ------------------------------
+    // ==================================================
     // STUDENT
-    // ------------------------------
+    // ==================================================
 
     if (
         currentMode === "student" &&
@@ -300,9 +395,13 @@ async function logout() {
                 }
             );
 
-        }
 
-        catch (error) {
+        } catch (error) {
+
+            /*
+             * Walaupun server logout gagal,
+             * browser tetap harus dibersihkan.
+             */
 
             console.error(
                 "Logout error:",
@@ -314,9 +413,9 @@ async function logout() {
     }
 
 
-    // ------------------------------
+    // ==================================================
     // HAPUS SESSION BROWSER
-    // ------------------------------
+    // ==================================================
 
     sessionStorage.clear();
 
