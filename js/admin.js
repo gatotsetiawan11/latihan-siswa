@@ -1,18 +1,18 @@
 // ======================================================
 // LATIHAN SISWA
-// ADMIN MONITORING V1
+// ADMIN DASHBOARD V2
 //
-// Fungsi:
-// - Memeriksa session administrator
-// - Memuat monitoring siswa
-// - Menampilkan ringkasan kelas
-// - Pencarian siswa
-// - Filter status aktivasi
+// Fitur:
+// - Validasi session admin
+// - Monitoring siswa
+// - Ringkasan progress
+// - Cari siswa
+// - Filter aktivasi
 // - Reset PIN siswa
-// - Logout administrator
-//
-// Pilot saat ini:
-// - Monitoring difokuskan pada class_name = "2"
+// - Melihat pendaftaran pending
+// - Approve pendaftaran
+// - Reject pendaftaran
+// - Logout admin
 // ======================================================
 
 
@@ -31,7 +31,7 @@ const MONITORED_CLASS =
 
 
 // ======================================================
-// DOM
+// DOM - HEADER
 // ======================================================
 
 const adminDisplayName =
@@ -51,6 +51,10 @@ const refreshButton =
         "refreshButton"
     );
 
+
+// ======================================================
+// DOM - PAGE STATE
+// ======================================================
 
 const adminLoading =
     document.getElementById(
@@ -75,6 +79,10 @@ const adminContent =
         "adminContent"
     );
 
+
+// ======================================================
+// DOM - SUMMARY
+// ======================================================
 
 const summaryTotalStudents =
     document.getElementById(
@@ -106,6 +114,32 @@ const summaryAccuracy =
     );
 
 
+// ======================================================
+// DOM - REGISTRATION
+// ======================================================
+
+const pendingRegistrationCount =
+    document.getElementById(
+        "pendingRegistrationCount"
+    );
+
+
+const pendingRegistrationList =
+    document.getElementById(
+        "pendingRegistrationList"
+    );
+
+
+const pendingRegistrationEmpty =
+    document.getElementById(
+        "pendingRegistrationEmpty"
+    );
+
+
+// ======================================================
+// DOM - STUDENT FILTER
+// ======================================================
+
 const studentSearchInput =
     document.getElementById(
         "studentSearchInput"
@@ -124,6 +158,10 @@ const visibleStudentCount =
     );
 
 
+// ======================================================
+// DOM - STUDENT TABLE
+// ======================================================
+
 const studentTableBody =
     document.getElementById(
         "studentTableBody"
@@ -135,6 +173,10 @@ const emptyStudents =
         "emptyStudents"
     );
 
+
+// ======================================================
+// DOM - RESET PIN
+// ======================================================
 
 const resetPinModal =
     document.getElementById(
@@ -160,6 +202,72 @@ const confirmResetButton =
     );
 
 
+// ======================================================
+// DOM - APPROVE
+// ======================================================
+
+const approveRegistrationModal =
+    document.getElementById(
+        "approveRegistrationModal"
+    );
+
+
+const approveRegistrationName =
+    document.getElementById(
+        "approveRegistrationName"
+    );
+
+
+const cancelApproveButton =
+    document.getElementById(
+        "cancelApproveButton"
+    );
+
+
+const confirmApproveButton =
+    document.getElementById(
+        "confirmApproveButton"
+    );
+
+
+// ======================================================
+// DOM - REJECT
+// ======================================================
+
+const rejectRegistrationModal =
+    document.getElementById(
+        "rejectRegistrationModal"
+    );
+
+
+const rejectRegistrationName =
+    document.getElementById(
+        "rejectRegistrationName"
+    );
+
+
+const rejectReason =
+    document.getElementById(
+        "rejectReason"
+    );
+
+
+const cancelRejectButton =
+    document.getElementById(
+        "cancelRejectButton"
+    );
+
+
+const confirmRejectButton =
+    document.getElementById(
+        "confirmRejectButton"
+    );
+
+
+// ======================================================
+// DOM - TOAST
+// ======================================================
+
 const adminToast =
     document.getElementById(
         "adminToast"
@@ -178,7 +286,15 @@ let students =
     [];
 
 
+let pendingRegistrations =
+    [];
+
+
 let selectedStudent =
+    null;
+
+
+let selectedRegistration =
     null;
 
 
@@ -191,48 +307,6 @@ let toastTimer =
 // ======================================================
 
 async function initializeAdminDashboard() {
-
-    // --------------------------------------------------
-    // Pastikan elemen halaman tersedia
-    // --------------------------------------------------
-
-    if (
-        !adminDisplayName ||
-        !adminLogoutButton ||
-        !refreshButton ||
-        !adminLoading ||
-        !adminError ||
-        !adminErrorMessage ||
-        !adminContent ||
-        !summaryTotalStudents ||
-        !summaryActivated ||
-        !summaryNotActivated ||
-        !summaryPracticed ||
-        !summaryAccuracy ||
-        !studentSearchInput ||
-        !activationFilter ||
-        !visibleStudentCount ||
-        !studentTableBody ||
-        !emptyStudents ||
-        !resetPinModal ||
-        !resetStudentName ||
-        !cancelResetButton ||
-        !confirmResetButton ||
-        !adminToast
-    ) {
-
-        console.error(
-            "Elemen dashboard admin tidak lengkap."
-        );
-
-        return;
-
-    }
-
-
-    // --------------------------------------------------
-    // Ambil token admin
-    // --------------------------------------------------
 
     adminToken =
         sessionStorage.getItem(
@@ -251,16 +325,8 @@ async function initializeAdminDashboard() {
     }
 
 
-    // --------------------------------------------------
-    // Event
-    // --------------------------------------------------
+    bindEvents();
 
-    bindAdminEvents();
-
-
-    // --------------------------------------------------
-    // Validasi session
-    // --------------------------------------------------
 
     setLoading(
         true
@@ -284,24 +350,16 @@ async function initializeAdminDashboard() {
     }
 
 
-    // --------------------------------------------------
-    // Load siswa
-    // --------------------------------------------------
-
-    await loadStudents();
+    await loadDashboardData();
 
 }
 
 
 // ======================================================
-// BIND EVENTS
+// EVENTS
 // ======================================================
 
-function bindAdminEvents() {
-
-    // --------------------------------------------------
-    // Logout
-    // --------------------------------------------------
+function bindEvents() {
 
     adminLogoutButton.addEventListener(
         "click",
@@ -309,19 +367,11 @@ function bindAdminEvents() {
     );
 
 
-    // --------------------------------------------------
-    // Refresh
-    // --------------------------------------------------
-
     refreshButton.addEventListener(
         "click",
-        loadStudents
+        loadDashboardData
     );
 
-
-    // --------------------------------------------------
-    // Search
-    // --------------------------------------------------
 
     studentSearchInput.addEventListener(
         "input",
@@ -329,19 +379,11 @@ function bindAdminEvents() {
     );
 
 
-    // --------------------------------------------------
-    // Filter
-    // --------------------------------------------------
-
     activationFilter.addEventListener(
         "change",
         renderFilteredStudents
     );
 
-
-    // --------------------------------------------------
-    // Cancel reset
-    // --------------------------------------------------
 
     cancelResetButton.addEventListener(
         "click",
@@ -349,19 +391,35 @@ function bindAdminEvents() {
     );
 
 
-    // --------------------------------------------------
-    // Confirm reset
-    // --------------------------------------------------
-
     confirmResetButton.addEventListener(
         "click",
         confirmResetPin
     );
 
 
-    // --------------------------------------------------
-    // Klik area luar modal
-    // --------------------------------------------------
+    cancelApproveButton.addEventListener(
+        "click",
+        closeApproveModal
+    );
+
+
+    confirmApproveButton.addEventListener(
+        "click",
+        confirmApproveRegistration
+    );
+
+
+    cancelRejectButton.addEventListener(
+        "click",
+        closeRejectModal
+    );
+
+
+    confirmRejectButton.addEventListener(
+        "click",
+        confirmRejectRegistration
+    );
+
 
     resetPinModal.addEventListener(
         "click",
@@ -380,20 +438,77 @@ function bindAdminEvents() {
     );
 
 
-    // --------------------------------------------------
-    // Escape
-    // --------------------------------------------------
+    approveRegistrationModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                approveRegistrationModal
+            ) {
+
+                closeApproveModal();
+
+            }
+
+        }
+    );
+
+
+    rejectRegistrationModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                rejectRegistrationModal
+            ) {
+
+                closeRejectModal();
+
+            }
+
+        }
+    );
+
 
     document.addEventListener(
         "keydown",
         event => {
 
             if (
-                event.key === "Escape" &&
+                event.key !==
+                "Escape"
+            ) {
+
+                return;
+
+            }
+
+
+            if (
                 !resetPinModal.hidden
             ) {
 
                 closeResetModal();
+
+            }
+
+
+            if (
+                !approveRegistrationModal.hidden
+            ) {
+
+                closeApproveModal();
+
+            }
+
+
+            if (
+                !rejectRegistrationModal.hidden
+            ) {
+
+                closeRejectModal();
 
             }
 
@@ -410,19 +525,6 @@ function bindAdminEvents() {
 async function validateAdminSession() {
 
     try {
-
-        if (
-            !window.db
-        ) {
-
-            console.error(
-                "Supabase client tidak tersedia."
-            );
-
-            return false;
-
-        }
-
 
         const {
             data,
@@ -452,7 +554,7 @@ async function validateAdminSession() {
 
 
         const result =
-            normalizeRpcSingleResult(
+            normalizeSingleResult(
                 data
             );
 
@@ -466,10 +568,6 @@ async function validateAdminSession() {
 
         }
 
-
-        // --------------------------------------------------
-        // Nama administrator
-        // --------------------------------------------------
 
         const displayName =
             result.display_name ||
@@ -495,7 +593,7 @@ async function validateAdminSession() {
     } catch (error) {
 
         console.error(
-            "Admin session validation failed:",
+            "Admin session validation error:",
             error
         );
 
@@ -508,10 +606,10 @@ async function validateAdminSession() {
 
 
 // ======================================================
-// LOAD STUDENTS
+// LOAD DASHBOARD
 // ======================================================
 
-async function loadStudents() {
+async function loadDashboardData() {
 
     hideError();
 
@@ -527,58 +625,22 @@ async function loadStudents() {
 
     try {
 
-        if (
-            !window.db
-        ) {
+        await Promise.all([
 
-            throw new Error(
-                "Supabase client tidak tersedia."
-            );
+            loadStudents(),
 
-        }
+            loadPendingRegistrations()
 
+        ]);
 
-        const {
-            data,
-            error
-        } =
-            await window.db.rpc(
-                "get_admin_student_monitoring",
-                {
-                    p_token:
-                        adminToken,
-
-                    p_class_name:
-                        MONITORED_CLASS
-                }
-            );
-
-
-        if (
-            error
-        ) {
-
-            throw error;
-
-        }
-
-
-        students =
-            normalizeStudentArray(
-                data
-            );
-
-
-        // --------------------------------------------------
-        // Reset pencarian/filter tidak dilakukan.
-        // Jadi saat refresh guru tetap berada pada
-        // pencarian yang sama.
-        // --------------------------------------------------
 
         renderSummary();
 
 
         renderFilteredStudents();
+
+
+        renderPendingRegistrations();
 
 
         adminContent.hidden =
@@ -588,7 +650,7 @@ async function loadStudents() {
     } catch (error) {
 
         console.error(
-            "Admin monitoring error:",
+            "Admin dashboard load error:",
             error
         );
 
@@ -609,9 +671,7 @@ async function loadStudents() {
 
 
         showError(
-            getFriendlyMonitoringError(
-                error
-            )
+            "Data admin gagal dimuat. Silakan tekan Perbarui Data."
         );
 
 
@@ -631,200 +691,76 @@ async function loadStudents() {
 
 
 // ======================================================
-// NORMALIZE STUDENT ARRAY
+// LOAD STUDENTS
 // ======================================================
 
-function normalizeStudentArray(
-    data
-) {
+async function loadStudents() {
+
+    const {
+        data,
+        error
+    } =
+        await window.db.rpc(
+            "get_admin_student_monitoring",
+            {
+                p_token:
+                    adminToken,
+
+                p_class_name:
+                    MONITORED_CLASS
+            }
+        );
+
 
     if (
-        data === null ||
-        data === undefined
+        error
     ) {
 
-        return [];
+        throw error;
 
     }
 
 
-    // --------------------------------------------------
-    // JSONB Supabase biasanya langsung menjadi Array
-    // --------------------------------------------------
-
-    if (
-        Array.isArray(
+    students =
+        normalizeArrayResult(
             data
-        )
-    ) {
-
-        return data;
-
-    }
-
-
-    // --------------------------------------------------
-    // Jika response berupa string JSON
-    // --------------------------------------------------
-
-    if (
-        typeof data ===
-        "string"
-    ) {
-
-        try {
-
-            const parsed =
-                JSON.parse(
-                    data
-                );
-
-
-            return Array.isArray(
-                parsed
-            )
-                ? parsed
-                : [];
-
-
-        } catch (error) {
-
-            console.error(
-                "Tidak dapat membaca data monitoring:",
-                error
-            );
-
-
-            return [];
-
-        }
-
-    }
-
-
-    // --------------------------------------------------
-    // Beberapa client dapat membungkus result
-    // --------------------------------------------------
-
-    if (
-        typeof data ===
-        "object"
-    ) {
-
-        if (
-            Array.isArray(
-                data.students
-            )
-        ) {
-
-            return data.students;
-
-        }
-
-
-        if (
-            Array.isArray(
-                data.data
-            )
-        ) {
-
-            return data.data;
-
-        }
-
-    }
-
-
-    return [];
+        );
 
 }
 
 
 // ======================================================
-// NORMALIZE SINGLE RPC
+// LOAD REGISTRATIONS
 // ======================================================
 
-function normalizeRpcSingleResult(
-    data
-) {
+async function loadPendingRegistrations() {
 
-    if (
-        !data
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        Array.isArray(
-            data
-        )
-    ) {
-
-        return data.length > 0
-            ? data[0]
-            : null;
-
-    }
-
-
-    if (
-        typeof data ===
-        "object"
-    ) {
-
-        return data;
-
-    }
-
-
-    if (
-        typeof data ===
-        "string"
-    ) {
-
-        try {
-
-            const parsed =
-                JSON.parse(
-                    data
-                );
-
-
-            if (
-                Array.isArray(
-                    parsed
-                )
-            ) {
-
-                return parsed.length > 0
-                    ? parsed[0]
-                    : null;
-
+    const {
+        data,
+        error
+    } =
+        await window.db.rpc(
+            "get_admin_pending_registrations",
+            {
+                p_token:
+                    adminToken
             }
+        );
 
 
-            return (
-                parsed &&
-                typeof parsed ===
-                    "object"
-            )
-                ? parsed
-                : null;
+    if (
+        error
+    ) {
 
-
-        } catch {
-
-            return null;
-
-        }
+        throw error;
 
     }
 
 
-    return null;
+    pendingRegistrations =
+        normalizeArrayResult(
+            data
+        );
 
 }
 
@@ -835,11 +771,11 @@ function normalizeRpcSingleResult(
 
 function renderSummary() {
 
-    const totalStudents =
+    const total =
         students.length;
 
 
-    const activatedStudents =
+    const activated =
         students.filter(
             student =>
                 student.activation_status ===
@@ -847,7 +783,7 @@ function renderSummary() {
         ).length;
 
 
-    const notActivatedStudents =
+    const notActivated =
         students.filter(
             student =>
                 student.activation_status !==
@@ -855,7 +791,7 @@ function renderSummary() {
         ).length;
 
 
-    const practicedStudents =
+    const practiced =
         students.filter(
             student =>
                 numberValue(
@@ -863,13 +799,6 @@ function renderSummary() {
                 ) > 0
         ).length;
 
-
-    // ==================================================
-    // RATA-RATA AKURASI KELAS
-    //
-    // Hanya siswa yang sudah memiliki jawaban
-    // yang dihitung.
-    // ==================================================
 
     const studentsWithAnswers =
         students.filter(
@@ -888,15 +817,15 @@ function renderSummary() {
         studentsWithAnswers.length > 0
     ) {
 
-        const accuracyTotal =
+        const totalAccuracy =
             studentsWithAnswers.reduce(
                 (
-                    total,
+                    totalValue,
                     student
                 ) => {
 
                     return (
-                        total +
+                        totalValue +
                         numberValue(
                             student.overall_accuracy
                         )
@@ -908,26 +837,26 @@ function renderSummary() {
 
 
         averageAccuracy =
-            accuracyTotal /
+            totalAccuracy /
             studentsWithAnswers.length;
 
     }
 
 
     summaryTotalStudents.textContent =
-        totalStudents;
+        total;
 
 
     summaryActivated.textContent =
-        activatedStudents;
+        activated;
 
 
     summaryNotActivated.textContent =
-        notActivatedStudents;
+        notActivated;
 
 
     summaryPracticed.textContent =
-        practicedStudents;
+        practiced;
 
 
     summaryAccuracy.textContent =
@@ -941,55 +870,239 @@ function renderSummary() {
 
 
 // ======================================================
-// FILTER STUDENTS
+// RENDER PENDING REGISTRATIONS
+// ======================================================
+
+function renderPendingRegistrations() {
+
+    pendingRegistrationList.innerHTML =
+        "";
+
+
+    pendingRegistrationCount.textContent =
+        pendingRegistrations.length;
+
+
+    if (
+        pendingRegistrations.length === 0
+    ) {
+
+        pendingRegistrationEmpty.hidden =
+            false;
+
+
+        return;
+
+    }
+
+
+    pendingRegistrationEmpty.hidden =
+        true;
+
+
+    pendingRegistrations.forEach(
+        registration => {
+
+            const card =
+                createRegistrationCard(
+                    registration
+                );
+
+
+            pendingRegistrationList.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// CREATE REGISTRATION CARD
+// ======================================================
+
+function createRegistrationCard(
+    registration
+) {
+
+    const card =
+        document.createElement(
+            "article"
+        );
+
+
+    card.className =
+        "registration-card";
+
+
+    card.innerHTML = `
+
+        <div class="registration-main">
+
+            <div class="registration-avatar">
+                ${getInitial(
+                    registration.full_name
+                )}
+            </div>
+
+
+            <div>
+
+                <strong class="registration-name">
+                    ${escapeHtml(
+                        registration.full_name ||
+                        "Siswa"
+                    )}
+                </strong>
+
+
+                <div class="registration-meta">
+
+                    <span>
+                        NISN:
+                        <strong>
+                            ${escapeHtml(
+                                registration.nisn_masked ||
+                                "-"
+                            )}
+                        </strong>
+                    </span>
+
+
+                    <span>
+                        WhatsApp:
+                        <strong>
+                            ${escapeHtml(
+                                registration.whatsapp_masked ||
+                                "Tidak diisi"
+                            )}
+                        </strong>
+                    </span>
+
+
+                    <span>
+                        Daftar:
+                        <strong>
+                            ${escapeHtml(
+                                formatDateTime(
+                                    registration.created_at
+                                )
+                            )}
+                        </strong>
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="registration-actions">
+
+            <button
+                type="button"
+                class="registration-reject-button"
+            >
+                Tolak
+            </button>
+
+
+            <button
+                type="button"
+                class="registration-approve-button"
+            >
+                Setujui
+            </button>
+
+        </div>
+
+    `;
+
+
+    const approveButton =
+        card.querySelector(
+            ".registration-approve-button"
+        );
+
+
+    const rejectButton =
+        card.querySelector(
+            ".registration-reject-button"
+        );
+
+
+    approveButton.addEventListener(
+        "click",
+        () => {
+
+            openApproveModal(
+                registration
+            );
+
+        }
+    );
+
+
+    rejectButton.addEventListener(
+        "click",
+        () => {
+
+            openRejectModal(
+                registration
+            );
+
+        }
+    );
+
+
+    return card;
+
+}
+
+
+// ======================================================
+// STUDENT FILTER
 // ======================================================
 
 function renderFilteredStudents() {
 
-    const searchText =
+    const search =
         studentSearchInput.value
             .trim()
             .toLowerCase();
 
 
-    const selectedStatus =
+    const status =
         activationFilter.value;
 
 
-    const filteredStudents =
+    const filtered =
         students.filter(
             student => {
 
-                const studentName =
+                const name =
                     String(
                         student.full_name ||
                         ""
-                    )
-                        .toLowerCase();
+                    ).toLowerCase();
 
-
-                // ------------------------------------------
-                // Search
-                // ------------------------------------------
 
                 const matchesSearch =
-                    searchText === ""
+                    search === ""
                     ||
-                    studentName.includes(
-                        searchText
+                    name.includes(
+                        search
                     );
 
 
-                // ------------------------------------------
-                // Status
-                // ------------------------------------------
-
                 const matchesStatus =
-                    selectedStatus ===
-                        "all"
+                    status === "all"
                     ||
                     student.activation_status ===
-                        selectedStatus;
+                        status;
 
 
                 return (
@@ -1002,14 +1115,14 @@ function renderFilteredStudents() {
 
 
     renderStudentTable(
-        filteredStudents
+        filtered
     );
 
 }
 
 
 // ======================================================
-// RENDER STUDENT TABLE
+// STUDENT TABLE
 // ======================================================
 
 function renderStudentTable(
@@ -1023,10 +1136,6 @@ function renderStudentTable(
     visibleStudentCount.textContent =
         studentList.length;
 
-
-    // --------------------------------------------------
-    // Empty
-    // --------------------------------------------------
 
     if (
         studentList.length === 0
@@ -1045,21 +1154,13 @@ function renderStudentTable(
         true;
 
 
-    // --------------------------------------------------
-    // Rows
-    // --------------------------------------------------
-
     studentList.forEach(
         student => {
 
-            const row =
+            studentTableBody.appendChild(
                 createStudentRow(
                     student
-                );
-
-
-            studentTableBody.appendChild(
-                row
+                )
             );
 
         }
@@ -1082,31 +1183,6 @@ function createStudentRow(
         );
 
 
-    const activationStatus =
-        String(
-            student.activation_status ||
-            "-"
-        );
-
-
-    const statusClass =
-        getStatusClass(
-            activationStatus
-        );
-
-
-    const practiceSessions =
-        numberValue(
-            student.practice_sessions
-        );
-
-
-    const masteredLevels =
-        numberValue(
-            student.mastered_levels
-        );
-
-
     const totalAnswers =
         numberValue(
             student.total_answers
@@ -1119,22 +1195,11 @@ function createStudentRow(
         );
 
 
-    const accuracyClass =
-        getAccuracyClass(
-            accuracy,
-            totalAnswers
-        );
-
-
     const averageResponse =
         nullableNumber(
             student.average_response_time_ms
         );
 
-
-    // ==================================================
-    // HTML
-    // ==================================================
 
     row.innerHTML = `
 
@@ -1155,11 +1220,14 @@ function createStudentRow(
             <span
                 class="
                     admin-status
-                    ${statusClass}
+                    ${getStatusClass(
+                        student.activation_status
+                    )}
                 "
             >
                 ${escapeHtml(
-                    activationStatus
+                    student.activation_status ||
+                    "-"
                 )}
             </span>
 
@@ -1167,12 +1235,16 @@ function createStudentRow(
 
 
         <td>
-            ${practiceSessions}
+            ${numberValue(
+                student.practice_sessions
+            )}
         </td>
 
 
         <td>
-            ${masteredLevels}
+            ${numberValue(
+                student.mastered_levels
+            )}
         </td>
 
 
@@ -1185,7 +1257,9 @@ function createStudentRow(
                         <span
                             class="
                                 admin-accuracy
-                                ${accuracyClass}
+                                ${getAccuracyClass(
+                                    accuracy
+                                )}
                             "
                         >
                             ${Math.round(
@@ -1216,8 +1290,10 @@ function createStudentRow(
 
 
         <td>
-            ${formatDateTime(
-                student.last_practice_at
+            ${escapeHtml(
+                formatDateTime(
+                    student.last_practice_at
+                )
             )}
         </td>
 
@@ -1225,8 +1301,8 @@ function createStudentRow(
         <td>
 
             <button
-                class="admin-reset-button"
                 type="button"
+                class="admin-reset-button"
             >
                 Reset PIN
             </button>
@@ -1236,21 +1312,11 @@ function createStudentRow(
     `;
 
 
-    // ==================================================
-    // RESET BUTTON
-    // ==================================================
-
-    const resetButton =
-        row.querySelector(
+    row
+        .querySelector(
             ".admin-reset-button"
-        );
-
-
-    if (
-        resetButton
-    ) {
-
-        resetButton.addEventListener(
+        )
+        .addEventListener(
             "click",
             () => {
 
@@ -1261,8 +1327,6 @@ function createStudentRow(
             }
         );
 
-    }
-
 
     return row;
 
@@ -1270,7 +1334,607 @@ function createStudentRow(
 
 
 // ======================================================
-// STATUS CLASS
+// RESET PIN MODAL
+// ======================================================
+
+function openResetModal(
+    student
+) {
+
+    if (
+        !student?.student_id
+    ) {
+
+        return;
+
+    }
+
+
+    selectedStudent =
+        student;
+
+
+    resetStudentName.textContent =
+        student.full_name ||
+        "siswa";
+
+
+    resetPinModal.hidden =
+        false;
+
+}
+
+
+function closeResetModal() {
+
+    resetPinModal.hidden =
+        true;
+
+
+    selectedStudent =
+        null;
+
+
+    confirmResetButton.disabled =
+        false;
+
+
+    cancelResetButton.disabled =
+        false;
+
+
+    confirmResetButton.textContent =
+        "Reset PIN";
+
+}
+
+
+// ======================================================
+// RESET PIN
+// ======================================================
+
+async function confirmResetPin() {
+
+    if (
+        !selectedStudent?.student_id
+    ) {
+
+        return;
+
+    }
+
+
+    confirmResetButton.disabled =
+        true;
+
+
+    cancelResetButton.disabled =
+        true;
+
+
+    confirmResetButton.textContent =
+        "Memproses...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await window.db.rpc(
+                "admin_reset_student_pin_by_id",
+                {
+                    p_token:
+                        adminToken,
+
+                    p_student_id:
+                        selectedStudent.student_id
+                }
+            );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+
+        }
+
+
+        const result =
+            normalizeSingleResult(
+                data
+            );
+
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+
+            throw new Error(
+                "Reset PIN gagal."
+            );
+
+        }
+
+
+        const name =
+            selectedStudent.full_name ||
+            "Siswa";
+
+
+        closeResetModal();
+
+
+        showToast(
+            `PIN ${name} berhasil direset.`
+        );
+
+
+        await loadDashboardData();
+
+
+    } catch (error) {
+
+        handleActionError(
+            error,
+            "Reset PIN gagal."
+        );
+
+    } finally {
+
+        confirmResetButton.disabled =
+            false;
+
+
+        cancelResetButton.disabled =
+            false;
+
+
+        confirmResetButton.textContent =
+            "Reset PIN";
+
+    }
+
+}
+
+
+// ======================================================
+// APPROVE MODAL
+// ======================================================
+
+function openApproveModal(
+    registration
+) {
+
+    selectedRegistration =
+        registration;
+
+
+    approveRegistrationName.textContent =
+        registration.full_name ||
+        "siswa";
+
+
+    approveRegistrationModal.hidden =
+        false;
+
+}
+
+
+function closeApproveModal() {
+
+    approveRegistrationModal.hidden =
+        true;
+
+
+    selectedRegistration =
+        null;
+
+
+    confirmApproveButton.disabled =
+        false;
+
+
+    cancelApproveButton.disabled =
+        false;
+
+
+    confirmApproveButton.textContent =
+        "Setujui";
+
+}
+
+
+// ======================================================
+// APPROVE REGISTRATION
+// ======================================================
+
+async function confirmApproveRegistration() {
+
+    if (
+        !selectedRegistration?.id
+    ) {
+
+        return;
+
+    }
+
+
+    const registrationId =
+        selectedRegistration.id;
+
+
+    const registrationName =
+        selectedRegistration.full_name ||
+        "Siswa";
+
+
+    confirmApproveButton.disabled =
+        true;
+
+
+    cancelApproveButton.disabled =
+        true;
+
+
+    confirmApproveButton.textContent =
+        "Memproses...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await window.db.rpc(
+                "admin_approve_student_registration",
+                {
+                    p_token:
+                        adminToken,
+
+                    p_request_id:
+                        registrationId,
+
+                    p_class_name:
+                        MONITORED_CLASS
+                }
+            );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+
+        }
+
+
+        const result =
+            normalizeSingleResult(
+                data
+            );
+
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+
+            throw new Error(
+                "Persetujuan gagal."
+            );
+
+        }
+
+
+        closeApproveModal();
+
+
+        showToast(
+            `${registrationName} berhasil disetujui.`
+        );
+
+
+        await loadDashboardData();
+
+
+    } catch (error) {
+
+        handleActionError(
+            error,
+            "Pendaftaran gagal disetujui."
+        );
+
+    } finally {
+
+        confirmApproveButton.disabled =
+            false;
+
+
+        cancelApproveButton.disabled =
+            false;
+
+
+        confirmApproveButton.textContent =
+            "Setujui";
+
+    }
+
+}
+
+
+// ======================================================
+// REJECT MODAL
+// ======================================================
+
+function openRejectModal(
+    registration
+) {
+
+    selectedRegistration =
+        registration;
+
+
+    rejectRegistrationName.textContent =
+        registration.full_name ||
+        "siswa";
+
+
+    rejectReason.value =
+        "";
+
+
+    rejectRegistrationModal.hidden =
+        false;
+
+}
+
+
+function closeRejectModal() {
+
+    rejectRegistrationModal.hidden =
+        true;
+
+
+    selectedRegistration =
+        null;
+
+
+    rejectReason.value =
+        "";
+
+
+    confirmRejectButton.disabled =
+        false;
+
+
+    cancelRejectButton.disabled =
+        false;
+
+
+    confirmRejectButton.textContent =
+        "Tolak";
+
+}
+
+
+// ======================================================
+// REJECT REGISTRATION
+// ======================================================
+
+async function confirmRejectRegistration() {
+
+    if (
+        !selectedRegistration?.id
+    ) {
+
+        return;
+
+    }
+
+
+    const registrationId =
+        selectedRegistration.id;
+
+
+    const registrationName =
+        selectedRegistration.full_name ||
+        "Siswa";
+
+
+    const reason =
+        rejectReason.value
+            .trim();
+
+
+    confirmRejectButton.disabled =
+        true;
+
+
+    cancelRejectButton.disabled =
+        true;
+
+
+    confirmRejectButton.textContent =
+        "Memproses...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await window.db.rpc(
+                "admin_reject_student_registration",
+                {
+                    p_token:
+                        adminToken,
+
+                    p_request_id:
+                        registrationId,
+
+                    p_reason:
+                        reason === ""
+                            ? null
+                            : reason
+                }
+            );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+
+        }
+
+
+        const result =
+            normalizeSingleResult(
+                data
+            );
+
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+
+            throw new Error(
+                "Penolakan gagal."
+            );
+
+        }
+
+
+        closeRejectModal();
+
+
+        showToast(
+            `Pendaftaran ${registrationName} ditolak.`
+        );
+
+
+        await loadDashboardData();
+
+
+    } catch (error) {
+
+        handleActionError(
+            error,
+            "Pendaftaran gagal ditolak."
+        );
+
+    } finally {
+
+        confirmRejectButton.disabled =
+            false;
+
+
+        cancelRejectButton.disabled =
+            false;
+
+
+        confirmRejectButton.textContent =
+            "Tolak";
+
+    }
+
+}
+
+
+// ======================================================
+// ACTION ERROR
+// ======================================================
+
+function handleActionError(
+    error,
+    fallbackMessage
+) {
+
+    console.error(
+        "Admin action error:",
+        error
+    );
+
+
+    if (
+        isInvalidAdminSessionError(
+            error
+        )
+    ) {
+
+        clearAdminSession();
+
+        redirectToAdminLogin();
+
+        return;
+
+    }
+
+
+    showToast(
+        fallbackMessage
+    );
+
+}
+
+
+// ======================================================
+// LOGOUT
+// ======================================================
+
+async function logoutAdmin() {
+
+    adminLogoutButton.disabled =
+        true;
+
+
+    try {
+
+        if (
+            adminToken
+        ) {
+
+            await window.db.rpc(
+                "admin_logout",
+                {
+                    p_token:
+                        adminToken
+                }
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Admin logout error:",
+            error
+        );
+
+    }
+
+
+    clearAdminSession();
+
+
+    redirectToAdminLogin();
+
+}
+
+
+// ======================================================
+// STATUS
 // ======================================================
 
 function getStatusClass(
@@ -1303,24 +1967,12 @@ function getStatusClass(
 
 
 // ======================================================
-// ACCURACY CLASS
+// ACCURACY
 // ======================================================
 
 function getAccuracyClass(
-    accuracy,
-    totalAnswers
+    accuracy
 ) {
-
-    if (
-        numberValue(
-            totalAnswers
-        ) === 0
-    ) {
-
-        return "";
-
-    }
-
 
     if (
         accuracy >= 80
@@ -1341,325 +1993,6 @@ function getAccuracyClass(
 
 
     return "low";
-
-}
-
-
-// ======================================================
-// OPEN RESET MODAL
-// ======================================================
-
-function openResetModal(
-    student
-) {
-
-    if (
-        !student ||
-        !student.student_id
-    ) {
-
-        showToast(
-            "Data siswa tidak lengkap."
-        );
-
-
-        return;
-
-    }
-
-
-    selectedStudent =
-        student;
-
-
-    resetStudentName.textContent =
-        student.full_name ||
-        "siswa";
-
-
-    confirmResetButton.disabled =
-        false;
-
-
-    cancelResetButton.disabled =
-        false;
-
-
-    confirmResetButton.textContent =
-        "Reset PIN";
-
-
-    resetPinModal.hidden =
-        false;
-
-}
-
-
-// ======================================================
-// CLOSE RESET MODAL
-// ======================================================
-
-function closeResetModal() {
-
-    resetPinModal.hidden =
-        true;
-
-
-    selectedStudent =
-        null;
-
-
-    confirmResetButton.disabled =
-        false;
-
-
-    cancelResetButton.disabled =
-        false;
-
-
-    confirmResetButton.textContent =
-        "Reset PIN";
-
-}
-
-
-// ======================================================
-// CONFIRM RESET PIN
-// ======================================================
-
-async function confirmResetPin() {
-
-    if (
-        !selectedStudent ||
-        !selectedStudent.student_id
-    ) {
-
-        return;
-
-    }
-
-
-    const studentId =
-        selectedStudent.student_id;
-
-
-    const studentName =
-        selectedStudent.full_name ||
-        "Siswa";
-
-
-    // --------------------------------------------------
-    // Disable buttons
-    // --------------------------------------------------
-
-    confirmResetButton.disabled =
-        true;
-
-
-    cancelResetButton.disabled =
-        true;
-
-
-    confirmResetButton.textContent =
-        "Memproses...";
-
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await window.db.rpc(
-                "admin_reset_student_pin_by_id",
-                {
-                    p_token:
-                        adminToken,
-
-                    p_student_id:
-                        studentId
-                }
-            );
-
-
-        if (
-            error
-        ) {
-
-            throw error;
-
-        }
-
-
-        const result =
-            normalizeRpcSingleResult(
-                data
-            );
-
-
-        if (
-            !result ||
-            result.success !== true
-        ) {
-
-            throw new Error(
-                "Reset PIN tidak berhasil."
-            );
-
-        }
-
-
-        // ==================================================
-        // SUCCESS
-        // ==================================================
-
-        closeResetModal();
-
-
-        showToast(
-            `PIN ${studentName} berhasil direset menjadi 123456.`
-        );
-
-
-        // --------------------------------------------------
-        // Refresh monitoring
-        // --------------------------------------------------
-
-        await loadStudents();
-
-
-    } catch (error) {
-
-        console.error(
-            "Reset PIN error:",
-            error
-        );
-
-
-        if (
-            isInvalidAdminSessionError(
-                error
-            )
-        ) {
-
-            clearAdminSession();
-
-            redirectToAdminLogin();
-
-            return;
-
-        }
-
-
-        showToast(
-            "Reset PIN gagal. Silakan coba kembali."
-        );
-
-
-    } finally {
-
-        confirmResetButton.disabled =
-            false;
-
-
-        cancelResetButton.disabled =
-            false;
-
-
-        confirmResetButton.textContent =
-            "Reset PIN";
-
-    }
-
-}
-
-
-// ======================================================
-// LOGOUT ADMIN
-// ======================================================
-
-async function logoutAdmin() {
-
-    adminLogoutButton.disabled =
-        true;
-
-
-    refreshButton.disabled =
-        true;
-
-
-    try {
-
-        if (
-            adminToken &&
-            window.db
-        ) {
-
-            await window.db.rpc(
-                "admin_logout",
-                {
-                    p_token:
-                        adminToken
-                }
-            );
-
-        }
-
-
-    } catch (error) {
-
-        /*
-         * Logout browser tetap dilakukan meskipun
-         * request ke server gagal.
-         */
-
-        console.error(
-            "Admin logout error:",
-            error
-        );
-
-    }
-
-
-    clearAdminSession();
-
-
-    redirectToAdminLogin();
-
-}
-
-
-// ======================================================
-// CLEAR ADMIN SESSION
-// ======================================================
-
-function clearAdminSession() {
-
-    sessionStorage.removeItem(
-        "admin_session_token"
-    );
-
-
-    sessionStorage.removeItem(
-        "admin_display_name"
-    );
-
-
-    adminToken =
-        null;
-
-}
-
-
-// ======================================================
-// REDIRECT
-// ======================================================
-
-function redirectToAdminLogin() {
-
-    window.location.replace(
-        "admin-login.html"
-    );
 
 }
 
@@ -1719,7 +2052,7 @@ function hideError() {
 
 
 // ======================================================
-// INVALID ADMIN SESSION ERROR
+// INVALID SESSION
 // ======================================================
 
 function isInvalidAdminSessionError(
@@ -1751,57 +2084,32 @@ function isInvalidAdminSessionError(
 
 
 // ======================================================
-// FRIENDLY MONITORING ERROR
+// SESSION
 // ======================================================
 
-function getFriendlyMonitoringError(
-    error
-) {
+function clearAdminSession() {
 
-    const message =
-        String(
-            error?.message ||
-            ""
-        ).toLowerCase();
+    sessionStorage.removeItem(
+        "admin_session_token"
+    );
 
 
-    if (
-        message.includes(
-            "get_admin_student_monitoring"
-        )
-        &&
-        (
-            message.includes(
-                "function"
-            )
-            ||
-            message.includes(
-                "schema cache"
-            )
-        )
-    ) {
-
-        return "Fungsi monitoring admin belum tersedia di server.";
-
-    }
+    sessionStorage.removeItem(
+        "admin_display_name"
+    );
 
 
-    if (
-        message.includes(
-            "fetch"
-        )
-        ||
-        message.includes(
-            "network"
-        )
-    ) {
+    adminToken =
+        null;
 
-        return "Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba kembali.";
-
-    }
+}
 
 
-    return "Data siswa gagal dimuat. Silakan tekan Perbarui Data.";
+function redirectToAdminLogin() {
+
+    window.location.replace(
+        "admin-login.html"
+    );
 
 }
 
@@ -1852,7 +2160,151 @@ function showToast(
 
 
 // ======================================================
-// NUMBER VALUE
+// NORMALIZE ARRAY
+// ======================================================
+
+function normalizeArrayResult(
+    data
+) {
+
+    if (
+        data === null ||
+        data === undefined
+    ) {
+
+        return [];
+
+    }
+
+
+    if (
+        Array.isArray(
+            data
+        )
+    ) {
+
+        return data;
+
+    }
+
+
+    if (
+        typeof data ===
+        "string"
+    ) {
+
+        try {
+
+            const parsed =
+                JSON.parse(
+                    data
+                );
+
+
+            return Array.isArray(
+                parsed
+            )
+                ? parsed
+                : [];
+
+
+        } catch {
+
+            return [];
+
+        }
+
+    }
+
+
+    return [];
+
+}
+
+
+// ======================================================
+// NORMALIZE SINGLE
+// ======================================================
+
+function normalizeSingleResult(
+    data
+) {
+
+    if (
+        !data
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        Array.isArray(
+            data
+        )
+    ) {
+
+        return data[0] ||
+            null;
+
+    }
+
+
+    if (
+        typeof data ===
+        "object"
+    ) {
+
+        return data;
+
+    }
+
+
+    if (
+        typeof data ===
+        "string"
+    ) {
+
+        try {
+
+            const parsed =
+                JSON.parse(
+                    data
+                );
+
+
+            if (
+                Array.isArray(
+                    parsed
+                )
+            ) {
+
+                return parsed[0] ||
+                    null;
+
+            }
+
+
+            return parsed;
+
+
+        } catch {
+
+            return null;
+
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+// ======================================================
+// NUMBER
 // ======================================================
 
 function numberValue(
@@ -1873,10 +2325,6 @@ function numberValue(
 
 }
 
-
-// ======================================================
-// NULLABLE NUMBER
-// ======================================================
 
 function nullableNumber(
     value
@@ -1916,25 +2364,21 @@ function formatResponseTime(
     milliseconds
 ) {
 
-    const number =
+    const seconds =
         Number(
             milliseconds
-        );
+        ) / 1000;
 
 
     if (
         !Number.isFinite(
-            number
+            seconds
         )
     ) {
 
         return "-";
 
     }
-
-
-    const seconds =
-        number / 1000;
 
 
     return `${
@@ -2005,6 +2449,29 @@ function formatDateTime(
             minute:
                 "2-digit"
         }
+    );
+
+}
+
+
+// ======================================================
+// INITIAL
+// ======================================================
+
+function getInitial(
+    value
+) {
+
+    const text =
+        String(
+            value ||
+            "S"
+        ).trim();
+
+
+    return escapeHtml(
+        text.charAt(0)
+            .toUpperCase()
     );
 
 }
