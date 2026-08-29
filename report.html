@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Laporan Belajar - Latihan Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/report.css"
+    >
+</head>
+
+<body class="report-page">
+
+    <header class="report-header">
+
+        <div class="report-header-inner">
+
+            <a
+                href="dashboard.html"
+                class="report-back-link"
+            >
+                ← Dashboard
+            </a>
+
+            <div>
+                <h1>
+                    Laporan Belajar
+                </h1>
+
+                <p>
+                    Perkembangan kemampuan berdasarkan hasil latihan.
+                </p>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="report-shell">
+
+
+        <!-- ================================================= -->
+        <!-- LOADING                                           -->
+        <!-- ================================================= -->
+
+        <section
+            id="reportLoading"
+            class="report-loading"
+        >
+
+            <div class="report-spinner"></div>
+
+            <p>
+                Menyiapkan laporan...
+            </p>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- ERROR                                             -->
+        <!-- ================================================= -->
+
+        <section
+            id="reportError"
+            class="report-error-card"
+            hidden
+        >
+
+            <div class="report-error-icon">
+                !
+            </div>
+
+            <h2>
+                Laporan Tidak Tersedia
+            </h2>
+
+            <p id="reportErrorMessage">
+                Tidak dapat memuat laporan.
+            </p>
+
+            <a
+                href="dashboard.html"
+                class="report-primary-button"
+            >
+                Kembali ke Dashboard
+            </a>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- CONTENT                                           -->
+        <!-- ================================================= -->
+
+        <div
+            id="reportContent"
+            hidden
+        >
+
+
+            <!-- ============================================= -->
+            <!-- STUDENT                                      -->
+            <!-- ============================================= -->
+
+            <section class="student-report-card">
+
+                <div>
+
+                    <span class="report-eyebrow">
+                        LAPORAN SISWA
+                    </span>
+
+                    <h2 id="studentName">
+                        -
+                    </h2>
+
+                    <p id="studentClass">
+                        -
+                    </p>
+
+                </div>
+
+
+                <div class="report-generated">
+
+                    <span>
+                        Diperbarui
+                    </span>
+
+                    <strong id="generatedAt">
+                        -
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- OVERALL SUMMARY                               -->
+            <!-- ============================================= -->
+
+            <section class="report-section">
+
+                <div class="report-section-heading">
+
+                    <div>
+
+                        <span class="report-eyebrow">
+                            RINGKASAN
+                        </span>
+
+                        <h2>
+                            Perkembangan Keseluruhan
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary-grid">
+
+                    <article class="summary-card">
+
+                        <span class="summary-label">
+                            Level Dikuasai
+                        </span>
+
+                        <strong
+                            id="masteredLevels"
+                            class="summary-value"
+                        >
+                            0 / 0
+                        </strong>
+
+                        <div class="summary-progress-track">
+
+                            <div
+                                id="masteredProgressBar"
+                                class="summary-progress-fill"
+                            ></div>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="summary-label">
+                            Akurasi Keseluruhan
+                        </span>
+
+                        <strong
+                            id="overallAccuracy"
+                            class="summary-value"
+                        >
+                            0%
+                        </strong>
+
+                        <span class="summary-caption">
+                            Berdasarkan seluruh jawaban
+                        </span>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="summary-label">
+                            Sesi Latihan
+                        </span>
+
+                        <strong
+                            id="practiceSessions"
+                            class="summary-value"
+                        >
+                            0
+                        </strong>
+
+                        <span class="summary-caption">
+                            Total latihan yang diselesaikan
+                        </span>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="summary-label">
+                            Rata-rata Respons
+                        </span>
+
+                        <strong
+                            id="averageResponse"
+                            class="summary-value"
+                        >
+                            -
+                        </strong>
+
+                        <span class="summary-caption">
+                            Jawaban benar dan salah
+                        </span>
+
+                    </article>
+
+                </div>
+
+
+                <article class="analysis-card">
+
+                    <div class="analysis-icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <span class="analysis-label">
+                            Analisis
+                        </span>
+
+                        <p id="overallAnalysis">
+                            -
+                        </p>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- STAGES                                       -->
+            <!-- ============================================= -->
+
+            <section class="report-section">
+
+                <div class="report-section-heading">
+
+                    <div>
+
+                        <span class="report-eyebrow">
+                            TINGKAT & LEVEL
+                        </span>
+
+                        <h2>
+                            Progress Kemampuan
+                        </h2>
+
+                        <p>
+                            Lihat level yang sudah dikuasai dan yang
+                            masih perlu dilatih.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="stagesContainer"
+                    class="stages-report-list"
+                ></div>
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- WEAK / STRONG FACTS                           -->
+            <!-- ============================================= -->
+
+            <section class="report-section">
+
+                <div class="report-section-heading">
+
+                    <div>
+
+                        <span class="report-eyebrow">
+                            POLA JAWABAN
+                        </span>
+
+                        <h2>
+                            Fakta Perkalian
+                        </h2>
+
+                        <p>
+                            Analisis menggunakan fakta yang sudah
+                            muncul minimal dua kali.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="facts-layout">
+
+                    <article class="facts-panel">
+
+                        <div class="facts-panel-heading">
+
+                            <div class="facts-status weak">
+                                !
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Perlu Dilatih
+                                </h3>
+
+                                <p>
+                                    Fakta dengan akurasi yang masih rendah.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="weakFactsContainer"
+                            class="facts-list"
+                        ></div>
+
+                    </article>
+
+
+                    <article class="facts-panel">
+
+                        <div class="facts-panel-heading">
+
+                            <div class="facts-status strong">
+                                ✓
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Sudah Kuat
+                                </h3>
+
+                                <p>
+                                    Fakta yang sudah dijawab dengan konsisten.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="strongFactsContainer"
+                            class="facts-list"
+                        ></div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- COLUMN ANALYSIS                               -->
+            <!-- ============================================= -->
+
+            <section
+                id="columnAnalysisSection"
+                class="report-section"
+                hidden
+            >
+
+                <div class="report-section-heading">
+
+                    <div>
+
+                        <span class="report-eyebrow">
+                            PERKALIAN BERSUSUN
+                        </span>
+
+                        <h2>
+                            Analisis Langkah Pengerjaan
+                        </h2>
+
+                        <p>
+                            Membantu melihat pada bagian mana kesalahan
+                            paling sering terjadi.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="column-analysis-grid">
+
+                    <article class="column-analysis-card">
+
+                        <span>
+                            Langkah Satuan
+                        </span>
+
+                        <strong id="partial1Accuracy">
+                            -
+                        </strong>
+
+                        <small id="partial1Attempts">
+                            -
+                        </small>
+
+                    </article>
+
+
+                    <article class="column-analysis-card">
+
+                        <span>
+                            Langkah Puluhan
+                        </span>
+
+                        <strong id="partial2Accuracy">
+                            -
+                        </strong>
+
+                        <small id="partial2Attempts">
+                            -
+                        </small>
+
+                    </article>
+
+
+                    <article class="column-analysis-card">
+
+                        <span>
+                            Hasil Akhir
+                        </span>
+
+                        <strong id="finalAccuracy">
+                            -
+                        </strong>
+
+                        <small id="finalAttempts">
+                            -
+                        </small>
+
+                    </article>
+
+                </div>
+
+
+                <article class="analysis-card">
+
+                    <div class="analysis-icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <span class="analysis-label">
+                            Fokus Latihan
+                        </span>
+
+                        <p id="columnAnalysisText">
+                            -
+                        </p>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- FOOTER                                       -->
+            <!-- ============================================= -->
+
+            <div class="report-bottom-actions">
+
+                <a
+                    href="dashboard.html"
+                    class="report-secondary-button"
+                >
+                    Dashboard
+                </a>
+
+                <a
+                    href="topics.html?subject=MATEMATIKA"
+                    class="report-primary-button"
+                >
+                    Lanjut Latihan
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+    <script src="js/config.js"></script>
+
+    <script src="js/report.js"></script>
+
+</body>
+</html>
