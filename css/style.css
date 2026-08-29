@@ -2,31 +2,17 @@
     box-sizing: border-box;
 }
 
-html {
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-}
-
 body {
     margin: 0;
+
+    font-family:
+        Arial,
+        sans-serif;
+
     background: #f5f7fb;
+
     color: #172033;
 }
-
-button,
-input {
-    font: inherit;
-}
-
-
-/* =============================
-   LOGIN
-============================= */
 
 .login-page {
     min-height: 100vh;
@@ -35,52 +21,46 @@ input {
     align-items: center;
     justify-content: center;
 
-    padding: 24px;
+    padding: 20px;
 }
 
 .login-card {
     width: 100%;
-    max-width: 430px;
+    max-width: 420px;
 
-    padding: 34px;
+    padding: 32px;
 
-    background: #ffffff;
+    background: white;
 
-    border-radius: 26px;
+    border-radius: 20px;
 
     box-shadow:
-        0 20px 60px
-        rgba(28, 42, 70, 0.10);
+        0 15px 40px
+        rgba(0,0,0,0.08);
 }
 
 .logo-box {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
 
     display: grid;
     place-items: center;
 
-    margin-bottom: 22px;
-
-    border-radius: 18px;
+    margin-bottom: 20px;
 
     background: #315efb;
     color: white;
 
+    border-radius: 16px;
+
     font-size: 28px;
-    font-weight: 800;
-}
-
-.login-card h1 {
-    margin: 0 0 7px;
-
-    font-size: 30px;
+    font-weight: bold;
 }
 
 .subtitle {
-    margin: 0 0 30px;
+    color: #777;
 
-    color: #717b8e;
+    margin-bottom: 30px;
 }
 
 .form-group label {
@@ -88,43 +68,35 @@ input {
 
     margin-bottom: 8px;
 
-    font-size: 14px;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .form-group input {
     width: 100%;
 
-    padding: 15px 16px;
+    padding: 14px;
 
-    border: 2px solid #e2e6ed;
-    border-radius: 13px;
+    border:
+        2px solid
+        #ddd;
 
-    outline: none;
+    border-radius: 10px;
 
     font-size: 18px;
-}
-
-.form-group input:focus {
-    border-color: #315efb;
 }
 
 .button {
     width: 100%;
 
-    padding: 15px;
+    padding: 14px;
 
-    border: none;
-    border-radius: 13px;
+    border: 0;
 
-    font-weight: 700;
+    border-radius: 10px;
 
     cursor: pointer;
-}
 
-.button:disabled {
-    opacity: 0.6;
-    cursor: wait;
+    font-weight: bold;
 }
 
 .button-primary {
@@ -133,31 +105,27 @@ input {
 }
 
 .button-secondary {
-    background: #edf1ff;
-    color: #3155d7;
+    background: #eef1ff;
+    color: #315efb;
 }
 
 .message {
-    min-height: 22px;
+    min-height: 25px;
 
-    margin: 8px 0 8px;
-
-    font-size: 14px;
+    margin: 7px 0;
 }
 
 .message-error {
-    color: #c82e37;
+    color: red;
 }
 
 .separator {
     display: flex;
     align-items: center;
 
-    gap: 12px;
+    gap: 10px;
 
-    margin: 25px 0;
-
-    color: #8993a4;
+    margin: 20px 0;
 }
 
 .separator span {
@@ -165,135 +133,55 @@ input {
 
     height: 1px;
 
-    background: #e2e6ec;
-}
-
-.separator p {
-    margin: 0;
+    background: #ddd;
 }
 
 .guest-text {
-    margin: 13px 0 0;
-
     text-align: center;
 
-    color: #858fa0;
+    color: #888;
 
     font-size: 13px;
 }
 
-
-/* =============================
-   TOPBAR
-============================= */
-
 .topbar {
-    min-height: 76px;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
 
-    padding:
-        0
-        max(
-            22px,
-            calc((100vw - 1100px) / 2)
-        );
+    padding: 20px;
 
     background: white;
-
-    border-bottom:
-        1px solid #e5e9ef;
 }
-
-.topbar small {
-    display: block;
-
-    margin-bottom: 3px;
-
-    color: #8791a2;
-
-    font-size: 11px;
-}
-
-.logout-button {
-    padding: 9px 15px;
-
-    border: 1px solid #dbe0e8;
-    border-radius: 10px;
-
-    background: white;
-
-    cursor: pointer;
-}
-
-
-/* =============================
-   DASHBOARD
-============================= */
 
 .dashboard {
     width: min(
-        1100px,
-        calc(100% - 44px)
+        1000px,
+        calc(100% - 30px)
     );
 
-    margin: 35px auto 70px;
+    margin: 30px auto;
 }
 
 .welcome-card {
-    margin-bottom: 32px;
+    padding: 25px;
 
-    padding: 30px;
+    margin-bottom: 30px;
 
-    border-radius: 24px;
+    border-radius: 20px;
 
     background: #315efb;
     color: white;
 }
 
-.welcome-card p {
-    margin: 0;
-
-    opacity: 0.8;
-}
-
-.welcome-card h1 {
-    margin: 5px 0;
-}
-
 .guest-notice {
-    margin-bottom: 32px;
+    padding: 20px;
 
-    padding: 20px 24px;
+    margin-bottom: 30px;
 
-    border-radius: 17px;
+    border-radius: 15px;
 
-    background: #fff1c9;
-
-    color: #624600;
-}
-
-.guest-notice p {
-    margin: 6px 0 0;
-}
-
-.section-title p {
-    margin: 0;
-
-    color: #778298;
-
-    font-size: 12px;
-    font-weight: 800;
-
-    letter-spacing: 0.08em;
-}
-
-.section-title h2 {
-    margin: 5px 0 22px;
-
-    font-size: 27px;
+    background: #fff2c7;
 }
 
 .subject-grid {
@@ -302,98 +190,74 @@ input {
     grid-template-columns:
         repeat(2, 1fr);
 
-    gap: 18px;
+    gap: 15px;
 }
 
 .subject-card {
-    min-height: 150px;
-
     display: flex;
+    gap: 20px;
     align-items: center;
 
-    gap: 20px;
+    min-height: 130px;
 
-    padding: 24px;
+    padding: 20px;
 
-    border: 1px solid #e0e5ed;
-    border-radius: 21px;
+    border:
+        1px solid
+        #ddd;
+
+    border-radius: 16px;
 
     background: white;
 
     text-align: left;
-
-    cursor: pointer;
-}
-
-button.subject-card:hover {
-    border-color: #bfcaf8;
-
-    box-shadow:
-        0 12px 30px
-        rgba(28, 47, 90, 0.07);
 }
 
 .subject-icon {
-    min-width: 62px;
-    height: 62px;
+    width: 55px;
+    height: 55px;
 
     display: grid;
     place-items: center;
 
-    border-radius: 17px;
-
-    background: #edf1ff;
+    background: #eef1ff;
     color: #315efb;
 
-    font-size: 27px;
-    font-weight: 800;
-}
+    border-radius: 14px;
 
-.subject-card h3 {
-    margin: 0 0 7px;
-
-    font-size: 19px;
-}
-
-.subject-card p {
-    margin: 0;
-
-    color: #747f91;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 .subject-disabled {
-    opacity: 0.48;
-
-    cursor: default;
+    opacity: 0.5;
 }
 
 .hidden {
     display: none !important;
 }
 
+.logout-button {
+    padding: 8px 14px;
 
-/* =============================
-   MOBILE
-============================= */
+    border:
+        1px solid
+        #ddd;
 
-@media (max-width: 700px) {
+    background: white;
 
-    .login-card {
-        padding: 26px;
-    }
+    border-radius: 8px;
 
-    .dashboard {
-        width: calc(100% - 28px);
+    cursor: pointer;
+}
 
-        margin-top: 20px;
-    }
-
-    .topbar {
-        padding: 0 15px;
-    }
+@media (
+    max-width: 650px
+) {
 
     .subject-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
 }
