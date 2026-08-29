@@ -17,7 +17,13 @@
     >
 </head>
 
+
 <body>
+
+
+    <!-- ================================================= -->
+    <!-- TOPBAR                                            -->
+    <!-- ================================================= -->
 
     <header class="topbar">
 
@@ -45,11 +51,16 @@
     </header>
 
 
+    <!-- ================================================= -->
+    <!-- DASHBOARD                                         -->
+    <!-- ================================================= -->
+
     <main class="dashboard">
 
-        <!-- =========================
-             SISWA
-        ========================== -->
+
+        <!-- ============================================= -->
+        <!-- WELCOME SISWA                                 -->
+        <!-- ============================================= -->
 
         <section
             id="studentWelcome"
@@ -64,14 +75,12 @@
                 Memuat...
             </h1>
 
-            <span id="studentClass"></span>
-
         </section>
 
 
-        <!-- =========================
-             GUEST
-        ========================== -->
+        <!-- ============================================= -->
+        <!-- GUEST                                         -->
+        <!-- ============================================= -->
 
         <section
             id="guestNotice"
@@ -90,9 +99,66 @@
         </section>
 
 
-        <!-- =========================
-             MATA PELAJARAN
-        ========================== -->
+        <!-- ============================================= -->
+        <!-- LAPORAN SISWA                                 -->
+        <!-- ============================================= -->
+
+        <section
+            id="studentReportSection"
+            class="hidden"
+            style="margin-bottom: 34px;"
+        >
+
+            <div class="section-title">
+
+                <p>
+                    PERKEMBANGAN
+                </p>
+
+                <h2>
+                    Laporan Belajar
+                </h2>
+
+            </div>
+
+
+            <div class="subject-grid">
+
+                <button
+                    id="reportButton"
+                    class="subject-card"
+                    type="button"
+                >
+
+                    <div class="subject-icon">
+                        ✓
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            Lihat Perkembangan
+                        </h3>
+
+                        <p>
+                            Lihat Level yang sudah dikuasai,
+                            akurasi, kecepatan menjawab,
+                            serta bagian yang perlu dilatih.
+                        </p>
+
+                    </div>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============================================= -->
+        <!-- MATA PELAJARAN                                -->
+        <!-- ============================================= -->
 
         <section>
 
@@ -111,7 +177,10 @@
 
             <div class="subject-grid">
 
-                <!-- MATEMATIKA -->
+
+                <!-- ===================================== -->
+                <!-- MATEMATIKA                            -->
+                <!-- ===================================== -->
 
                 <button
                     id="mathButton"
@@ -122,6 +191,7 @@
                     <div class="subject-icon">
                         ×
                     </div>
+
 
                     <div>
 
@@ -139,16 +209,21 @@
                 </button>
 
 
-                <!-- BAHASA INDONESIA -->
+                <!-- ===================================== -->
+                <!-- BAHASA INDONESIA                      -->
+                <!-- ===================================== -->
 
                 <div
-                    class="subject-card
-                           subject-disabled"
+                    class="
+                        subject-card
+                        subject-disabled
+                    "
                 >
 
                     <div class="subject-icon">
                         A
                     </div>
+
 
                     <div>
 
@@ -165,16 +240,21 @@
                 </div>
 
 
-                <!-- BAHASA INGGRIS -->
+                <!-- ===================================== -->
+                <!-- BAHASA INGGRIS                        -->
+                <!-- ===================================== -->
 
                 <div
-                    class="subject-card
-                           subject-disabled"
+                    class="
+                        subject-card
+                        subject-disabled
+                    "
                 >
 
                     <div class="subject-icon">
                         EN
                     </div>
+
 
                     <div>
 
@@ -191,16 +271,21 @@
                 </div>
 
 
-                <!-- IPAS -->
+                <!-- ===================================== -->
+                <!-- IPAS                                  -->
+                <!-- ===================================== -->
 
                 <div
-                    class="subject-card
-                           subject-disabled"
+                    class="
+                        subject-card
+                        subject-disabled
+                    "
                 >
 
                     <div class="subject-icon">
                         IP
                     </div>
+
 
                     <div>
 
@@ -223,19 +308,25 @@
     </main>
 
 
-    <!-- SUPABASE -->
+    <!-- ================================================= -->
+    <!-- SUPABASE                                          -->
+    <!-- ================================================= -->
 
     <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
 
 
-    <!-- CONFIG -->
+    <!-- ================================================= -->
+    <!-- CONFIG                                            -->
+    <!-- ================================================= -->
 
     <script src="js/config.js"></script>
 
 
-    <!-- DASHBOARD -->
+    <!-- ================================================= -->
+    <!-- DASHBOARD                                         -->
+    <!-- ================================================= -->
 
     <script src="js/dashboard.js"></script>
 
