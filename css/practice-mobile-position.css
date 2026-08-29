@@ -1,0 +1,174 @@
+/* =========================================================
+   LATIHAN SISWA
+   PRACTICE MOBILE POSITION V1
+
+   Tujuan:
+   - Soal berada lebih ke atas pada HP
+   - Kolom jawaban tetap terlihat saat keyboard terbuka
+   - Desktop tidak berubah
+   ========================================================= */
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    /* =====================================================
+       AREA SOAL
+       ===================================================== */
+
+    .practice-stage {
+        min-height: 0 !important;
+
+        height: auto !important;
+
+        margin-top: 8px !important;
+
+        padding:
+            26px
+            14px
+            24px !important;
+
+        display: flex !important;
+
+        flex-direction: column !important;
+
+        align-items: center !important;
+
+        justify-content: flex-start !important;
+    }
+
+
+    /* =====================================================
+       DIRECT QUESTION
+       ===================================================== */
+
+    .direct-question-area {
+        width: 100% !important;
+
+        min-height: 0 !important;
+
+        height: auto !important;
+
+        padding:
+            12px
+            0
+            8px !important;
+
+        margin: 0 !important;
+
+        display: flex !important;
+
+        flex-direction: column !important;
+
+        align-items: center !important;
+
+        justify-content: flex-start !important;
+    }
+
+
+    /* =====================================================
+       SOAL BESAR
+       ===================================================== */
+
+    .big-question {
+        margin:
+            0
+            0
+            18px !important;
+
+        padding: 0 !important;
+
+        line-height: 1.05 !important;
+    }
+
+
+    /* =====================================================
+       INPUT ANSWER
+       ===================================================== */
+
+    .answer-wrap {
+        width: 100% !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+
+        display: flex !important;
+
+        justify-content: center !important;
+    }
+
+
+    .big-answer-input {
+        margin: 0 auto !important;
+    }
+
+
+    /* =====================================================
+       FEEDBACK
+       ===================================================== */
+
+    .answer-feedback {
+        margin-top: 12px !important;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .practice-stage {
+        margin-top: 6px !important;
+
+        padding:
+            20px
+            12px
+            20px !important;
+    }
+
+
+    .direct-question-area {
+        padding-top: 8px !important;
+    }
+
+
+    .big-question {
+        margin-bottom: 14px !important;
+    }
+
+}
+
+
+/* =========================================================
+   PHONE LANDSCAPE / KEYBOARD HEIGHT KECIL
+   ========================================================= */
+
+@media (
+    max-width: 700px
+)
+and (
+    max-height: 750px
+) {
+
+    .practice-stage {
+        padding-top: 14px !important;
+    }
+
+
+    .direct-question-area {
+        padding-top: 4px !important;
+    }
+
+
+    .big-question {
+        margin-bottom: 10px !important;
+    }
+
+}
