@@ -8,81 +8,331 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Latihan Siswa</title>
+    <title>Masuk - Latihan Siswa</title>
 
     <link
         rel="stylesheet"
         href="css/style.css"
     >
+
+    <link
+        rel="stylesheet"
+        href="css/auth.css"
+    >
 </head>
 
-<body>
+<body class="auth-page">
 
-    <main class="login-page">
+    <main class="auth-shell">
 
-        <section class="login-card">
+        <section class="auth-card">
 
-            <div class="logo-box">
-                L
+            <div class="auth-brand">
+
+                <div class="auth-logo">
+                    ✕
+                </div>
+
+                <div>
+
+                    <h1>
+                        Latihan Siswa
+                    </h1>
+
+                    <p>
+                        Belajar dan berlatih sesuai kemampuanmu.
+                    </p>
+
+                </div>
+
             </div>
 
-            <h1>Latihan Siswa</h1>
 
-            <p class="subtitle">
-                Belajar dan berlatih secara bertahap.
-            </p>
+            <!-- ================================================= -->
+            <!-- STEP 1 - NISN                                     -->
+            <!-- ================================================= -->
+
+            <section
+                id="nisnSection"
+                class="auth-section"
+            >
+
+                <div class="auth-heading">
+
+                    <span class="auth-badge">
+                        Masuk
+                    </span>
+
+                    <h2>
+                        Masukkan NISN
+                    </h2>
+
+                    <p>
+                        Gunakan NISN yang sudah terdaftar.
+                    </p>
+
+                </div>
 
 
-            <div class="form-group">
-
-                <label for="nisn">
-                    NISN
-                </label>
-
-                <input
-                    id="nisn"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="10"
+                <form
+                    id="nisnForm"
                     autocomplete="off"
-                    placeholder="Masukkan 10 digit NISN"
+                    novalidate
                 >
 
-            </div>
+                    <div class="form-group">
+
+                        <label for="nisnInput">
+                            NISN
+                        </label>
+
+                        <input
+                            id="nisnInput"
+                            class="auth-input"
+                            type="text"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="10"
+                            placeholder="10 digit NISN"
+                            autocomplete="off"
+                            required
+                        >
+
+                        <p class="field-help">
+                            NISN terdiri dari tepat 10 angka.
+                        </p>
+
+                    </div>
 
 
-            <p
-                id="loginMessage"
-                class="message"
-            ></p>
+                    <div
+                        id="nisnMessage"
+                        class="auth-message"
+                        hidden
+                    ></div>
 
 
-            <button
-                id="loginButton"
-                class="button button-primary"
+                    <button
+                        id="nisnButton"
+                        class="auth-primary-button"
+                        type="submit"
+                    >
+                        Lanjut
+                    </button>
+
+                </form>
+
+
+                <div class="auth-secondary-action">
+
+                    <a
+                        id="manualRegisterLink"
+                        href="register.html"
+                    >
+                        Belum punya akun? Daftar mandiri
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================================================= -->
+            <!-- STEP 2 - PIN                                      -->
+            <!-- ================================================= -->
+
+            <section
+                id="pinSection"
+                class="auth-section"
+                hidden
             >
-                Masuk
-            </button>
+
+                <div class="auth-heading">
+
+                    <span class="auth-badge">
+                        Masuk
+                    </span>
+
+                    <h2>
+                        Masukkan PIN
+                    </h2>
+
+                    <p>
+                        Masukkan PIN 6 digit untuk melanjutkan.
+                    </p>
+
+                </div>
 
 
-            <div class="separator">
-                <span></span>
-                <p>atau</p>
-                <span></span>
-            </div>
+                <div class="identity-box">
+
+                    <div class="identity-item">
+
+                        <span class="identity-label">
+                            NISN
+                        </span>
+
+                        <strong
+                            id="selectedNisn"
+                            class="identity-value"
+                        >
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
 
 
-            <button
-                id="guestButton"
-                class="button button-secondary"
+                <form
+                    id="pinForm"
+                    autocomplete="off"
+                    novalidate
+                >
+
+                    <div class="form-group">
+
+                        <label for="pinInput">
+                            PIN
+                        </label>
+
+                        <input
+                            id="pinInput"
+                            class="auth-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            placeholder="6 digit PIN"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div
+                        id="pinMessage"
+                        class="auth-message"
+                        hidden
+                    ></div>
+
+
+                    <button
+                        id="pinButton"
+                        class="auth-primary-button"
+                        type="submit"
+                    >
+                        Masuk
+                    </button>
+
+                </form>
+
+
+                <div class="auth-secondary-action">
+
+                    <a
+                        id="changeNisnButton"
+                        href="#"
+                    >
+                        Gunakan NISN lain
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================================================= -->
+            <!-- PENDING REGISTRATION                              -->
+            <!-- ================================================= -->
+
+            <section
+                id="pendingLoginSection"
+                class="auth-section"
+                hidden
             >
-                Lanjut sebagai Guest
-            </button>
+
+                <div class="pending-icon">
+                    ✓
+                </div>
 
 
-            <p class="guest-text">
-                Hasil latihan Guest tidak disimpan.
-            </p>
+                <div class="auth-heading pending-heading">
+
+                    <span class="auth-badge">
+                        Pendaftaran
+                    </span>
+
+                    <h2>
+                        Menunggu Persetujuan
+                    </h2>
+
+                    <p>
+                        Permintaan pendaftaran untuk NISN ini
+                        sudah diterima dan sedang menunggu
+                        persetujuan admin.
+                    </p>
+
+                </div>
+
+
+                <div class="pending-info">
+
+                    <span>
+                        NISN
+                    </span>
+
+                    <strong id="pendingLoginNisn">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <button
+                    id="pendingBackButton"
+                    class="auth-primary-button"
+                    type="button"
+                >
+                    Kembali
+                </button>
+
+            </section>
+
+
+            <!-- ================================================= -->
+            <!-- GUEST                                             -->
+            <!-- ================================================= -->
+
+            <div
+                id="guestArea"
+                class="auth-secondary-action"
+            >
+
+                <p
+                    style="
+                        margin: 24px 0 10px;
+                        color: #7b8798;
+                        font-size: 13px;
+                    "
+                >
+                    Atau berlatih tanpa menyimpan progres
+                </p>
+
+                <button
+                    id="guestButton"
+                    type="button"
+                    class="auth-primary-button"
+                    style="
+                        background: #eef4ff;
+                        color: #2563eb;
+                    "
+                >
+                    Masuk sebagai Tamu
+                </button>
+
+            </div>
 
         </section>
 
@@ -90,10 +340,11 @@
 
 
     <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
 
     <script src="js/config.js"></script>
+
     <script src="js/login.js"></script>
 
 </body>
