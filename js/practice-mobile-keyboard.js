@@ -1,178 +1,283 @@
-// ======================================================
+// ============================================================
 // LATIHAN SISWA
-// MOBILE KEYBOARD HELPER V1
+// MOBILE KEYBOARD HELPER V2 - STABLE
 //
 // Tujuan:
-// - Menjaga soal dan kolom jawaban tetap terlihat
-//   ketika keyboard HP terbuka.
-// - Tidak mengganggu desktop.
-// - Tidak memaksa scroll saat siswa belum mengetik.
-// ======================================================
+// - mencegah viewport HP naik-turun saat input berpindah
+// - Tingkat 10-15 tidak memakai auto-scroll keyboard
+// - Tingkat 1-9 tetap dibantu bila input tertutup keyboard
+//
+// Penting:
+// input bersusun sudah memakai focus({preventScroll:true})
+// sehingga tidak perlu helper scroll tambahan.
+// ============================================================
 
-
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeMobileKeyboardHelper
-);
-
-
-// ======================================================
-// CONFIG
-// ======================================================
 
 const MOBILE_MAX_WIDTH =
     700;
 
 
-// ======================================================
-// STATE
-// ======================================================
-
 let keyboardScrollTimer =
     null;
 
 
-// ======================================================
-// INITIALIZE
-// ======================================================
+const practiceParams =
+    new URLSearchParams(
+        window.location.search
+    );
 
-function initializeMobileKeyboardHelper() {
 
-    const inputs = [
-
-        document.getElementById(
-            "answerInput"
-        ),
-
-        document.getElementById(
-            "columnStep1Input"
-        ),
-
-        document.getElementById(
-            "columnStep2Input"
-        ),
-
-        document.getElementById(
-            "columnFinalInput"
+const practiceStage =
+    Number(
+        practiceParams.get(
+            "stage"
         )
+    );
 
-    ].filter(Boolean);
+
+const columnPracticeMode =
+
+    Number.isInteger(
+        practiceStage
+    )
+
+    &&
+
+    practiceStage >= 10
+
+    &&
+
+    practiceStage <= 15;
 
 
-    if (
-        inputs.length === 0
-    ) {
+// ============================================================
+// CLASS STABIL UNTUK COLUMN MODE
+// ============================================================
 
-        return;
+if (columnPracticeMode) {
+
+    document.documentElement
+        .classList
+        .add(
+            "column-mobile-stable"
+        );
+}
+
+
+// ============================================================
+// CSS STABILISASI
+// ============================================================
+
+const keyboardStyle =
+    document.createElement(
+        "style"
+    );
+
+
+keyboardStyle.textContent = `
+
+    @media (max-width: 700px) {
+
+        html.column-mobile-stable,
+        html.column-mobile-stable body {
+
+            scroll-behavior:
+                auto
+                !important;
+        }
+
+
+        html.column-mobile-stable
+        #columnQuestionArea {
+
+            scroll-margin-top:
+                8px;
+        }
+
+
+        html.column-mobile-stable
+        .column-practice {
+
+            scroll-margin-top:
+                8px;
+        }
+
+
+        html.column-mobile-stable
+        .lm22-input,
+
+        html.column-mobile-stable
+        .column-step-input {
+
+            scroll-margin-top:
+                90px;
+
+            scroll-margin-bottom:
+                80px;
+        }
 
     }
 
-
-    inputs.forEach(
-        input => {
-
-            input.addEventListener(
-                "focus",
-                () => {
-
-                    scheduleInputVisibility(
-                        input
-                    );
-
-                }
-            );
+`;
 
 
-            input.addEventListener(
-                "input",
-                () => {
+document.head.appendChild(
+    keyboardStyle
+);
 
-                    /*
-                     * Tidak perlu scroll pada setiap digit.
-                     * Hanya cek apabila input hampir tertutup.
-                     */
 
-                    ensureInputVisible(
-                        input
-                    );
+// ============================================================
+// START
+// ============================================================
 
-                }
-            );
+if (
+    document.readyState ===
+    "loading"
+) {
 
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeMobileKeyboardHelper,
+        {
+            once: true
         }
     );
 
 
-    // ==================================================
-    // VISUAL VIEWPORT
+} else {
+
+    initializeMobileKeyboardHelper();
+}
+
+
+// ============================================================
+// INITIALIZE
+// ============================================================
+
+function initializeMobileKeyboardHelper() {
+
+    // ========================================================
+    // TINGKAT 10-15
     //
-    // Di browser mobile, ukuran visualViewport mengecil
-    // ketika keyboard tampil.
-    // ==================================================
+    // Jangan lakukan auto-scroll sama sekali.
+    // Engine bersusun sudah mengatur fokus sendiri dengan
+    // preventScroll:true.
+    // ========================================================
+
+    if (columnPracticeMode) {
+
+        return;
+    }
+
+
+    // ========================================================
+    // TINGKAT 1-9
+    // ========================================================
+
+    const answerInput =
+        document.getElementById(
+            "answerInput"
+        );
+
+
+    if (!answerInput) {
+
+        return;
+    }
+
+
+    answerInput.addEventListener(
+        "focus",
+        handleDirectInputFocus
+    );
+
+
+    // Hanya resize.
+    //
+    // Jangan dengarkan visualViewport "scroll",
+    // karena event tersebut bisa terpicu oleh scroll yang
+    // kita lakukan sendiri dan menghasilkan loop gerakan.
 
     if (
         window.visualViewport
     ) {
 
-        window.visualViewport.addEventListener(
-            "resize",
-            handleViewportChange
-        );
-
-
-        window.visualViewport.addEventListener(
-            "scroll",
-            handleViewportChange
-        );
-
+        window.visualViewport
+            .addEventListener(
+                "resize",
+                handleViewportResize
+            );
     }
-
 }
 
 
-// ======================================================
-// VIEWPORT CHANGE
-// ======================================================
+// ============================================================
+// FOCUS DIRECT INPUT
+// ============================================================
 
-function handleViewportChange() {
+function handleDirectInputFocus(
+    event
+) {
+
+    scheduleInputVisibility(
+        event.currentTarget
+    );
+}
+
+
+// ============================================================
+// VIEWPORT RESIZE
+// ============================================================
+
+function handleViewportResize() {
+
+    if (columnPracticeMode) {
+
+        return;
+    }
+
 
     const activeElement =
         document.activeElement;
 
 
     if (
-        !isPracticeInput(
-            activeElement
-        )
+        !activeElement
+
+        ||
+
+        activeElement.id !==
+        "answerInput"
     ) {
 
         return;
-
     }
 
 
     scheduleInputVisibility(
         activeElement
     );
-
 }
 
 
-// ======================================================
+// ============================================================
 // SCHEDULE
-// ======================================================
+// ============================================================
 
 function scheduleInputVisibility(
     input
 ) {
 
     if (
+        !input
+
+        ||
+
         window.innerWidth >
         MOBILE_MAX_WIDTH
     ) {
 
         return;
-
     }
 
 
@@ -180,11 +285,6 @@ function scheduleInputVisibility(
         keyboardScrollTimer
     );
 
-
-    /*
-     * Keyboard biasanya membutuhkan beberapa ratus
-     * milidetik untuk selesai membuka.
-     */
 
     keyboardScrollTimer =
         window.setTimeout(
@@ -195,28 +295,33 @@ function scheduleInputVisibility(
                 );
 
             },
-            320
+            250
         );
-
 }
 
 
-// ======================================================
+// ============================================================
 // ENSURE INPUT VISIBLE
-// ======================================================
+// ============================================================
 
 function ensureInputVisible(
     input
 ) {
 
     if (
-        !input ||
+        !input
+
+        ||
+
+        columnPracticeMode
+
+        ||
+
         window.innerWidth >
-            MOBILE_MAX_WIDTH
+        MOBILE_MAX_WIDTH
     ) {
 
         return;
-
     }
 
 
@@ -228,56 +333,62 @@ function ensureInputVisible(
         getVisibleViewportHeight();
 
 
-    /*
-     * Sisakan ruang antara input dengan keyboard.
-     */
+    // ========================================================
+    // BATAS BAWAH
+    // ========================================================
 
     const bottomSafeArea =
-        70;
+        60;
 
 
-    const maximumVisibleBottom =
-        viewportHeight -
+    const maximumBottom =
+        viewportHeight
+        -
         bottomSafeArea;
 
 
-    // ==================================================
-    // INPUT TERLALU BAWAH
-    // ==================================================
-
     if (
         rect.bottom >
-        maximumVisibleBottom
+        maximumBottom
     ) {
 
-        const scrollAmount =
-            rect.bottom -
-            maximumVisibleBottom;
+        const amount =
+            rect.bottom
+            -
+            maximumBottom
+            +
+            15;
 
+
+        // Penting:
+        // jangan pakai smooth.
+        // Smooth + keyboard resize dapat menyebabkan
+        // viewport bergerak bolak-balik.
 
         window.scrollBy({
+
             top:
-                scrollAmount +
-                25,
+                amount,
+
+            left:
+                0,
 
             behavior:
-                "smooth"
+                "auto"
+
         });
 
 
         return;
-
     }
 
 
-    // ==================================================
-    // INPUT TERLALU ATAS
-    //
-    // Hindari juga input masuk ke bawah browser toolbar.
-    // ==================================================
+    // ========================================================
+    // BATAS ATAS
+    // ========================================================
 
     const topSafeArea =
-        120;
+        95;
 
 
     if (
@@ -286,87 +397,52 @@ function ensureInputVisible(
     ) {
 
         window.scrollBy({
+
             top:
-                rect.top -
+                rect.top
+                -
                 topSafeArea,
 
+            left:
+                0,
+
             behavior:
-                "smooth"
+                "auto"
+
         });
-
     }
-
 }
 
 
-// ======================================================
-// VISIBLE VIEWPORT HEIGHT
-// ======================================================
+// ============================================================
+// VISIBLE VIEWPORT
+// ============================================================
 
 function getVisibleViewportHeight() {
 
     if (
-        window.visualViewport &&
+        window.visualViewport
+
+        &&
+
         Number.isFinite(
             window.visualViewport.height
         )
     ) {
 
-        return window.visualViewport.height;
-
+        return window
+            .visualViewport
+            .height;
     }
 
 
     return window.innerHeight;
-
 }
 
 
-// ======================================================
-// CHECK PRACTICE INPUT
-// ======================================================
-
-function isPracticeInput(
-    element
-) {
-
-    if (
-        !element
-    ) {
-
-        return false;
-
-    }
-
-
-    return (
-
-        element.id ===
-            "answerInput"
-
-        ||
-
-        element.id ===
-            "columnStep1Input"
-
-        ||
-
-        element.id ===
-            "columnStep2Input"
-
-        ||
-
-        element.id ===
-            "columnFinalInput"
-
-    );
-
-}
-
-
-// ======================================================
+// ============================================================
 // CLEANUP
-// ======================================================
+// ============================================================
 
 window.addEventListener(
     "pagehide",
@@ -381,17 +457,11 @@ window.addEventListener(
             window.visualViewport
         ) {
 
-            window.visualViewport.removeEventListener(
-                "resize",
-                handleViewportChange
-            );
-
-
-            window.visualViewport.removeEventListener(
-                "scroll",
-                handleViewportChange
-            );
-
+            window.visualViewport
+                .removeEventListener(
+                    "resize",
+                    handleViewportResize
+                );
         }
 
     }
