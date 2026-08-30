@@ -1951,6 +1951,42 @@
         }
 
 
+        /*
+           Carry Step 3 ditempel langsung pada kolom tujuan.
+           Jadi carry dari suatu kolom selalu muncul tepat di atas
+           angka satu tempat di sebelah kiri, seperti penjumlahan
+           bersusun di kertas.
+        */
+        .lm22-source-row > span {
+            position:
+                relative;
+
+            overflow:
+                visible;
+        }
+
+
+        .lm22-source-row > span > .lm22-add-carry {
+            position:
+                absolute;
+
+            left:
+                50%;
+
+            bottom:
+                calc(100% + 2px);
+
+            transform:
+                translateX(-50%);
+
+            z-index:
+                8;
+
+            pointer-events:
+                none;
+        }
+
+
         .lm22-source-row {
             min-height:
                 37px;
@@ -4206,8 +4242,34 @@
                         : null;
 
 
+        // Kolom tujuan dihitung dari kanan ke kiri:
+        // 1 = puluhan, 2 = ratusan, 3 = ribuan.
+        // Carry ditempel pada sel BARIS ATAS di kolom tujuan,
+        // sehingga secara visual benar-benar berada tepat di atas
+        // angka yang akan dijumlahkan berikutnya.
+        const host =
+
+            nextIdx === 1
+
+                ? el.a1T
+
+                : nextIdx === 2
+
+                    ? el.a1H
+
+                    : nextIdx === 3
+
+                        ? el.a1K
+
+                        : null;
+
+
         if (
             !target
+
+            ||
+
+            !host
 
             ||
 
@@ -4218,6 +4280,14 @@
 
             return;
         }
+
+
+        // Re-parent carry ke kolom tujuan.
+        // Ini membuat posisi selalu mengikuti grid angka, termasuk
+        // ketika ukuran board berubah di layar HP.
+        host.appendChild(
+            target
+        );
 
 
         target.textContent =
