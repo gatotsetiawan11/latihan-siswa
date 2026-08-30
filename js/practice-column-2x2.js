@@ -2,7 +2,13 @@
 // LATIHAN SISWA - LONG MULTIPLICATION 2 DIGIT x 2 DIGIT V2
 // Tingkat 14: tanpa carry
 // Tingkat 15: carry diperbolehkan
-// Semua input satu digit, dikerjakan dari kanan ke kiri.
+//
+// Aturan:
+// - Perkalian dikerjakan dari kanan ke kiri.
+// - Digit pertama: siswa menulis digit satuan, carry muncul otomatis.
+// - Perkalian TERAKHIR pada setiap baris: siswa menulis HASIL PENUH
+//   sendiri (1-2 digit). Carry akhir tidak diisi otomatis.
+// - Baris kedua bergeser satu tempat; nol kanan otomatis.
 //
 // Urutan script:
 // practice.js
@@ -840,10 +846,10 @@
                 class="lm22-input"
                 type="text"
                 inputmode="numeric"
-                maxlength="1"
+                maxlength="2"
                 autocomplete="off"
                 disabled
-                aria-label="Baris pertama puluhan"
+                aria-label="Hasil akhir Step 1"
             >
 
             <input
@@ -888,10 +894,10 @@
                     class="lm22-input"
                     type="text"
                     inputmode="numeric"
-                    maxlength="1"
+                    maxlength="2"
                     autocomplete="off"
                     disabled
-                    aria-label="Baris kedua ratusan"
+                    aria-label="Hasil akhir Step 2"
                 >
 
                 <input
@@ -1480,7 +1486,7 @@
                 0.16s;
         }
 
-
+\n        /*\n           Input kiri Step 1 dan Step 2 adalah perkalian terakhir\n           pada masing-masing baris. Siswa menulis hasil PENUH\n           sendiri, sehingga kotaknya membentang selebar 2 digit.\n        */\n        #lm22R1Lead,\n        #lm22R2Lead {\n            display:\n                none\n                !important;\n        }\n\n\n        #lm22R1T {\n            grid-column:\n                2 / span 2;\n\n            width:\n                100%\n                !important;\n\n            justify-self:\n                stretch;\n        }\n\n\n        #lm22R1O {\n            grid-column:\n                4;\n        }\n\n\n        #lm22R2H {\n            grid-column:\n                1 / span 2;\n\n            width:\n                100%\n                !important;\n\n            justify-self:\n                stretch;\n        }\n\n\n        #lm22R2T {\n            grid-column:\n                3;\n        }\n\n\n        .lm22-zero {\n            grid-column:\n                4;\n        }\n\n\n
         .lm22-input:focus {
             border-color:
                 #4f5cff;
@@ -2676,7 +2682,10 @@
 
         input.value =
             digits(
-                input.value
+                input.value,
+                Number(
+                    input.maxLength
+                )
             );
 
 
@@ -2853,7 +2862,7 @@
         if (
             !eq(
                 el.r1T,
-                x.r1T
+                x.r1s2
             )
         ) {
 
@@ -2884,31 +2893,15 @@
         );
 
 
-        // Lock dilakukan sesudah fokus berpindah agar keyboard tetap stabil.
-        // Jika hasil paling kiri masih memiliki carry,
-        // muncul otomatis.
+        // Perkalian terakhir pada baris:
+        // siswa sudah menulis hasil PENUH sendiri di kotak kiri.
+        // Tidak ada digit depan yang diisi otomatis.
 
         el.r1Lead.textContent =
-            x.r1c2 > 0
-                ? String(
-                    x.r1c2
-                )
-                : "";
+            "";
 
 
-        if (
-            x.r1c2 > 0
-        ) {
-
-            showCarry(
-                x.r1c2
-            );
-
-
-        } else {
-
-            hideCarry();
-        }
+        hideCarry();
 
 
         unlockStep2();
@@ -3062,7 +3055,7 @@
         if (
             !eq(
                 el.r2H,
-                x.r2H
+                x.r2s2
             )
         ) {
 
@@ -3089,28 +3082,15 @@
         );
 
 
-        // Lock dilakukan setelah Step 3 memperoleh fokus.
+        // Perkalian terakhir pada baris kedua:
+        // siswa menulis hasil PENUH sendiri.
+        // Tidak ada digit depan otomatis.
+
         el.r2Lead.textContent =
-            x.r2c2 > 0
-                ? String(
-                    x.r2c2
-                )
-                : "";
+            "";
 
 
-        if (
-            x.r2c2 > 0
-        ) {
-
-            showCarry(
-                x.r2c2
-            );
-
-
-        } else {
-
-            hideCarry();
-        }
+        hideCarry();
 
 
         unlockAdd(
@@ -3488,6 +3468,15 @@
                     : `Step 1: ${x.bO} × ${x.aT}`;
 
 
+            if (
+                carryNote
+            ) {
+
+                carryNote.textContent =
+                    "Perkalian terakhir baris ini: tulis hasil lengkap di kotak kiri.";
+            }
+
+
         } else if (
             target ===
             "r2t"
@@ -3542,6 +3531,15 @@
                     ? `Step 2: ${x.bT} × ${x.aT} + ${x.r2c1}`
 
                     : `Step 2: ${x.bT} × ${x.aT}`;
+
+
+            if (
+                carryNote
+            ) {
+
+                carryNote.textContent =
+                    "Perkalian terakhir baris ini: tulis hasil lengkap di kotak kiri.";
+            }
         }
 
 
@@ -4255,7 +4253,7 @@
 
             eq(
                 el.r1T,
-                x.r1T
+                x.r1s2
             )
 
         );
@@ -4277,7 +4275,7 @@
 
             eq(
                 el.r2H,
-                x.r2H
+                x.r2s2
             )
 
         );
@@ -4352,8 +4350,6 @@
 
 
         return (
-            `${el.r1Lead.textContent.trim()}`
-            +
             `${el.r1T.value}`
             +
             `${el.r1O.value}`
@@ -4376,8 +4372,6 @@
 
 
         return (
-            `${el.r2Lead.textContent.trim()}`
-            +
             `${el.r2H.value}`
             +
             `${el.r2T.value}`
@@ -4515,22 +4509,14 @@
 
             el.r1T.value =
                 r1.slice(
-                    -2,
+                    0,
                     -1
                 );
         }
 
 
-        if (
-            r1.length >= 3
-        ) {
-
-            el.r1Lead.textContent =
-                r1.slice(
-                    0,
-                    -2
-                );
-        }
+        el.r1Lead.textContent =
+            "";
 
 
         if (
@@ -4566,7 +4552,7 @@
         if (
             !eq(
                 el.r1T,
-                x.r1T
+                x.r1s2
             )
         ) {
 
@@ -4595,13 +4581,7 @@
 
 
         el.r1Lead.textContent =
-            x.r1c2 > 0
-
-                ? String(
-                    x.r1c2
-                )
-
-                : "";
+            "";
 
 
         unlockStep2();
@@ -4641,22 +4621,14 @@
 
             el.r2H.value =
                 raw2.slice(
-                    -2,
+                    0,
                     -1
                 );
         }
 
 
-        if (
-            raw2.length >= 3
-        ) {
-
-            el.r2Lead.textContent =
-                raw2.slice(
-                    0,
-                    -2
-                );
-        }
+        el.r2Lead.textContent =
+            "";
 
 
         if (
@@ -4692,7 +4664,7 @@
         if (
             !eq(
                 el.r2H,
-                x.r2H
+                x.r2s2
             )
         ) {
 
@@ -4721,13 +4693,7 @@
 
 
         el.r2Lead.textContent =
-            x.r2c2 > 0
-
-                ? String(
-                    x.r2c2
-                )
-
-                : "";
+            "";
 
 
         unlockAdd(
@@ -4851,7 +4817,7 @@
         if (
             !eq(
                 el.r1T,
-                x.r1T
+                x.r1s2
             )
         ) {
 
@@ -4909,7 +4875,7 @@
         if (
             !eq(
                 el.r2H,
-                x.r2H
+                x.r2s2
             )
         ) {
 
@@ -5399,8 +5365,27 @@
 
 
     function digits(
-        value
+        value,
+        maxLength = 1
     ) {
+
+        const parsed =
+            Number(
+                maxLength
+            );
+
+
+        const limit =
+            Number.isInteger(
+                parsed
+            )
+            &&
+            parsed > 0
+
+                ? parsed
+
+                : 1;
+
 
         return String(
             value ?? ""
@@ -5413,7 +5398,7 @@
 
         .slice(
             0,
-            1
+            limit
         );
     }
 
