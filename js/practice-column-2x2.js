@@ -2790,8 +2790,7 @@
         );
 
 
-        // Jangan disable input aktif sebelum fokus berpindah.
-        // Keyboard mobile tetap terbuka dan viewport tidak meloncat.
+        // Jangan lock input aktif sebelum fokus baru berhasil.
         showCarry(
             x.r1c1
         );
@@ -2815,7 +2814,9 @@
                 eq(
                     el.r1O,
                     x.r1O
-                )
+                ),
+
+            el.r1O
 
         );
     }
@@ -2883,9 +2884,7 @@
         );
 
 
-        // Input yang sudah benar tetap aktif secara DOM agar keyboard
-        // tidak kehilangan fokus sebelum Step 2 mendapat fokus.
-        // Jika disentuh ulang, dependency engine tetap memvalidasi ulang.
+        // Lock dilakukan sesudah fokus berpindah agar keyboard tetap stabil.
         // Jika hasil paling kiri masih memiliki carry,
         // muncul otomatis.
 
@@ -2928,7 +2927,9 @@
             () =>
                 row1Done(
                     x
-                )
+                ),
+
+            el.r1T
 
         );
     }
@@ -2998,7 +2999,7 @@
         );
 
 
-        // Pertahankan fokus/keyboard sampai digit berikutnya difokuskan.
+        // Jangan lock sebelum fokus berpindah.
         showCarry(
             x.r2c1
         );
@@ -3022,7 +3023,9 @@
                 eq(
                     el.r2T,
                     x.r2T
-                )
+                ),
+
+            el.r2T
 
         );
     }
@@ -3086,7 +3089,7 @@
         );
 
 
-        // Jangan tutup keyboard sebelum Step 3 siap menerima fokus.
+        // Lock dilakukan setelah Step 3 memperoleh fokus.
         el.r2Lead.textContent =
             x.r2c2 > 0
                 ? String(
@@ -3127,6 +3130,19 @@
                 ) {
 
                     focusNext();
+
+                    requestAnimationFrame(
+                        () => {
+
+                            if (
+                                document.activeElement !== el.r2H
+                            ) {
+
+                                el.r2H.disabled =
+                                    true;
+                            }
+                        }
+                    );
                 }
 
             },
@@ -3248,8 +3264,7 @@
         );
 
 
-        // Digit penjumlahan yang benar tidak di-disable saat keyboard
-        // masih digunakan untuk kolom berikutnya.
+        // Untuk digit penjumlahan, lock setelah fokus pindah.
         if (
             step.carryOut > 0
 
@@ -3308,7 +3323,9 @@
                     eq(
                         input,
                         step.write
-                    )
+                    ),
+
+                input
 
             );
 
@@ -3326,6 +3343,10 @@
                 x
             )
         ) {
+
+            // Digit terakhir boleh dilock karena tidak ada input berikutnya.
+            input.disabled =
+                true;
 
             hideAddCarries();
 
@@ -3538,14 +3559,9 @@
         target
     ) {
 
-        // Level 1-5 memakai bantuan panah.
-        // Level 6+ tidak menjalankan SVG/animasi panah.
-        // Dengan demikian tidak ada forced layout dari restart animasi.
+        // Level 1-5: bantuan panah aktif.
+        // Level 6+: tidak mengubah SVG / tidak memaksa reflow.
         if (
-            Number.isInteger(
-                Number(levelNumber)
-            )
-            &&
             Number(levelNumber) >= 6
         ) {
 
@@ -5424,7 +5440,8 @@
 
     function moveFocus(
         input,
-        condition
+        condition,
+        previousInput = null
     ) {
 
         setTimeout(
@@ -5438,9 +5455,31 @@
                     condition()
                 ) {
 
+                    // Fokuskan target terlebih dahulu.
+                    // Baru lock input sebelumnya setelah browser memindahkan fokus.
                     focus(
                         input
                     );
+
+                    if (
+                        previousInput
+                        &&
+                        previousInput !== input
+                    ) {
+
+                        requestAnimationFrame(
+                            () => {
+
+                                if (
+                                    document.activeElement === input
+                                ) {
+
+                                    previousInput.disabled =
+                                        true;
+                                }
+                            }
+                        );
+                    }
                 }
 
             },

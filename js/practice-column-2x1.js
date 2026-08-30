@@ -3322,14 +3322,9 @@
         expected
     ) {
 
-        // Level 1-5 memakai bantuan panah.
-        // Level 6+ tidak menjalankan engine panah sama sekali.
-        // Ini mencegah update SVG dan forced layout yang tidak perlu.
+        // Level 1-5: bantuan panah aktif.
+        // Level 6+: engine panah tidak dijalankan.
         if (
-            Number.isInteger(
-                Number(levelNumber)
-            )
-            &&
             Number(levelNumber) >= 6
         ) {
 
