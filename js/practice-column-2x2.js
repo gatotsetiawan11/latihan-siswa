@@ -1952,32 +1952,32 @@
 
 
         /*
-           Carry Step 3 ditempel langsung pada kolom tujuan.
-           Jadi carry dari suatu kolom selalu muncul tepat di atas
-           angka satu tempat di sebelah kiri, seperti penjumlahan
-           bersusun di kertas.
+           Carry Step 3 memakai BARIS CARRY khusus yang memiliki
+           grid 4 kolom sama persis dengan baris penjumlahan.
+
+           Kolom dari kiri ke kanan:
+           ribuan | ratusan | puluhan | satuan
+
+           Dengan begitu:
+           - carry satuan  -> tampil di kolom puluhan
+           - carry puluhan -> tampil di kolom ratusan
+           - carry ratusan -> tampil di kolom ribuan
+
+           Jangan re-parent elemen carry ke baris angka karena itu
+           dapat merusak posisi grid di layar HP.
         */
-        .lm22-source-row > span {
+        .lm22-add-carries > .lm22-add-carry {
             position:
-                relative;
-
-            overflow:
-                visible;
-        }
-
-
-        .lm22-source-row > span > .lm22-add-carry {
-            position:
-                absolute;
-
-            left:
-                50%;
-
-            bottom:
-                calc(100% + 2px);
+                static;
 
             transform:
-                translateX(-50%);
+                none;
+
+            justify-self:
+                center;
+
+            align-self:
+                center;
 
             z-index:
                 8;
@@ -4225,6 +4225,19 @@
         hideAddCarries();
 
 
+        // --------------------------------------------------
+        // GRID STEP 3:
+        // kolom 1 = ribuan
+        // kolom 2 = ratusan
+        // kolom 3 = puluhan
+        // kolom 4 = satuan
+        //
+        // nextIdx dihitung dari kanan ke kiri:
+        // 1 = puluhan
+        // 2 = ratusan
+        // 3 = ribuan
+        // --------------------------------------------------
+
         const target =
 
             nextIdx === 1
@@ -4242,34 +4255,8 @@
                         : null;
 
 
-        // Kolom tujuan dihitung dari kanan ke kiri:
-        // 1 = puluhan, 2 = ratusan, 3 = ribuan.
-        // Carry ditempel pada sel BARIS ATAS di kolom tujuan,
-        // sehingga secara visual benar-benar berada tepat di atas
-        // angka yang akan dijumlahkan berikutnya.
-        const host =
-
-            nextIdx === 1
-
-                ? el.a1T
-
-                : nextIdx === 2
-
-                    ? el.a1H
-
-                    : nextIdx === 3
-
-                        ? el.a1K
-
-                        : null;
-
-
         if (
             !target
-
-            ||
-
-            !host
 
             ||
 
@@ -4282,13 +4269,11 @@
         }
 
 
-        // Re-parent carry ke kolom tujuan.
-        // Ini membuat posisi selalu mengikuti grid angka, termasuk
-        // ketika ukuran board berubah di layar HP.
-        host.appendChild(
-            target
-        );
-
+        // PENTING:
+        // Jangan appendChild/re-parent ke sel angka.
+        // Ketiga elemen carry sejak awal sudah berada pada kolom
+        // yang benar di .lm22-add-carries. Re-parenting justru
+        // membuat browser kehilangan alignment grid pada mobile.
 
         target.textContent =
             String(
