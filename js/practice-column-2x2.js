@@ -3567,53 +3567,362 @@
             return;
         }
 
-        const paths = {
 
+        // ==================================================
+        // V1.6 - PANAH DINAMIS BERDASARKAN POSISI DIGIT
+        //
+        // Tidak lagi memakai koordinat tetap. Dengan demikian
+        // panah tetap tepat pada desktop, HP, dan setelah ukuran
+        // board berubah oleh responsive CSS.
+        // ==================================================
+
+        const mapping = {
+
+            // digit satuan bawah -> digit satuan atas
             r1o: [
-
-                "M 250 119 C 250 98, 250 75, 250 53",
-
-                "M 244 60 L 250 52 L 256 60"
-
+                el.bottomO,
+                el.topO
             ],
 
-
+            // digit satuan bawah -> digit puluhan atas
             r1t: [
-
-                "M 250 119 C 231 95, 211 73, 188 53",
-
-                "M 190 62 L 187 52 L 198 55"
-
+                el.bottomO,
+                el.topT
             ],
 
-
+            // digit puluhan bawah -> digit satuan atas
             r2t: [
-
-                "M 188 119 C 207 95, 228 73, 250 53",
-
-                "M 240 55 L 251 52 L 247 63"
-
+                el.bottomT,
+                el.topO
             ],
 
-
+            // digit puluhan bawah -> digit puluhan atas
             r2h: [
-
-                "M 188 119 C 188 98, 188 75, 188 53",
-
-                "M 182 60 L 188 52 L 194 60"
-
+                el.bottomT,
+                el.topT
             ]
 
         };
 
 
-        const [
-            path,
-            head
-        ] =
-            paths[
+        const pair =
+            mapping[
                 target
             ];
+
+
+        if (
+            !pair
+            ||
+            !pair[0]
+            ||
+            !pair[1]
+            ||
+            !el.arrow
+            ||
+            !el.arrowPath
+            ||
+            !el.arrowHead
+        ) {
+
+            hideArrow();
+            return;
+        }
+
+
+        const source =
+            pair[0];
+
+
+        const destination =
+            pair[1];
+
+
+        const svgRect =
+            el.arrow
+                .getBoundingClientRect();
+
+
+        const sourceRect =
+            source
+                .getBoundingClientRect();
+
+
+        const targetRect =
+            destination
+                .getBoundingClientRect();
+
+
+        if (
+            svgRect.width <= 0
+            ||
+            svgRect.height <= 0
+            ||
+            sourceRect.width <= 0
+            ||
+            targetRect.width <= 0
+        ) {
+
+            hideArrow();
+            return;
+        }
+
+
+        const viewBox =
+            el.arrow.viewBox.baseVal;
+
+
+        const viewWidth =
+            viewBox.width || 340;
+
+
+        const viewHeight =
+            viewBox.height || 220;
+
+
+        const toSvgX =
+            clientX =>
+
+                (
+                    (
+                        clientX
+                        -
+                        svgRect.left
+                    )
+                    /
+                    svgRect.width
+                )
+                *
+                viewWidth;
+
+
+        const toSvgY =
+            clientY =>
+
+                (
+                    (
+                        clientY
+                        -
+                        svgRect.top
+                    )
+                    /
+                    svgRect.height
+                )
+                *
+                viewHeight;
+
+
+        // Pangkal berada di sisi atas digit pengali.
+        const startX =
+            toSvgX(
+                sourceRect.left
+                +
+                sourceRect.width / 2
+            );
+
+
+        const startY =
+            toSvgY(
+                sourceRect.top
+                +
+                2
+            );
+
+
+        // Ujung berada tepat di sisi bawah digit tujuan.
+        const endX =
+            toSvgX(
+                targetRect.left
+                +
+                targetRect.width / 2
+            );
+
+
+        const endY =
+            toSvgY(
+                targetRect.bottom
+                -
+                2
+            );
+
+
+        const dx =
+            endX - startX;
+
+
+        const dy =
+            endY - startY;
+
+
+        // Jika menuju kolom berbeda, beri lengkungan tipis.
+        // Jika lurus satu kolom, tetap hampir vertikal.
+        const bend =
+            Math.abs(dx) < 8
+
+                ? 0
+
+                : Math.max(
+                    12,
+                    Math.min(
+                        28,
+                        Math.abs(dx) * 0.28
+                    )
+                );
+
+
+        const direction =
+            dx < 0
+                ? -1
+                : 1;
+
+
+        const c1x =
+            startX
+            +
+            direction * bend;
+
+
+        const c1y =
+            startY
+            +
+            dy * 0.34;
+
+
+        const c2x =
+            endX
+            +
+            direction * bend * 0.42;
+
+
+        const c2y =
+            startY
+            +
+            dy * 0.76;
+
+
+        const path =
+            `M ${startX.toFixed(2)} ${startY.toFixed(2)} `
+            +
+            `C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, `
+            +
+            `${c2x.toFixed(2)} ${c2y.toFixed(2)}, `
+            +
+            `${endX.toFixed(2)} ${endY.toFixed(2)}`;
+
+
+        // ==================================================
+        // KEPALA PANAH
+        //
+        // Dibentuk dari arah tangent terakhir kurva sehingga
+        // selalu menghadap tepat ke digit tujuan.
+        // ==================================================
+
+        let tangentX =
+            endX - c2x;
+
+
+        let tangentY =
+            endY - c2y;
+
+
+        let tangentLength =
+            Math.hypot(
+                tangentX,
+                tangentY
+            );
+
+
+        if (
+            tangentLength < 0.001
+        ) {
+
+            tangentX =
+                endX - startX;
+
+            tangentY =
+                endY - startY;
+
+            tangentLength =
+                Math.max(
+                    1,
+                    Math.hypot(
+                        tangentX,
+                        tangentY
+                    )
+                );
+        }
+
+
+        const ux =
+            tangentX
+            /
+            tangentLength;
+
+
+        const uy =
+            tangentY
+            /
+            tangentLength;
+
+
+        const nx =
+            -uy;
+
+
+        const ny =
+            ux;
+
+
+        const headLength =
+            11;
+
+
+        const headWidth =
+            5;
+
+
+        const baseX =
+            endX
+            -
+            ux * headLength;
+
+
+        const baseY =
+            endY
+            -
+            uy * headLength;
+
+
+        const wing1X =
+            baseX
+            +
+            nx * headWidth;
+
+
+        const wing1Y =
+            baseY
+            +
+            ny * headWidth;
+
+
+        const wing2X =
+            baseX
+            -
+            nx * headWidth;
+
+
+        const wing2Y =
+            baseY
+            -
+            ny * headWidth;
+
+
+        const head =
+            `M ${wing1X.toFixed(2)} ${wing1Y.toFixed(2)} `
+            +
+            `L ${endX.toFixed(2)} ${endY.toFixed(2)} `
+            +
+            `L ${wing2X.toFixed(2)} ${wing2Y.toFixed(2)}`;
 
 
         el.arrowPath.setAttribute(
@@ -3634,7 +3943,7 @@
         );
 
 
-        // restart animation
+        // Restart animasi.
         void el.arrow
             .getBoundingClientRect();
 

@@ -399,8 +399,7 @@
         }
 
 
-        .column-guide-arrow:not(.hidden)
-        .arrow-to-hundreds
+        .column-guide-arrow:not(.hidden).arrow-to-hundreds
         .column-arrow-path {
             animation:
                 columnArrowDraw
@@ -415,8 +414,7 @@
         }
 
 
-        .column-guide-arrow:not(.hidden)
-        .arrow-to-hundreds
+        .column-guide-arrow:not(.hidden).arrow-to-hundreds
         .column-arrow-head {
             animation:
                 columnArrowHeadReveal
@@ -3614,6 +3612,231 @@
             return;
         }
 
+
+        // ==================================================
+        // TARGET DIGIT
+        //
+        // V1.6: jangan lagi memakai koordinat hard-coded.
+        // Koordinat dihitung langsung dari posisi angka pada
+        // layar, sehingga tetap tepat pada desktop maupun HP.
+        // ==================================================
+
+        let targetDigit =
+            topOnesDigit;
+
+
+        let cssClass =
+            "arrow-to-ones";
+
+
+        if (
+            stepIndex === 1
+        ) {
+
+            targetDigit =
+                topTensDigit;
+
+            cssClass =
+                "arrow-to-tens";
+
+        } else if (
+            stepIndex === 2
+            &&
+            expected.digitCount === 3
+        ) {
+
+            targetDigit =
+                topHundredsDigit;
+
+            cssClass =
+                "arrow-to-hundreds";
+        }
+
+
+        if (
+            !bottomSingleDigit
+            ||
+            !targetDigit
+            ||
+            !guideArrow
+            ||
+            !guideArrowPath
+        ) {
+
+            hideArrow();
+            return;
+        }
+
+
+        const svgRect =
+            guideArrow
+                .getBoundingClientRect();
+
+
+        const sourceRect =
+            bottomSingleDigit
+                .getBoundingClientRect();
+
+
+        const targetRect =
+            targetDigit
+                .getBoundingClientRect();
+
+
+        if (
+            svgRect.width <= 0
+            ||
+            svgRect.height <= 0
+            ||
+            sourceRect.width <= 0
+            ||
+            targetRect.width <= 0
+        ) {
+
+            hideArrow();
+            return;
+        }
+
+
+        const viewBox =
+            guideArrow.viewBox.baseVal;
+
+
+        const viewWidth =
+            viewBox.width || 260;
+
+
+        const viewHeight =
+            viewBox.height || 170;
+
+
+        const toSvgX =
+            clientX =>
+
+                (
+                    (
+                        clientX
+                        -
+                        svgRect.left
+                    )
+                    /
+                    svgRect.width
+                )
+                *
+                viewWidth;
+
+
+        const toSvgY =
+            clientY =>
+
+                (
+                    (
+                        clientY
+                        -
+                        svgRect.top
+                    )
+                    /
+                    svgRect.height
+                )
+                *
+                viewHeight;
+
+
+        // Mulai sedikit di atas digit pengali.
+        const startX =
+            toSvgX(
+                sourceRect.left
+                +
+                sourceRect.width / 2
+            );
+
+
+        const startY =
+            toSvgY(
+                sourceRect.top
+                +
+                2
+            );
+
+
+        // Ujung sedikit di bawah digit tujuan agar kepala panah
+        // menunjuk angka, bukan menutupi angka.
+        const endX =
+            toSvgX(
+                targetRect.left
+                +
+                targetRect.width / 2
+            );
+
+
+        const endY =
+            toSvgY(
+                targetRect.bottom
+                -
+                2
+            );
+
+
+        const dx =
+            endX - startX;
+
+
+        const dy =
+            endY - startY;
+
+
+        // Kurva ringan agar panah tidak menimpa angka di tengah.
+        // Arah lengkungan otomatis mengikuti target kiri/kanan.
+        const bend =
+            Math.max(
+                10,
+                Math.min(
+                    24,
+                    Math.abs(dx) * 0.24
+                )
+            );
+
+
+        const direction =
+            dx < 0
+                ? -1
+                : 1;
+
+
+        const c1x =
+            startX
+            +
+            direction * bend;
+
+
+        const c1y =
+            startY
+            +
+            dy * 0.34;
+
+
+        const c2x =
+            endX
+            +
+            direction * bend * 0.45;
+
+
+        const c2y =
+            startY
+            +
+            dy * 0.74;
+
+
+        const path =
+            `M ${startX.toFixed(2)} ${startY.toFixed(2)} `
+            +
+            `C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, `
+            +
+            `${c2x.toFixed(2)} ${c2y.toFixed(2)}, `
+            +
+            `${endX.toFixed(2)} ${endY.toFixed(2)}`;
+
+
         guideArrow
             .classList
             .remove(
@@ -3624,94 +3847,6 @@
             );
 
 
-        let cssClass;
-        let path;
-
-
-        // ==============================================
-        // 3 DIGIT
-        // ==============================================
-
-        if (
-            expected
-                .digitCount === 3
-        ) {
-
-            // SATUAN
-
-            if (
-                stepIndex === 0
-            ) {
-
-                cssClass =
-                    "arrow-to-ones";
-
-
-                path =
-                    "M 210 132 C 222 110, 222 78, 210 45";
-
-
-            // PULUHAN
-
-            } else if (
-                stepIndex === 1
-            ) {
-
-                cssClass =
-                    "arrow-to-tens";
-
-
-                path =
-                    "M 210 132 C 186 108, 170 76, 152 45";
-
-
-            // RATUSAN
-
-            } else {
-
-                cssClass =
-                    "arrow-to-hundreds";
-
-
-                path =
-                    "M 210 132 C 166 106, 126 74, 94 45";
-            }
-
-
-        // ==============================================
-        // 2 DIGIT
-        // ==============================================
-
-        } else {
-
-            // SATUAN
-
-            if (
-                stepIndex === 0
-            ) {
-
-                cssClass =
-                    "arrow-to-ones";
-
-
-                path =
-                    "M 178 132 C 205 112, 210 80, 188 45";
-
-
-            // PULUHAN
-
-            } else {
-
-                cssClass =
-                    "arrow-to-tens";
-
-
-                path =
-                    "M 178 132 C 150 108, 132 78, 126 45";
-            }
-        }
-
-
         guideArrowPath.setAttribute(
             "d",
             path
@@ -3719,7 +3854,6 @@
 
 
         // Restart animasi dari pangkal.
-
         void guideArrow
             .getBoundingClientRect();
 
