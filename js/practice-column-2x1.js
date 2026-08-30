@@ -244,6 +244,67 @@
 
     style.textContent = `
 
+        /*
+           Elemen 3 digit dibuat dinamis dan memakai atribut hidden.
+           CSS komponen memiliki display:flex/inline-flex yang dapat
+           mengalahkan default browser [hidden]. Karena itu atribut
+           hidden harus dipaksa benar-benar tidak mengambil layout.
+        */
+        .column-board-2x1 [hidden] {
+            display: none !important;
+        }
+
+
+        /* ==================================================
+           ALIGNMENT KHUSUS 2 DIGIT x 1 DIGIT
+
+           Number grid memakai 3 kolom:
+           [ruang tanda] [puluhan] [satuan]
+
+           Result grid sekarang memakai kolom yang SAMA agar:
+           - Step 1 tepat di bawah satuan.
+           - Step 2 satu digit tepat di bawah puluhan.
+           - Step 2 dua digit (contoh 21 pada Tingkat 11)
+             membentang tepat di kolom ratusan + puluhan.
+           ================================================== */
+
+        .column-board-2x1:not(.column-board-3digit)
+        .column-result-grid {
+            width: 174px;
+            grid-template-columns: 48px 58px 58px;
+            gap: 0;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
+        .column-result-ones {
+            grid-column: 3;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
+        #columnStep2Wrap.column-step2-single {
+            grid-column: 2;
+            width: 58px;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
+        #columnStep2Wrap.column-step2-single
+        #columnStep2Input {
+            width: 58px;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
+        #columnStep2Wrap.column-step2-double {
+            grid-column: 1 / span 2;
+            width: 106px;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
+        #columnStep2Wrap.column-step2-double
+        #columnStep2Input {
+            width: 106px;
+        }
+
+
         .column-board-2x1.column-board-3digit {
             width: 334px;
         }
@@ -359,6 +420,36 @@
 
 
         @media (max-width: 600px) {
+
+            .column-board-2x1:not(.column-board-3digit)
+            .column-result-grid {
+                width: 156px;
+                grid-template-columns: 42px 52px 52px;
+                gap: 0;
+            }
+
+            .column-board-2x1:not(.column-board-3digit)
+            #columnStep2Wrap.column-step2-single {
+                width: 52px;
+            }
+
+            .column-board-2x1:not(.column-board-3digit)
+            #columnStep2Wrap.column-step2-single
+            #columnStep2Input {
+                width: 52px;
+            }
+
+            .column-board-2x1:not(.column-board-3digit)
+            #columnStep2Wrap.column-step2-double {
+                width: 94px;
+            }
+
+            .column-board-2x1:not(.column-board-3digit)
+            #columnStep2Wrap.column-step2-double
+            #columnStep2Input {
+                width: 94px;
+            }
+
 
             .column-board-2x1.column-board-3digit {
                 width: 296px;
@@ -1024,6 +1115,45 @@
 
 
     // ==================================================
+    // POSISI KOLOM HASIL UNTUK 2 DIGIT
+    // ==================================================
+
+    function applyTwoDigitResultLayout(
+        expected
+    ) {
+
+        columnStep2Wrap.classList.remove(
+            "column-step2-single",
+            "column-step2-double"
+        );
+
+
+        if (
+            !expected
+            ||
+            expected.digitCount !== 2
+        ) {
+            return;
+        }
+
+
+        const step2Text =
+            String(
+                expected.steps?.[1]?.writeValue
+                ??
+                ""
+            );
+
+
+        columnStep2Wrap.classList.add(
+            step2Text.length >= 2
+                ? "column-step2-double"
+                : "column-step2-single"
+        );
+    }
+
+
+    // ==================================================
     // LABEL LANGKAH
     // ==================================================
 
@@ -1080,6 +1210,11 @@
             applyDigitLayout(
                 expected
                     .digitCount
+            );
+
+
+            applyTwoDigitResultLayout(
+                expected
             );
 
 
@@ -1459,6 +1594,11 @@
             applyDigitLayout(
                 expected
                     .digitCount
+            );
+
+
+            applyTwoDigitResultLayout(
+                expected
             );
 
 
