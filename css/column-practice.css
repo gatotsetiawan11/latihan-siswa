@@ -1,349 +1,279 @@
-/* =========================================================
-   COLUMN MULTIPLICATION
-   ========================================================= */
+/* ======================================================
+   COLUMN PRACTICE UI
+   2 DIGIT x 1 DIGIT
+   ====================================================== */
 
-.column-practice {
+.column-math-shell {
     width: 100%;
-    max-width: 560px;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 18px 32px;
+}
+
+.column-math-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.column-math-progress {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 20px;
+    color: #0f172a;
+}
+
+.column-help-box {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: #eef4ff;
+    border: 1px solid #d8e6ff;
+}
+
+.column-help-text {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.column-board {
+    position: relative;
+    padding: 28px 18px 20px;
+    border-radius: 24px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+}
+
+.column-problem-grid {
+    position: relative;
+    width: 280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 60px 60px 60px;
+    grid-template-rows: 60px 60px 26px 8px 70px;
+    justify-content: center;
+    align-items: center;
+}
+
+.column-digit,
+.column-operator,
+.column-carry-display,
+.column-empty-cell,
+.column-carry-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.column-digit,
+.column-operator {
+    font-size: 44px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.column-digit.active-digit,
+.bottom-digit.active-digit {
+    color: #2563eb;
+    transform: scale(1.05);
+}
+
+.column-carry-display {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+    border-radius: 999px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #dc2626;
+    opacity: 0;
+    transform: translateY(6px) scale(0.8);
+    transition: all 0.25s ease;
+}
+
+.column-carry-display.show-carry {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+}
+
+.column-line {
+    height: 4px;
+    background: #0f172a;
+    border-radius: 99px;
+}
+
+.column-answer-input {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto;
+    border-radius: 14px;
+    border: 2px solid #cbd5e1;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f172a;
+    outline: none;
+    background: #f8fafc;
+    transition: 0.18s ease;
+}
+
+.column-answer-input:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    transform: scale(1.04);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.column-answer-input.correct {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.column-answer-input.wrong {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+.column-answer-input:disabled {
+    opacity: 0.8;
+}
+
+.column-feedback {
+    margin-top: 18px;
+    min-height: 28px;
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #334155;
+    font-weight: 600;
+}
+
+.column-arrow-layer {
+    position: relative;
+    width: 280px;
+    height: 0;
     margin: 0 auto;
 }
 
-
-.column-heading {
-    text-align: center;
-    margin-bottom: 26px;
-}
-
-
-.column-heading-label {
-    display: inline-block;
-
-    margin-bottom: 8px;
-
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-
-    color: var(--primary, #4f5cff);
-}
-
-
-.column-heading p {
-    margin: 0;
-
-    color: #6b7485;
-
-    font-size: 14px;
-    line-height: 1.55;
-}
-
-
-
-/* =========================================================
-   EQUATION
-   ========================================================= */
-
-.column-equation {
+.column-guide-arrow {
+    position: absolute;
+    top: 4px;
+    left: 0;
     width: 180px;
-
-    margin:
-        0 auto
-        30px;
-
-    padding:
-        18px
-        26px
-        12px;
-
-    border-radius: 18px;
-
-    background:
-        #f7f8fc;
-
-    border:
-        1px solid
-        #e8ebf3;
-
-    text-align: right;
+    height: 40px;
+    opacity: 1;
+    transition: all 0.28s ease;
 }
 
-
-.column-number {
-    font-size: 38px;
-    line-height: 1.15;
-
-    font-weight: 800;
-
-    color:
-        #172033;
-
-    font-variant-numeric:
-        tabular-nums;
+.column-guide-arrow.hidden {
+    opacity: 0;
 }
 
-
-.column-second-line {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    margin-top: 5px;
+.column-guide-arrow .arrow-line {
+    position: absolute;
+    top: 18px;
+    left: 14px;
+    width: 110px;
+    height: 4px;
+    background: #f59e0b;
+    border-radius: 99px;
+    transform-origin: left center;
 }
 
-
-.column-sign {
-    font-size: 28px;
-
-    font-weight: 700;
-
-    color:
-        #687086;
+.column-guide-arrow .arrow-head {
+    position: absolute;
+    top: 11px;
+    left: 118px;
+    width: 16px;
+    height: 16px;
+    border-top: 4px solid #f59e0b;
+    border-right: 4px solid #f59e0b;
+    transform: rotate(45deg);
 }
 
-
-.column-rule {
-    width: 100%;
-    height: 3px;
-
-    margin-top: 8px;
-
-    border-radius: 999px;
-
-    background:
-        #172033;
+.column-guide-arrow.to-ones {
+    transform: translate(112px, 48px);
+    animation: pulseArrow 1s infinite ease-in-out;
 }
 
-
-
-/* =========================================================
-   STEPS
-   ========================================================= */
-
-.column-step {
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        150px;
-
-    gap: 16px;
-
-    align-items: center;
-
-    padding:
-        16px
-        18px;
-
-    margin-bottom: 12px;
-
-    border-radius: 16px;
-
-    border:
-        1px solid
-        #e3e7ef;
-
-    background:
-        #ffffff;
+.column-guide-arrow.to-tens {
+    transform: translate(52px, 48px);
+    animation: pulseArrow 1s infinite ease-in-out;
 }
 
-
-.column-step label {
-    font-size: 16px;
-
-    line-height: 1.4;
-
-    font-weight: 700;
-
-    color:
-        #263147;
+@keyframes pulseArrow {
+    0% {
+        transform-origin: center;
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.15);
+    }
+    100% {
+        filter: brightness(1);
+    }
 }
 
-
-.column-step-input {
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding:
-        12px
-        14px;
-
-    border:
-        2px solid
-        #d9deea;
-
-    border-radius: 12px;
-
-    outline: none;
-
-    background:
-        #ffffff;
-
-    color:
-        #172033;
-
-    text-align: center;
-
-    font-family: inherit;
-
-    font-size: 20px;
-    font-weight: 800;
-
-    font-variant-numeric:
-        tabular-nums;
-
-    transition:
-        border-color 0.18s ease,
-        box-shadow 0.18s ease,
-        background 0.18s ease;
-}
-
-
-.column-step-input:focus {
-    border-color:
-        var(--primary, #4f5cff);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(79, 92, 255, 0.10);
-}
-
-
-.column-step-input:disabled {
-    cursor: default;
-
-    opacity: 0.78;
-
-    background:
-        #f5f6f9;
-}
-
-
-
-/* =========================================================
-   FINAL STEP
-   ========================================================= */
-
-.column-final-step {
-    margin-top: 18px;
-
-    border-color:
-        #ccd3ff;
-
-    background:
-        #f7f8ff;
-}
-
-
-.column-final-step label {
-    color:
-        #3442d9;
-}
-
-
-.column-final-input {
-    border-color:
-        #bfc7ff;
-}
-
-
-
-/* =========================================================
-   HELP
-   ========================================================= */
-
-.column-help {
-    margin:
-        16px
-        0
-        0;
-
-    text-align: center;
-
-    color:
-        #8a92a3;
-
-    font-size: 13px;
-
-    line-height: 1.55;
-}
-
-
-
-/* =========================================================
-   FEEDBACK STATES
-   ========================================================= */
-
-.column-step-input.step-correct {
-    border-color:
-        #41a46d;
-
-    background:
-        #f1fbf5;
-}
-
-
-.column-step-input.step-wrong {
-    border-color:
-        #d95c5c;
-
-    background:
-        #fff5f5;
-}
-
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (
-    max-width: 600px
-) {
-
-    .column-practice {
-        max-width: 100%;
+@media (max-width: 640px) {
+    .column-math-shell {
+        padding: 18px 12px 24px;
     }
 
-
-    .column-equation {
-        width: 155px;
-
-        padding:
-            16px
-            22px
-            11px;
-
-        margin-bottom: 24px;
+    .column-math-progress {
+        font-size: 18px;
     }
 
-
-    .column-number {
-        font-size: 34px;
+    .column-help-text {
+        font-size: 16px;
     }
 
-
-    .column-step {
-        grid-template-columns:
-            1fr;
-
-        gap: 10px;
-
-        padding:
-            14px;
+    .column-board {
+        padding: 20px 10px 18px;
     }
 
-
-    .column-step label {
-        text-align: center;
+    .column-problem-grid {
+        width: 228px;
+        grid-template-columns: 52px 52px 52px;
+        grid-template-rows: 54px 54px 24px 8px 62px;
     }
 
-
-    .column-step-input {
-        min-height: 52px;
-
-        font-size: 22px;
+    .column-digit,
+    .column-operator {
+        font-size: 38px;
     }
 
+    .column-answer-input {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+    }
+
+    .column-carry-display {
+        font-size: 18px;
+        width: 26px;
+        height: 26px;
+    }
+
+    .column-arrow-layer {
+        width: 228px;
+    }
+
+    .column-guide-arrow.to-ones {
+        transform: translate(90px, 40px);
+    }
+
+    .column-guide-arrow.to-tens {
+        transform: translate(42px, 40px);
+    }
+
+    .column-feedback {
+        font-size: 15px;
+    }
 }
