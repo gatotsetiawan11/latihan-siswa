@@ -1,65 +1,101 @@
 // ======================================================
-// LATIHAN SISWA
-// COLUMN MULTIPLICATION PATCH V1
-// 2 DIGIT x 1 DIGIT - DIGIT BY DIGIT WITH CARRY
+// LATIHAN SISWA - COLUMN MULTIPLICATION V2
 //
-// Tujuan:
-// - Bersusun hanya 2 digit x 1 digit.
-// - Wajib mulai dari digit paling belakang.
-// - Panah bantu bergerak dari pengali ke digit aktif.
-// - Carry/simpanan muncul otomatis jika langkah pertama benar.
-// - Jawaban salah tidak langsung dinilai; siswa boleh memperbaiki
-//   sampai waktu habis.
-// - Setelah langkah pertama benar, fokus pindah otomatis.
-// - Setelah langkah kedua benar, jawaban auto-submit setelah jeda.
+// Tingkat 10:
+// 2 digit x 1 digit, tanpa carry
 //
-// File ini harus dimuat SETELAH practice.js dan SEBELUM
-// practice-navigation-fix.js.
+// Tingkat 11:
+// 2 digit x 1 digit, carry diperbolehkan
+//
+// Tingkat 12:
+// 3 digit x 1 digit, tanpa carry
+//
+// Tingkat 13:
+// 3 digit x 1 digit, carry diperbolehkan
+//
+// Dimuat setelah practice.js dan sebelum
+// practice-navigation-fix.js
 // ======================================================
 
 (() => {
 
-    // ==================================================
-    // SETTINGS
-    // ==================================================
-
-    const STEP_ADVANCE_DELAY_MS = 450;
-    const CORRECT_SUBMIT_DELAY_MS = 850;
+    const STEP_DELAY = 420;
+    const SUBMIT_DELAY = 850;
 
 
     // ==================================================
-    // DOM TAMBAHAN
+    // DOM
     // ==================================================
 
     const topTensDigit =
-        document.getElementById("columnTopTensDigit");
+        document.getElementById(
+            "columnTopTensDigit"
+        );
 
     const topOnesDigit =
-        document.getElementById("columnTopOnesDigit");
+        document.getElementById(
+            "columnTopOnesDigit"
+        );
 
     const bottomSingleDigit =
-        document.getElementById("columnBottomSingleDigit");
+        document.getElementById(
+            "columnBottomSingleDigit"
+        );
 
     const carryBadge =
-        document.getElementById("columnCarryBadge");
+        document.getElementById(
+            "columnCarryBadge"
+        );
 
     const carryValue =
-        document.getElementById("columnCarryValue");
+        document.getElementById(
+            "columnCarryValue"
+        );
 
     const carryNote =
-        document.getElementById("columnCarryNote");
+        document.getElementById(
+            "columnCarryNote"
+        );
 
     const guideArrow =
-        document.getElementById("columnGuideArrow");
+        document.getElementById(
+            "columnGuideArrow"
+        );
 
     const guideArrowPath =
-        document.getElementById("columnGuideArrowPath");
+        document.getElementById(
+            "columnGuideArrowPath"
+        );
 
     const columnMethodText =
-        document.getElementById("columnMethodText");
+        document.getElementById(
+            "columnMethodText"
+        );
 
     const columnStep2Wrap =
-        document.getElementById("columnStep2Wrap");
+        document.getElementById(
+            "columnStep2Wrap"
+        );
+
+    const columnBoard =
+        document.querySelector(
+            ".column-board-2x1"
+        );
+
+    const topGrid =
+        document.querySelector(
+            ".column-top-grid"
+        );
+
+    const bottomGrid =
+        document.querySelector(
+            ".column-bottom-grid"
+        );
+
+    const resultGrid =
+        document.querySelector(
+            ".column-result-grid"
+        );
 
 
     // ==================================================
@@ -83,15 +119,310 @@
         !guideArrow ||
         !guideArrowPath ||
         !columnMethodText ||
-        !columnStep2Wrap
+        !columnStep2Wrap ||
+        !columnBoard ||
+        !topGrid ||
+        !bottomGrid ||
+        !resultGrid
     ) {
 
         console.error(
-            "Column 2x1 patch: elemen HTML belum lengkap."
+            "Column V2: elemen HTML belum lengkap."
         );
 
         return;
     }
+
+
+    // ==================================================
+    // TAMBAH DOM UNTUK 3 DIGIT
+    //
+    // Tidak perlu mengubah practice.html.
+    // ==================================================
+
+    const topHundredsDigit =
+        document.createElement(
+            "span"
+        );
+
+    topHundredsDigit.id =
+        "columnTopHundredsDigit";
+
+    topHundredsDigit.className =
+        "column-board-digit";
+
+    topHundredsDigit.hidden =
+        true;
+
+    topGrid.insertBefore(
+        topHundredsDigit,
+        topTensDigit
+    );
+
+
+    const bottomSpacer2 =
+        document.createElement(
+            "span"
+        );
+
+    bottomSpacer2.className =
+        "column-grid-spacer";
+
+    bottomSpacer2.hidden =
+        true;
+
+    bottomGrid.insertBefore(
+        bottomSpacer2,
+        bottomSingleDigit
+    );
+
+
+    // ==================================================
+    // INPUT LANGKAH 3
+    //
+    // columnFinalInput lama kita gunakan sebagai
+    // input digit paling depan untuk mode 3 digit.
+    // ==================================================
+
+    const columnStep3Wrap =
+        document.createElement(
+            "div"
+        );
+
+    columnStep3Wrap.id =
+        "columnStep3Wrap";
+
+    columnStep3Wrap.className =
+        "column-result-front column-step-locked";
+
+    columnStep3Wrap.hidden =
+        true;
+
+
+    const columnStep3Label =
+        document.createElement(
+            "label"
+        );
+
+    columnStep3Label.id =
+        "columnStep3Label";
+
+    columnStep3Label.className =
+        "column-result-label";
+
+    columnStep3Label.htmlFor =
+        "columnFinalInput";
+
+    columnStep3Label.textContent =
+        "Langkah 3";
+
+
+    columnStep3Wrap.appendChild(
+        columnStep3Label
+    );
+
+    columnStep3Wrap.appendChild(
+        columnFinalInput
+    );
+
+    resultGrid.insertBefore(
+        columnStep3Wrap,
+        columnStep2Wrap
+    );
+
+
+    // ==================================================
+    // CSS KHUSUS 3 DIGIT
+    //
+    // CSS panah yang sekarang tetap dipakai.
+    // ==================================================
+
+    const style =
+        document.createElement(
+            "style"
+        );
+
+    style.textContent = `
+
+        .column-board-2x1.column-board-3digit {
+            width: 334px;
+        }
+
+
+        .column-board-3digit .column-number-grid {
+            width: 232px;
+            grid-template-columns:
+                48px
+                58px
+                58px
+                58px;
+        }
+
+
+        .column-board-3digit .column-board-rule {
+            width: 234px;
+        }
+
+
+        .column-board-3digit .column-result-grid {
+            width: 242px;
+            grid-template-columns:
+                106px
+                58px
+                58px;
+            gap: 10px;
+        }
+
+
+        .column-step3-visible {
+            position: static !important;
+
+            width: 106px !important;
+            height: auto !important;
+            min-height: 56px !important;
+
+            padding: 8px !important;
+            margin: 0 !important;
+
+            opacity: 1 !important;
+
+            pointer-events: auto !important;
+
+            clip: auto !important;
+
+            border:
+                2px solid
+                #d9deea !important;
+        }
+
+
+        .column-step3-visible:focus {
+            border-color:
+                #4f5cff !important;
+
+            background:
+                #ffffff !important;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(
+                    79,
+                    92,
+                    255,
+                    0.11
+                )
+                !important;
+
+            outline:
+                none !important;
+        }
+
+
+        .column-step3-visible.step-correct {
+            border-color:
+                #36a569 !important;
+
+            background:
+                #effbf4 !important;
+
+            color:
+                #167744 !important;
+        }
+
+
+        .column-guide-arrow:not(.hidden)
+        .arrow-to-hundreds
+        .column-arrow-path {
+            animation:
+                columnArrowDraw
+                0.48s
+                cubic-bezier(
+                    0.22,
+                    0.8,
+                    0.32,
+                    1
+                )
+                forwards;
+        }
+
+
+        .column-guide-arrow:not(.hidden)
+        .arrow-to-hundreds
+        .column-arrow-head {
+            animation:
+                columnArrowHeadReveal
+                0.11s
+                ease-out
+                0.39s
+                forwards;
+        }
+
+
+        @media (max-width: 600px) {
+
+            .column-board-2x1.column-board-3digit {
+                width: 296px;
+            }
+
+
+            .column-board-3digit .column-number-grid {
+                width: 208px;
+
+                grid-template-columns:
+                    42px
+                    52px
+                    52px
+                    52px;
+            }
+
+
+            .column-board-3digit .column-board-rule {
+                width: 210px;
+            }
+
+
+            .column-board-3digit .column-result-grid {
+                width: 218px;
+
+                grid-template-columns:
+                    94px
+                    52px
+                    52px;
+
+                gap: 10px;
+            }
+
+
+            .column-step3-visible {
+                width: 94px !important;
+
+                min-height:
+                    50px !important;
+
+                padding:
+                    6px !important;
+
+                font-size:
+                    27px !important;
+            }
+
+        }
+
+
+        @media (max-width: 390px) {
+
+            .column-board-2x1.column-board-3digit {
+                width: 278px;
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        style
+    );
 
 
     // ==================================================
@@ -115,71 +446,169 @@
 
 
     // ==================================================
+    // CONFIG
+    // ==================================================
+
+    function getCarryMode() {
+
+        return String(
+            levelData
+                ?.config
+                ?.carry_mode
+            ||
+            "allowed"
+        );
+    }
+
+
+    // ==================================================
+    // CEK TANPA CARRY
+    //
+    // Contoh:
+    //
+    // 23 × 3
+    //
+    // 3 × 3 = 9
+    // 3 × 2 = 6
+    //
+    // semua < 10
+    // ==================================================
+
+    function noCarry(
+        a,
+        b
+    ) {
+
+        return String(a)
+
+            .split("")
+
+            .map(
+                Number
+            )
+
+            .every(
+                digit =>
+                    digit * b < 10
+            );
+    }
+
+
+    // ==================================================
+    // SHUFFLE
+    // ==================================================
+
+    function shuffle(
+        items
+    ) {
+
+        for (
+            let i =
+                items.length - 1;
+
+            i > 0;
+
+            i--
+        ) {
+
+            const j =
+                Math.floor(
+                    Math.random()
+                    *
+                    (
+                        i + 1
+                    )
+                );
+
+
+            [
+                items[i],
+                items[j]
+            ]
+            =
+            [
+                items[j],
+                items[i]
+            ];
+        }
+
+
+        return items;
+    }
+
+
+    // ==================================================
     // HELP TEXT
     // ==================================================
 
     function setColumnHelpText() {
 
-        const helpMain =
+        const main =
             document.querySelector(
                 ".practice-help-main"
             );
 
-        const helpNote =
+        const note =
             document.querySelector(
                 ".practice-help-note"
             );
 
 
-        if (helpMain) {
+        if (main) {
 
-            helpMain.textContent =
-                "Mulai dari angka paling belakang. Isi satu langkah, lalu fokus berpindah otomatis.";
+            main.textContent =
+                "Kerjakan dari angka paling belakang. Setelah benar, kursor berpindah otomatis ke depan.";
         }
 
 
-        if (helpNote) {
+        if (note) {
 
-            helpNote.textContent =
-                "Jika belum benar, jawaban tetap bisa diperbaiki sampai waktu habis.";
+            note.textContent =
+                "Jika belum benar, jawaban masih dapat diperbaiki sampai waktu habis.";
         }
     }
 
 
     function setDirectHelpText() {
 
-        const helpMain =
+        const main =
             document.querySelector(
                 ".practice-help-main"
             );
 
-        const helpNote =
+        const note =
             document.querySelector(
                 ".practice-help-note"
             );
 
 
-        if (helpMain) {
+        if (main) {
 
-            helpMain.innerHTML =
+            main.innerHTML =
                 'Tekan <strong class="enter-key">Enter / Selesai</strong> untuk mengirim jawaban.';
         }
 
 
-        if (helpNote) {
+        if (note) {
 
-            helpNote.textContent =
+            note.textContent =
                 "Jika belum benar, jawaban masih dapat diperbaiki sampai waktu habis.";
         }
     }
 
 
     // ==================================================
-    // QUESTION GENERATOR OVERRIDE
+    // GENERATOR SOAL
+    //
+    // Tingkat 10/12:
+    // carry_mode = none
+    //
+    // Tingkat 11/13:
+    // carry_mode = allowed
     // ==================================================
 
     generateMultiDigitQuestions =
-        function generateMultiDigitQuestions2x1(
+        function generateColumnQuestions(
             level
         ) {
 
@@ -198,190 +627,321 @@
             }
 
 
-            const rawMinA =
-                Number(config.min_a);
+            const digits =
+                Number(
+                    config
+                        .multiplicand_digits
+                ) === 3
 
-            const rawMaxA =
-                Number(config.max_a);
+                    ? 3
+                    : 2;
 
-            const rawMinB =
-                Number(config.min_b);
 
-            const rawMaxB =
-                Number(config.max_b);
+            const defaultMinA =
+                digits === 3
+                    ? 100
+                    : 10;
+
+
+            const defaultMaxA =
+                digits === 3
+                    ? 999
+                    : 99;
 
 
             const minA =
-                Number.isInteger(rawMinA)
-                    ? Math.max(10, rawMinA)
-                    : 10;
+                Number.isInteger(
+                    Number(
+                        config.min_a
+                    )
+                )
+
+                    ? Math.max(
+                        defaultMinA,
+                        Number(
+                            config.min_a
+                        )
+                    )
+
+                    : defaultMinA;
+
 
             const maxA =
-                Number.isInteger(rawMaxA)
-                    ? Math.min(99, rawMaxA)
-                    : 99;
+                Number.isInteger(
+                    Number(
+                        config.max_a
+                    )
+                )
+
+                    ? Math.min(
+                        defaultMaxA,
+                        Number(
+                            config.max_a
+                        )
+                    )
+
+                    : defaultMaxA;
+
 
             const minB =
-                Number.isInteger(rawMinB)
-                    ? Math.max(1, rawMinB)
+                Number.isInteger(
+                    Number(
+                        config.min_b
+                    )
+                )
+
+                    ? Math.max(
+                        1,
+                        Number(
+                            config.min_b
+                        )
+                    )
+
                     : 2;
 
+
             const maxB =
-                Number.isInteger(rawMaxB)
-                    ? Math.min(9, rawMaxB)
+                Number.isInteger(
+                    Number(
+                        config.max_b
+                    )
+                )
+
+                    ? Math.min(
+                        9,
+                        Number(
+                            config.max_b
+                        )
+                    )
+
                     : 9;
-
-
-            if (
-                minA > maxA ||
-                minB > maxB
-            ) {
-
-                return [];
-            }
 
 
             const target =
                 Number(
-                    level.question_count
+                    level
+                        .question_count
                 );
 
-            const result = [];
-            const used = new Set();
 
-            let safety = 0;
+            const carryMode =
+                String(
+                    config
+                        .carry_mode
+                    ||
+                    "allowed"
+                );
 
 
-            while (
-                result.length < target &&
-                safety < 5000
+            const candidates =
+                [];
+
+
+            for (
+                let a = minA;
+
+                a <= maxA;
+
+                a++
             ) {
 
-                safety++;
+                for (
+                    let b = minB;
+
+                    b <= maxB;
+
+                    b++
+                ) {
+
+                    if (
+                        carryMode ===
+                        "none"
+
+                        &&
+
+                        !noCarry(
+                            a,
+                            b
+                        )
+                    ) {
+
+                        continue;
+                    }
 
 
-                const a =
-                    randomInteger(
-                        minA,
-                        maxA
-                    );
+                    candidates.push({
 
-                const b =
-                    randomInteger(
-                        minB,
-                        maxB
-                    );
+                        a,
 
-                const key =
-                    `${a}x${b}`;
+                        b,
 
+                        answer:
+                            a * b
 
-                if (used.has(key)) {
-                    continue;
+                    });
                 }
-
-
-                used.add(key);
-
-
-                result.push({
-
-                    a,
-
-                    b,
-
-                    answer:
-                        a * b
-
-                });
             }
 
 
-            return result;
+            shuffle(
+                candidates
+            );
+
+
+            return candidates.slice(
+                0,
+                target
+            );
         };
 
 
     // ==================================================
-    // EXPECTED VALUES
+    // HITUNG LANGKAH BERSUSUN
+    //
+    // Dari kanan -> kiri.
     // ==================================================
 
     getColumnExpected =
-        function getColumnExpected2x1(
+        function getColumnExpectedV2(
             question
         ) {
 
             const a =
-                Number(question.a);
-
-            const b =
-                Number(question.b);
-
-            const tensDigit =
-                Math.floor(a / 10);
-
-            const onesDigit =
-                a % 10;
-
-            const firstProduct =
-                b * onesDigit;
-
-            const resultOnesDigit =
-                firstProduct % 10;
-
-            const carry =
-                Math.floor(
-                    firstProduct / 10
+                Number(
+                    question.a
                 );
 
-            const frontResult =
-                (b * tensDigit) + carry;
+            const b =
+                Number(
+                    question.b
+                );
 
-            const final =
-                a * b;
+
+            const digits =
+                String(a)
+
+                    .split("")
+
+                    .map(
+                        Number
+                    );
+
+
+            const steps =
+                [];
+
+
+            let carry =
+                0;
+
+
+            for (
+                let index =
+                    digits.length - 1;
+
+                index >= 0;
+
+                index--
+            ) {
+
+                const digit =
+                    digits[index];
+
+
+                const carryIn =
+                    carry;
+
+
+                const product =
+                    (
+                        b * digit
+                    )
+                    +
+                    carryIn;
+
+
+                const isLeftmost =
+                    index === 0;
+
+
+                const writeValue =
+                    isLeftmost
+
+                        ? product
+
+                        : product % 10;
+
+
+                const carryOut =
+                    isLeftmost
+
+                        ? 0
+
+                        : Math.floor(
+                            product / 10
+                        );
+
+
+                steps.push({
+
+                    digit,
+
+                    carryIn,
+
+                    product,
+
+                    writeValue,
+
+                    carryOut,
+
+                    isLeftmost
+
+                });
+
+
+                carry =
+                    carryOut;
+            }
 
 
             return {
 
-                unitsDigit:
-                    b,
+                digits,
 
-                tensValue:
-                    0,
-
-                partial1:
-                    resultOnesDigit,
-
-                partial2:
-                    frontResult,
-
-                final,
-
-                tensDigit,
-
-                onesDigit,
+                digitCount:
+                    digits.length,
 
                 multiplier:
                     b,
 
-                firstProduct,
+                steps,
 
-                resultOnesDigit,
+                partial1:
+                    steps[0]
+                        ?.writeValue
+                    ??
+                    0,
 
-                carry,
+                partial2:
+                    steps[1]
+                        ?.writeValue
+                    ??
+                    0,
 
-                frontResult,
+                step3:
+                    steps[2]
+                        ?.writeValue
+                    ??
+                    null,
 
-                serverPartial1:
-                    final,
-
-                serverPartial2:
-                    0
+                final:
+                    a * b
             };
         };
 
 
     // ==================================================
-    // DIRECT RENDER OVERRIDE
+    // DIRECT
     // ==================================================
 
     renderDirectQuestion =
@@ -398,21 +958,114 @@
 
 
     // ==================================================
-    // COLUMN RENDER
+    // LAYOUT 2 / 3 DIGIT
+    // ==================================================
+
+    function applyDigitLayout(
+        digitCount
+    ) {
+
+        const isThree =
+            digitCount === 3;
+
+
+        columnBoard
+            .classList
+            .toggle(
+                "column-board-3digit",
+                isThree
+            );
+
+
+        topHundredsDigit.hidden =
+            !isThree;
+
+
+        bottomSpacer2.hidden =
+            !isThree;
+
+
+        columnStep3Wrap.hidden =
+            !isThree;
+
+
+        if (isThree) {
+
+            columnFinalInput.className =
+                "column-final-input column-step-input column-front-input column-step3-visible";
+
+
+            columnFinalInput
+                .removeAttribute(
+                    "aria-hidden"
+                );
+
+
+            columnFinalInput.tabIndex =
+                0;
+
+        } else {
+
+            columnFinalInput.className =
+                "column-final-input column-final-engine-input";
+
+
+            columnFinalInput
+                .setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+
+            columnFinalInput.tabIndex =
+                -1;
+        }
+    }
+
+
+    // ==================================================
+    // LABEL LANGKAH
+    // ==================================================
+
+    function makeStepLabel(
+        multiplier,
+        step
+    ) {
+
+        if (!step) {
+            return "";
+        }
+
+
+        return step.carryIn > 0
+
+            ? `${multiplier} × ${step.digit} + ${step.carryIn}`
+
+            : `${multiplier} × ${step.digit}`;
+    }
+
+
+    // ==================================================
+    // RENDER COLUMN
     // ==================================================
 
     renderColumnQuestion =
-        function renderColumnQuestion2x1(
+        function renderColumnQuestionV2(
             question
         ) {
 
             directQuestionArea
                 .classList
-                .add("hidden");
+                .add(
+                    "hidden"
+                );
+
 
             columnQuestionArea
                 .classList
-                .remove("hidden");
+                .remove(
+                    "hidden"
+                );
 
 
             setColumnHelpText();
@@ -424,11 +1077,17 @@
                 );
 
 
-            // Kompatibilitas engine lama.
+            applyDigitLayout(
+                expected
+                    .digitCount
+            );
+
+
             columnTopNumber.textContent =
                 formatNumber(
                     question.a
                 );
+
 
             columnBottomNumber.textContent =
                 formatNumber(
@@ -436,163 +1095,258 @@
                 );
 
 
-            // Tampilan digit baru.
-            topTensDigit.textContent =
-                String(
-                    expected.tensDigit
-                );
+            // ==========================================
+            // 3 DIGIT
+            // ==========================================
 
-            topOnesDigit.textContent =
-                String(
-                    expected.onesDigit
-                );
+            if (
+                expected
+                    .digitCount === 3
+            ) {
+
+                topHundredsDigit.textContent =
+                    String(
+                        expected
+                            .digits[0]
+                    );
+
+
+                topTensDigit.textContent =
+                    String(
+                        expected
+                            .digits[1]
+                    );
+
+
+                topOnesDigit.textContent =
+                    String(
+                        expected
+                            .digits[2]
+                    );
+
+
+            // ==========================================
+            // 2 DIGIT
+            // ==========================================
+
+            } else {
+
+                topTensDigit.textContent =
+                    String(
+                        expected
+                            .digits[0]
+                    );
+
+
+                topOnesDigit.textContent =
+                    String(
+                        expected
+                            .digits[1]
+                    );
+            }
+
 
             bottomSingleDigit.textContent =
                 String(
-                    expected.multiplier
+                    expected
+                        .multiplier
                 );
 
 
             columnStep1Label.textContent =
-                `${expected.multiplier} × ${expected.onesDigit} dulu`;
+                `${expected.multiplier} × ${expected.steps[0].digit}`;
+
 
             columnStep2Label.textContent =
-                expected.carry > 0
-                    ? `${expected.multiplier} × ${expected.tensDigit} + simpanan ${expected.carry}`
-                    : `${expected.multiplier} × ${expected.tensDigit}`;
+                makeStepLabel(
+                    expected
+                        .multiplier,
+
+                    expected
+                        .steps[1]
+                );
+
+
+            if (
+                expected
+                    .digitCount === 3
+            ) {
+
+                columnStep3Label.textContent =
+                    makeStepLabel(
+                        expected
+                            .multiplier,
+
+                        expected
+                            .steps[2]
+                    );
+            }
+
+
+            // ==========================================
+            // MAX LENGTH
+            // ==========================================
+
+            columnStep1Input.maxLength =
+                1;
+
+
+            columnStep2Input.maxLength =
+                expected
+                    .digitCount === 3
+
+                    ? 1
+
+                    : String(
+                        expected
+                            .steps[1]
+                            .writeValue
+                    ).length;
+
+
+            columnFinalInput.maxLength =
+                expected
+                    .digitCount === 3
+
+                    ? String(
+                        expected
+                            .steps[2]
+                            .writeValue
+                    ).length
+
+                    : String(
+                        expected.final
+                    ).length;
 
 
             columnMethodText.textContent =
-                `Mulai dari belakang: ${expected.multiplier} × ${expected.onesDigit}`;
+                `Mulai dari belakang: ${expected.multiplier} × ${expected.steps[0].digit}`;
 
 
-            columnStep1Input.maxLength = 1;
-
-            columnStep2Input.maxLength =
-                String(
-                    expected.frontResult
-                ).length;
-
-
-            columnFinalInput.value = "";
-            columnFinalInput.disabled = true;
-            columnFinalInput.tabIndex = -1;
-
+            clearStepClasses();
 
             hideCarry();
-            setArrowToOnes();
-            setStep2Visible(false);
 
+            lockAfterStep1();
 
-            topOnesDigit.classList.add(
-                "column-active-digit"
+            setActiveDigit(
+                0,
+                expected
             );
 
-            topTensDigit.classList.remove(
-                "column-active-digit"
+            setArrow(
+                0,
+                expected
             );
         };
 
 
     // ==================================================
-    // RESET OVERRIDE
+    // RESET
     // ==================================================
 
     resetQuestionInputs =
-        function resetQuestionInputs2x1() {
+        function resetQuestionInputsV2() {
 
-            if (!isColumnMode()) {
+            if (
+                !isColumnMode()
+            ) {
 
                 originalResetQuestionInputs();
+
                 return;
             }
 
 
-            answerFeedback.textContent = "";
+            answerFeedback.textContent =
+                "";
+
+
             answerFeedback.className =
                 "answer-feedback";
 
 
-            answerInput.disabled = false;
-
-            columnStep1Input.disabled = false;
-            columnStep2Input.disabled = true;
-            columnFinalInput.disabled = true;
+            answerInput.disabled =
+                false;
 
 
-            [
-                columnStep1Input,
-                columnStep2Input,
-                columnFinalInput
-            ].forEach(
-                input => {
+            columnStep1Input.disabled =
+                false;
 
-                    input.classList.remove(
-                        "step-correct",
-                        "step-wrong"
-                    );
-                }
-            );
 
+            columnStep2Input.disabled =
+                true;
+
+
+            columnFinalInput.disabled =
+                true;
+
+
+            clearStepClasses();
 
             hideCarry();
-            setStep2Visible(false);
         };
 
 
     // ==================================================
-    // CLEAR VALUE OVERRIDE
+    // CLEAR VALUES
     // ==================================================
 
     clearCurrentInputValues =
-        function clearCurrentInputValues2x1() {
+        function clearCurrentInputValuesV2() {
 
-            if (!isColumnMode()) {
+            if (
+                !isColumnMode()
+            ) {
 
                 originalClearCurrentInputValues();
+
                 return;
             }
 
 
-            answerInput.value = "";
-
-            columnStep1Input.value = "";
-            columnStep2Input.value = "";
-            columnFinalInput.value = "";
+            answerInput.value =
+                "";
 
 
-            columnStep1Input.disabled = false;
-            columnStep2Input.disabled = true;
-            columnFinalInput.disabled = true;
+            columnStep1Input.value =
+                "";
 
 
-            [
-                columnStep1Input,
-                columnStep2Input,
-                columnFinalInput
-            ].forEach(
-                input => {
+            columnStep2Input.value =
+                "";
 
-                    input.classList.remove(
-                        "step-correct",
-                        "step-wrong"
-                    );
-                }
-            );
 
+            columnFinalInput.value =
+                "";
+
+
+            columnStep1Input.disabled =
+                false;
+
+
+            columnStep2Input.disabled =
+                true;
+
+
+            columnFinalInput.disabled =
+                true;
+
+
+            clearStepClasses();
 
             hideCarry();
-            setStep2Visible(false);
-            setArrowToOnes();
+
+            lockAfterStep1();
         };
 
 
     // ==================================================
-    // INPUT VALUES OVERRIDE
+    // GET INPUT
     // ==================================================
 
     getColumnInputs =
-        function getColumnInputs2x1() {
+        function getColumnInputsV2() {
 
             return {
 
@@ -610,35 +1364,80 @@
                     columnFinalInput
                         .value
                         .trim()
+
             };
         };
 
 
+    // ==================================================
+    // CHECK ALL
+    // ==================================================
+
     columnInputsAreCorrect =
-        function columnInputsAreCorrect2x1(
+        function columnInputsAreCorrectV2(
             inputs,
             expected
         ) {
 
+            const step1 =
+                Number(
+                    inputs.partial1
+                )
+                ===
+                expected
+                    .steps[0]
+                    .writeValue;
+
+
+            const step2 =
+                Number(
+                    inputs.partial2
+                )
+                ===
+                expected
+                    .steps[1]
+                    .writeValue;
+
+
+            if (
+                expected
+                    .digitCount === 2
+            ) {
+
+                return (
+                    step1
+                    &&
+                    step2
+                );
+            }
+
+
+            const step3 =
+                Number(
+                    inputs.final
+                )
+                ===
+                expected
+                    .steps[2]
+                    .writeValue;
+
+
             return (
-                Number(inputs.partial1) ===
-                    expected.resultOnesDigit
+                step1
                 &&
-                Number(inputs.partial2) ===
-                    expected.frontResult
+                step2
                 &&
-                Number(inputs.final) ===
-                    expected.final
+                step3
             );
         };
 
 
     // ==================================================
-    // LIVE MARKERS / RESTORE
+    // RESTORE / REFRESH
     // ==================================================
 
     refreshColumnLiveMarkers =
-        function refreshColumnLiveMarkers2x1() {
+        function refreshColumnLiveMarkersV2() {
 
             const question =
                 questions[
@@ -657,108 +1456,246 @@
                 );
 
 
-            columnStep1Input.classList.remove(
-                "step-correct",
-                "step-wrong"
-            );
-
-            columnStep2Input.classList.remove(
-                "step-correct",
-                "step-wrong"
+            applyDigitLayout(
+                expected
+                    .digitCount
             );
 
 
-            const step1Correct =
-                columnStep1Input.value !== ""
-                &&
-                Number(
-                    columnStep1Input.value
-                ) ===
-                expected.resultOnesDigit;
+            clearStepClasses();
 
 
-            if (!step1Correct) {
+            // ==========================================
+            // STEP 1
+            // ==========================================
 
-                columnStep2Input.value = "";
-                columnFinalInput.value = "";
-                columnStep2Input.disabled = true;
+            if (
+                !isCorrect(
+                    columnStep1Input,
+                    expected
+                        .steps[0]
+                        .writeValue
+                )
+            ) {
+
+                columnStep2Input.value =
+                    "";
+
+
+                columnFinalInput.value =
+                    "";
+
+
+                lockAfterStep1();
 
                 hideCarry();
-                setStep2Visible(false);
-                setArrowToOnes();
 
-                topOnesDigit.classList.add(
-                    "column-active-digit"
+
+                setActiveDigit(
+                    0,
+                    expected
                 );
 
-                topTensDigit.classList.remove(
-                    "column-active-digit"
+
+                setArrow(
+                    0,
+                    expected
                 );
+
 
                 return;
             }
 
 
-            columnStep1Input.classList.add(
-                "step-correct"
-            );
-
-
-            showCarry(
-                expected.carry
-            );
-
-            setStep2Visible(true);
-            columnStep2Input.disabled = false;
-            setArrowToTens();
-
-
-            const step2Correct =
-                columnStep2Input.value !== ""
-                &&
-                Number(
-                    columnStep2Input.value
-                ) ===
-                expected.frontResult;
-
-
-            if (step2Correct) {
-
-                columnStep2Input.classList.add(
+            columnStep1Input
+                .classList
+                .add(
                     "step-correct"
                 );
+
+
+            columnStep2Input.disabled =
+                false;
+
+
+            setLocked(
+                columnStep2Wrap,
+                false
+            );
+
+
+            // ==========================================
+            // STEP 2
+            // ==========================================
+
+            if (
+                !isCorrect(
+                    columnStep2Input,
+                    expected
+                        .steps[1]
+                        .writeValue
+                )
+            ) {
+
+                if (
+                    expected
+                        .digitCount === 3
+                ) {
+
+                    columnFinalInput.value =
+                        "";
+
+
+                    columnFinalInput.disabled =
+                        true;
+
+
+                    setLocked(
+                        columnStep3Wrap,
+                        true
+                    );
+                }
+
+
+                showCarryFrom(
+                    expected
+                        .steps[0]
+                );
+
+
+                setActiveDigit(
+                    1,
+                    expected
+                );
+
+
+                setArrow(
+                    1,
+                    expected
+                );
+
+
+                return;
+            }
+
+
+            columnStep2Input
+                .classList
+                .add(
+                    "step-correct"
+                );
+
+
+            // ==========================================
+            // 2 DIGIT SELESAI
+            // ==========================================
+
+            if (
+                expected
+                    .digitCount === 2
+            ) {
 
                 columnFinalInput.value =
                     String(
                         expected.final
                     );
 
+
+                hideCarry();
+
+                clearActiveDigits();
+
                 hideArrow();
 
-                scheduleCorrectSubmit();
+                scheduleSubmit();
 
-            } else {
-
-                columnFinalInput.value = "";
-            }
-        };
-
-
-    // ==================================================
-    // FOCUS OVERRIDE
-    // ==================================================
-
-    focusCurrentInput =
-        function focusCurrentInput2x1() {
-
-            if (!isColumnMode()) {
-
-                originalFocusCurrentInput();
                 return;
             }
 
 
-            if (answerLocked) {
+            // ==========================================
+            // STEP 3
+            // ==========================================
+
+            columnFinalInput.disabled =
+                false;
+
+
+            setLocked(
+                columnStep3Wrap,
+                false
+            );
+
+
+            if (
+                !isCorrect(
+                    columnFinalInput,
+                    expected
+                        .steps[2]
+                        .writeValue
+                )
+            ) {
+
+                showCarryFrom(
+                    expected
+                        .steps[1]
+                );
+
+
+                setActiveDigit(
+                    2,
+                    expected
+                );
+
+
+                setArrow(
+                    2,
+                    expected
+                );
+
+
+                return;
+            }
+
+
+            columnFinalInput
+                .classList
+                .add(
+                    "step-correct"
+                );
+
+
+            hideCarry();
+
+            clearActiveDigits();
+
+            hideArrow();
+
+            scheduleSubmit();
+        };
+
+
+    // ==================================================
+    // FOCUS
+    // ==================================================
+
+    focusCurrentInput =
+        function focusCurrentInputV2() {
+
+            if (
+                !isColumnMode()
+            ) {
+
+                originalFocusCurrentInput();
+
+                return;
+            }
+
+
+            if (
+                answerLocked
+            ) {
+
                 return;
             }
 
@@ -780,60 +1717,109 @@
                 );
 
 
-            const step1Correct =
-                columnStep1Input.value !== ""
-                &&
-                Number(
-                    columnStep1Input.value
-                ) ===
-                expected.resultOnesDigit;
+            // STEP 1
 
+            if (
+                !isCorrect(
+                    columnStep1Input,
+                    expected
+                        .steps[0]
+                        .writeValue
+                )
+            ) {
 
-            if (!step1Correct) {
-
-                columnStep1Input.focus({
-                    preventScroll: true
-                });
-
-                columnStep1Input.select();
+                focusInput(
+                    columnStep1Input
+                );
 
                 return;
             }
 
 
-            columnStep2Input.disabled = false;
-            setStep2Visible(true);
+            // STEP 2
+
+            columnStep2Input.disabled =
+                false;
 
 
-            columnStep2Input.focus({
-                preventScroll: true
-            });
+            setLocked(
+                columnStep2Wrap,
+                false
+            );
 
-            columnStep2Input.select();
+
+            if (
+                !isCorrect(
+                    columnStep2Input,
+                    expected
+                        .steps[1]
+                        .writeValue
+                )
+            ) {
+
+                focusInput(
+                    columnStep2Input
+                );
+
+                return;
+            }
+
+
+            // STEP 3
+
+            if (
+                expected
+                    .digitCount === 3
+            ) {
+
+                columnFinalInput.disabled =
+                    false;
+
+
+                setLocked(
+                    columnStep3Wrap,
+                    false
+                );
+
+
+                focusInput(
+                    columnFinalInput
+                );
+            }
         };
 
 
     // ==================================================
-    // DISABLE OVERRIDE
+    // DISABLE
     // ==================================================
 
     disableColumnInputs =
-        function disableColumnInputs2x1() {
+        function disableColumnInputsV2() {
 
-            columnStep1Input.disabled = true;
-            columnStep2Input.disabled = true;
-            columnFinalInput.disabled = true;
+            columnStep1Input.disabled =
+                true;
+
+
+            columnStep2Input.disabled =
+                true;
+
+
+            columnFinalInput.disabled =
+                true;
         };
 
 
     // ==================================================
-    // SUBMIT OVERRIDE
+    // SUBMIT
     // ==================================================
 
     submitColumnAnswer =
-        function submitColumnAnswer2x1() {
+        function submitColumnAnswerV2() {
 
-            if (answerLocked) {
+            if (
+                answerLocked
+            ) {
+
                 return;
             }
 
@@ -849,72 +1835,109 @@
             }
 
 
-            if (!hasAnyColumnInput()) {
+            if (
+                !hasAnyColumnInput()
+            ) {
 
                 submitTimeout();
+
                 return;
             }
 
 
-            answerLocked = true;
+            const expected =
+                getColumnExpected(
+                    question
+                );
+
+
+            const step1Correct =
+                isCorrect(
+                    columnStep1Input,
+                    expected
+                        .steps[0]
+                        .writeValue
+                );
+
+
+            const step2Correct =
+                isCorrect(
+                    columnStep2Input,
+                    expected
+                        .steps[1]
+                        .writeValue
+                );
+
+
+            const step3Correct =
+                expected
+                    .digitCount === 2
+
+                    ? true
+
+                    : isCorrect(
+                        columnFinalInput,
+                        expected
+                            .steps[2]
+                            .writeValue
+                    );
+
+
+            const assembled =
+                assembleAnswer(
+                    expected
+                );
+
+
+            const finalCorrect =
+                assembled !== ""
+
+                &&
+
+                Number(
+                    assembled
+                )
+                ===
+                expected.final;
+
+
+            const fullyCorrect =
+                step1Correct
+
+                &&
+
+                step2Correct
+
+                &&
+
+                step3Correct
+
+                &&
+
+                finalCorrect;
+
+
+            answerLocked =
+                true;
 
 
             clearTimer();
+
 
             clearTimeout(
                 delayedSubmit
             );
 
-            delayedSubmit = null;
+
+            delayedSubmit =
+                null;
 
 
             disableColumnInputs();
+
             hideArrow();
 
-
-            const values =
-                getColumnInputs();
-
-            const expected =
-                getColumnExpected(
-                    question
-                );
-
-
-            const step1Correct =
-                values.partial1 !== ""
-                &&
-                Number(values.partial1) ===
-                    expected.resultOnesDigit;
-
-
-            const step2Correct =
-                values.partial2 !== ""
-                &&
-                Number(values.partial2) ===
-                    expected.frontResult;
-
-
-            const assembledAnswer =
-                values.partial2 !== "" &&
-                values.partial1 !== ""
-                    ? `${values.partial2}${values.partial1}`
-                    : "";
-
-
-            const finalCorrect =
-                assembledAnswer !== ""
-                &&
-                Number(assembledAnswer) ===
-                    expected.final;
-
-
-            const fullyCorrect =
-                step1Correct
-                &&
-                step2Correct
-                &&
-                finalCorrect;
+            hideCarry();
 
 
             applyColumnResultClass(
@@ -922,32 +1945,53 @@
                 step1Correct
             );
 
+
             applyColumnResultClass(
                 columnStep2Input,
                 step2Correct
             );
 
 
+            if (
+                expected
+                    .digitCount === 3
+            ) {
+
+                applyColumnResultClass(
+                    columnFinalInput,
+                    step3Correct
+                );
+            }
+
+
             let status;
 
 
-            if (fullyCorrect) {
+            if (
+                fullyCorrect
+            ) {
 
-                status = "correct";
+                status =
+                    "correct";
+
+
                 correctCount++;
 
 
                 answerFeedback.textContent =
-                    expected.carry > 0
-                        ? `✓ Benar • ${expected.multiplier} × ${expected.onesDigit} = ${expected.firstProduct}, simpan ${expected.carry} • ${expected.multiplier} × ${expected.tensDigit} + ${expected.carry} = ${expected.frontResult}`
-                        : `✓ Benar • ${expected.multiplier} × ${expected.onesDigit} = ${expected.firstProduct} • ${expected.multiplier} × ${expected.tensDigit} = ${expected.frontResult}`;
+                    "✓ Benar";
+
 
                 answerFeedback.className =
                     "answer-feedback feedback-correct";
 
+
             } else {
 
-                status = "wrong";
+                status =
+                    "wrong";
+
+
                 wrongCount++;
 
 
@@ -956,27 +2000,22 @@
                         expected.final
                     )}`;
 
+
                 answerFeedback.className =
                     "answer-feedback feedback-wrong";
             }
 
 
-            // ==================================================
-            // DATA UNTUK SERVER
+            // ==========================================
+            // SERVER
             //
-            // Server lama mengenal partial_1, partial_2, final.
-            // Karena pengali sekarang hanya 1 digit:
-            // - partial_1 = hasil penuh a × b
-            // - partial_2 = 0
-            // - final     = hasil penuh
+            // Karena pengali hanya 1 digit:
+            // partial_1 = hasil akhir
+            // partial_2 = 0
             //
-            // Nilai ini menjaga kompatibilitas dengan grading
-            // server yang sebelumnya digunakan untuk column_steps.
-            // ==================================================
-
-            const serverFinal =
-                assembledAnswer;
-
+            // Ini mempertahankan kompatibilitas
+            // dengan grading server yang sudah ada.
+            // ==========================================
 
             answers.push({
 
@@ -987,20 +2026,20 @@
                     question.b,
 
                 user_answer:
-                    serverFinal,
+                    assembled,
 
                 steps: {
 
                     partial_1:
-                        serverFinal,
+                        assembled,
 
                     partial_2:
-                        serverFinal === ""
+                        assembled === ""
                             ? ""
                             : "0",
 
                     final:
-                        serverFinal
+                        assembled
                 },
 
                 response_time_ms:
@@ -1008,19 +2047,25 @@
 
                 client_status:
                     status
+
             });
 
 
             liveCorrect.textContent =
-                String(correctCount);
+                String(
+                    correctCount
+                );
 
 
             closeCurrentQuestionState();
+
             savePracticeState();
 
 
             setTimeout(
+
                 nextQuestion,
+
                 fullyCorrect
                     ? 900
                     : 1100
@@ -1029,25 +2074,39 @@
 
 
     // ==================================================
-    // CAPTURE INPUT HANDLER
+    // INPUT
     // ==================================================
 
-    function handleColumn2x1Input(
+    function handleInput(
         event
     ) {
 
-        if (!isColumnMode()) {
+        if (
+            !isColumnMode()
+        ) {
+
             return;
         }
 
 
-        // Patch ini harus berjalan sebelum handler lama.
         event.stopImmediatePropagation();
 
 
-        if (answerLocked) {
+        if (
+            answerLocked
+        ) {
+
             return;
         }
+
+
+        clearTimeout(
+            delayedSubmit
+        );
+
+
+        delayedSubmit =
+            null;
 
 
         const question =
@@ -1067,28 +2126,32 @@
             );
 
 
-        clearTimeout(
-            delayedSubmit
-        );
-
-        delayedSubmit = null;
-
-
         if (
             event.currentTarget ===
             columnStep1Input
         ) {
 
-            handleStep1Input(
+            handleStep1(
                 expected
             );
+
 
         } else if (
             event.currentTarget ===
             columnStep2Input
         ) {
 
-            handleStep2Input(
+            handleStep2(
+                expected
+            );
+
+
+        } else if (
+            event.currentTarget ===
+            columnFinalInput
+        ) {
+
+            handleStep3(
                 expected
             );
         }
@@ -1099,142 +2162,390 @@
 
 
     // ==================================================
-    // STEP 1 INPUT
+    // STEP 1
     // ==================================================
 
-    function handleStep1Input(
+    function handleStep1(
         expected
     ) {
 
         columnStep1Input.value =
-            sanitizeDigits(
+            digitsOnly(
                 columnStep1Input.value,
                 1
             );
 
 
-        columnStep1Input.classList.remove(
-            "step-correct",
-            "step-wrong"
+        columnStep1Input
+            .classList
+            .remove(
+                "step-correct",
+                "step-wrong"
+            );
+
+
+        if (
+            !isCorrect(
+                columnStep1Input,
+                expected
+                    .steps[0]
+                    .writeValue
+            )
+        ) {
+
+            columnStep2Input.value =
+                "";
+
+
+            columnFinalInput.value =
+                "";
+
+
+            lockAfterStep1();
+
+            hideCarry();
+
+
+            setActiveDigit(
+                0,
+                expected
+            );
+
+
+            setArrow(
+                0,
+                expected
+            );
+
+
+            return;
+        }
+
+
+        columnStep1Input
+            .classList
+            .add(
+                "step-correct"
+            );
+
+
+        showCarryFrom(
+            expected
+                .steps[0]
         );
 
 
-        const value =
-            columnStep1Input.value;
+        columnStep2Input.disabled =
+            false;
 
 
-        if (value === "") {
+        setLocked(
+            columnStep2Wrap,
+            false
+        );
 
-            resetAfterIncorrectStep1(
+
+        setActiveDigit(
+            1,
+            expected
+        );
+
+
+        setArrow(
+            1,
+            expected
+        );
+
+
+        columnMethodText.textContent =
+            instruction(
+                expected,
+                1
+            );
+
+
+        setTimeout(
+            () => {
+
+                if (
+                    !answerLocked
+
+                    &&
+
+                    isCorrect(
+                        columnStep1Input,
+                        expected
+                            .steps[0]
+                            .writeValue
+                    )
+                ) {
+
+                    focusInput(
+                        columnStep2Input
+                    );
+                }
+
+            },
+            STEP_DELAY
+        );
+    }
+
+
+    // ==================================================
+    // STEP 2
+    // ==================================================
+
+    function handleStep2(
+        expected
+    ) {
+
+        if (
+            !isCorrect(
+                columnStep1Input,
+                expected
+                    .steps[0]
+                    .writeValue
+            )
+        ) {
+
+            columnStep2Input.value =
+                "";
+
+
+            focusInput(
+                columnStep1Input
+            );
+
+
+            return;
+        }
+
+
+        const maxLength =
+            expected
+                .digitCount === 3
+
+                ? 1
+
+                : String(
+                    expected
+                        .steps[1]
+                        .writeValue
+                ).length;
+
+
+        columnStep2Input.value =
+            digitsOnly(
+                columnStep2Input.value,
+                maxLength
+            );
+
+
+        columnStep2Input
+            .classList
+            .remove(
+                "step-correct",
+                "step-wrong"
+            );
+
+
+        if (
+            !isCorrect(
+                columnStep2Input,
+                expected
+                    .steps[1]
+                    .writeValue
+            )
+        ) {
+
+            if (
+                expected
+                    .digitCount === 3
+            ) {
+
+                columnFinalInput.value =
+                    "";
+
+
+                columnFinalInput.disabled =
+                    true;
+
+
+                setLocked(
+                    columnStep3Wrap,
+                    true
+                );
+            }
+
+
+            showCarryFrom(
+                expected
+                    .steps[0]
+            );
+
+
+            setActiveDigit(
+                1,
                 expected
             );
+
+
+            setArrow(
+                1,
+                expected
+            );
+
+
+            return;
+        }
+
+
+        columnStep2Input
+            .classList
+            .add(
+                "step-correct"
+            );
+
+
+        // ==============================================
+        // 2 DIGIT SELESAI
+        // ==============================================
+
+        if (
+            expected
+                .digitCount === 2
+        ) {
+
+            columnFinalInput.value =
+                String(
+                    expected.final
+                );
+
+
+            hideCarry();
+
+            clearActiveDigits();
+
+            hideArrow();
+
+
+            columnMethodText.textContent =
+                `Hasilnya ${expected.final}.`;
+
+
+            scheduleSubmit();
+
+
+            return;
+        }
+
+
+        // ==============================================
+        // LANJUT STEP 3
+        // ==============================================
+
+        showCarryFrom(
+            expected
+                .steps[1]
+        );
+
+
+        columnFinalInput.disabled =
+            false;
+
+
+        setLocked(
+            columnStep3Wrap,
+            false
+        );
+
+
+        setActiveDigit(
+            2,
+            expected
+        );
+
+
+        setArrow(
+            2,
+            expected
+        );
+
+
+        columnMethodText.textContent =
+            instruction(
+                expected,
+                2
+            );
+
+
+        setTimeout(
+            () => {
+
+                if (
+                    !answerLocked
+
+                    &&
+
+                    isCorrect(
+                        columnStep2Input,
+                        expected
+                            .steps[1]
+                            .writeValue
+                    )
+                ) {
+
+                    focusInput(
+                        columnFinalInput
+                    );
+                }
+
+            },
+            STEP_DELAY
+        );
+    }
+
+
+    // ==================================================
+    // STEP 3
+    // ==================================================
+
+    function handleStep3(
+        expected
+    ) {
+
+        if (
+            expected
+                .digitCount !== 3
+        ) {
+
+            columnFinalInput.value =
+                String(
+                    expected.final
+                );
+
 
             return;
         }
 
 
         if (
-            Number(value) !==
-            expected.resultOnesDigit
+            !isCorrect(
+                columnStep2Input,
+                expected
+                    .steps[1]
+                    .writeValue
+            )
         ) {
 
-            // Salah: biarkan saja. Tidak auto-submit,
-            // tidak pindah fokus, dan tidak langsung merah.
-            resetAfterIncorrectStep1(
-                expected,
-                false
+            columnFinalInput.value =
+                "";
+
+
+            focusInput(
+                columnStep2Input
             );
 
-            return;
-        }
-
-
-        columnStep1Input.classList.add(
-            "step-correct"
-        );
-
-
-        showCarry(
-            expected.carry
-        );
-
-        setStep2Visible(true);
-        columnStep2Input.disabled = false;
-        setArrowToTens();
-
-
-        topOnesDigit.classList.remove(
-            "column-active-digit"
-        );
-
-        topTensDigit.classList.add(
-            "column-active-digit"
-        );
-
-
-        columnMethodText.textContent =
-            expected.carry > 0
-                ? `Lanjut: ${expected.multiplier} × ${expected.tensDigit}, lalu tambah simpanan ${expected.carry}`
-                : `Lanjut: ${expected.multiplier} × ${expected.tensDigit}`;
-
-
-        window.setTimeout(
-            () => {
-
-                if (
-                    answerLocked ||
-                    columnStep1Input.value === "" ||
-                    Number(
-                        columnStep1Input.value
-                    ) !==
-                    expected.resultOnesDigit
-                ) {
-
-                    return;
-                }
-
-
-                columnStep2Input.focus({
-                    preventScroll: true
-                });
-
-                columnStep2Input.select();
-
-            },
-            STEP_ADVANCE_DELAY_MS
-        );
-    }
-
-
-    // ==================================================
-    // STEP 2 INPUT
-    // ==================================================
-
-    function handleStep2Input(
-        expected
-    ) {
-
-        const step1Correct =
-            columnStep1Input.value !== ""
-            &&
-            Number(
-                columnStep1Input.value
-            ) ===
-            expected.resultOnesDigit;
-
-
-        if (!step1Correct) {
-
-            columnStep2Input.value = "";
-            columnFinalInput.value = "";
-            columnStep2Input.disabled = true;
-
-            setStep2Visible(false);
-            setArrowToOnes();
-
-            columnStep1Input.focus({
-                preventScroll: true
-            });
 
             return;
         }
@@ -1242,84 +2553,110 @@
 
         const maxLength =
             String(
-                expected.frontResult
+                expected
+                    .steps[2]
+                    .writeValue
             ).length;
 
 
-        columnStep2Input.value =
-            sanitizeDigits(
-                columnStep2Input.value,
+        columnFinalInput.value =
+            digitsOnly(
+                columnFinalInput.value,
                 maxLength
             );
 
 
-        columnStep2Input.classList.remove(
-            "step-correct",
-            "step-wrong"
-        );
-
-
-        const value =
-            columnStep2Input.value;
+        columnFinalInput
+            .classList
+            .remove(
+                "step-correct",
+                "step-wrong"
+            );
 
 
         if (
-            value === "" ||
-            Number(value) !==
-                expected.frontResult
+            !isCorrect(
+                columnFinalInput,
+                expected
+                    .steps[2]
+                    .writeValue
+            )
         ) {
 
-            // Salah / belum lengkap: biarkan siswa memperbaiki.
-            columnFinalInput.value = "";
-            setArrowToTens();
+            showCarryFrom(
+                expected
+                    .steps[1]
+            );
+
+
+            setActiveDigit(
+                2,
+                expected
+            );
+
+
+            setArrow(
+                2,
+                expected
+            );
+
 
             return;
         }
 
 
-        columnStep2Input.classList.add(
-            "step-correct"
-        );
-
-
-        columnFinalInput.value =
-            String(
-                expected.final
+        columnFinalInput
+            .classList
+            .add(
+                "step-correct"
             );
 
 
-        columnMethodText.textContent =
-            `Hasilnya ${expected.final}. Bagus.`;
+        hideCarry();
 
+        clearActiveDigits();
 
         hideArrow();
-        scheduleCorrectSubmit();
+
+
+        columnMethodText.textContent =
+            `Hasilnya ${expected.final}.`;
+
+
+        scheduleSubmit();
     }
 
 
     // ==================================================
-    // ENTER HANDLER
+    // ENTER
     // ==================================================
 
-    function handleColumn2x1Keydown(
+    function handleKeydown(
         event
     ) {
 
-        if (!isColumnMode()) {
-            return;
-        }
+        if (
+            !isColumnMode()
 
+            ||
 
-        if (event.key !== "Enter") {
+            event.key !==
+            "Enter"
+        ) {
+
             return;
         }
 
 
         event.preventDefault();
+
         event.stopImmediatePropagation();
 
 
-        if (answerLocked) {
+        if (
+            answerLocked
+        ) {
+
             return;
         }
 
@@ -1341,27 +2678,25 @@
             );
 
 
+        // STEP 1
+
         if (
             event.currentTarget ===
             columnStep1Input
         ) {
 
             if (
-                columnStep1Input.value !== "" &&
-                Number(
-                    columnStep1Input.value
-                ) ===
-                expected.resultOnesDigit
+                isCorrect(
+                    columnStep1Input,
+                    expected
+                        .steps[0]
+                        .writeValue
+                )
             ) {
 
-                columnStep2Input.disabled = false;
-                setStep2Visible(true);
-
-                columnStep2Input.focus({
-                    preventScroll: true
-                });
-
-                columnStep2Input.select();
+                focusInput(
+                    columnStep2Input
+                );
             }
 
 
@@ -1369,45 +2704,82 @@
         }
 
 
+        // STEP 2
+
         if (
             event.currentTarget ===
             columnStep2Input
         ) {
 
-            const fullyCorrect =
-                columnStep1Input.value !== ""
-                &&
-                Number(
-                    columnStep1Input.value
-                ) ===
-                expected.resultOnesDigit
-                &&
-                columnStep2Input.value !== ""
-                &&
-                Number(
-                    columnStep2Input.value
-                ) ===
-                expected.frontResult;
+            if (
+                !isCorrect(
+                    columnStep2Input,
+                    expected
+                        .steps[1]
+                        .writeValue
+                )
+            ) {
+
+                return;
+            }
 
 
-            if (fullyCorrect) {
+            if (
+                expected
+                    .digitCount === 2
+            ) {
 
                 columnFinalInput.value =
                     String(
                         expected.final
                     );
 
+
                 submitColumnAnswer();
+
+            } else {
+
+                focusInput(
+                    columnFinalInput
+                );
             }
+
+
+            return;
+        }
+
+
+        // STEP 3
+
+        if (
+            event.currentTarget ===
+            columnFinalInput
+
+            &&
+
+            expected
+                .digitCount === 3
+
+            &&
+
+            isCorrect(
+                columnFinalInput,
+                expected
+                    .steps[2]
+                    .writeValue
+            )
+        ) {
+
+            submitColumnAnswer();
         }
     }
 
 
     // ==================================================
-    // CORRECT AUTO SUBMIT
+    // AUTO SUBMIT
     // ==================================================
 
-    function scheduleCorrectSubmit() {
+    function scheduleSubmit() {
 
         clearTimeout(
             delayedSubmit
@@ -1415,10 +2787,13 @@
 
 
         delayedSubmit =
-            window.setTimeout(
+            setTimeout(
                 () => {
 
-                    if (answerLocked) {
+                    if (
+                        answerLocked
+                    ) {
+
                         return;
                     }
 
@@ -1440,38 +2815,176 @@
                         );
 
 
-                    const fullyCorrect =
-                        columnStep1Input.value !== ""
-                        &&
-                        Number(
-                            columnStep1Input.value
-                        ) ===
-                        expected.resultOnesDigit
-                        &&
-                        columnStep2Input.value !== ""
-                        &&
-                        Number(
-                            columnStep2Input.value
-                        ) ===
-                        expected.frontResult;
+                    if (
+                        allStepsCorrect(
+                            expected
+                        )
+                    ) {
 
-
-                    if (!fullyCorrect) {
-                        return;
+                        submitColumnAnswer();
                     }
 
-
-                    columnFinalInput.value =
-                        String(
-                            expected.final
-                        );
-
-
-                    submitColumnAnswer();
-
                 },
-                CORRECT_SUBMIT_DELAY_MS
+                SUBMIT_DELAY
             );
+    }
+
+
+    // ==================================================
+    // CHECK COMPLETE
+    // ==================================================
+
+    function allStepsCorrect(
+        expected
+    ) {
+
+        if (
+            !isCorrect(
+                columnStep1Input,
+                expected
+                    .steps[0]
+                    .writeValue
+            )
+
+            ||
+
+            !isCorrect(
+                columnStep2Input,
+                expected
+                    .steps[1]
+                    .writeValue
+            )
+        ) {
+
+            return false;
+        }
+
+
+        if (
+            expected
+                .digitCount === 2
+        ) {
+
+            return true;
+        }
+
+
+        return isCorrect(
+            columnFinalInput,
+            expected
+                .steps[2]
+                .writeValue
+        );
+    }
+
+
+    // ==================================================
+    // SUSUN JAWABAN AKHIR
+    //
+    // Contoh 127 × 4
+    //
+    // step1 = 8
+    // step2 = 0
+    // step3 = 5
+    //
+    // hasil = 508
+    // ==================================================
+
+    function assembleAnswer(
+        expected
+    ) {
+
+        const step1 =
+            columnStep1Input
+                .value
+                .trim();
+
+
+        const step2 =
+            columnStep2Input
+                .value
+                .trim();
+
+
+        if (
+            step1 === ""
+
+            ||
+
+            step2 === ""
+        ) {
+
+            return "";
+        }
+
+
+        if (
+            expected
+                .digitCount === 2
+        ) {
+
+            return `${step2}${step1}`;
+        }
+
+
+        const step3 =
+            columnFinalInput
+                .value
+                .trim();
+
+
+        if (
+            step3 === ""
+        ) {
+
+            return "";
+        }
+
+
+        return `${step3}${step2}${step1}`;
+    }
+
+
+    // ==================================================
+    // INSTRUCTION
+    // ==================================================
+
+    function instruction(
+        expected,
+        stepIndex
+    ) {
+
+        const step =
+            expected
+                .steps[
+                    stepIndex
+                ];
+
+
+        if (!step) {
+            return "";
+        }
+
+
+        if (
+            step.carryIn > 0
+        ) {
+
+            return (
+                `Lanjut: `
+                +
+                `${expected.multiplier} × ${step.digit}, `
+                +
+                `lalu tambah simpanan ${step.carryIn}`
+            );
+        }
+
+
+        return (
+            `Lanjut: `
+            +
+            `${expected.multiplier} × ${step.digit}`
+        );
     }
 
 
@@ -1479,191 +2992,189 @@
     // CARRY
     // ==================================================
 
-    function showCarry(
-        value
+    function showCarryFrom(
+        step
     ) {
 
         if (
-            !Number.isFinite(
-                Number(value)
-            ) ||
-            Number(value) <= 0
+            step?.carryOut > 0
         ) {
 
+            carryValue.textContent =
+                String(
+                    step.carryOut
+                );
+
+
+            carryBadge
+                .classList
+                .remove(
+                    "hidden"
+                );
+
+
+            if (
+                carryNote
+            ) {
+
+                carryNote.textContent =
+                    `Simpan ${step.carryOut}, lalu lanjut ke angka berikutnya.`;
+            }
+
+
+        } else {
+
             hideCarry();
-            return;
-        }
-
-
-        carryValue.textContent =
-            String(value);
-
-        carryBadge.classList.remove(
-            "hidden"
-        );
-
-
-        if (carryNote) {
-
-            carryNote.textContent =
-                `Simpan ${value}`;
         }
     }
 
 
     function hideCarry() {
 
-        carryValue.textContent = "";
-
-        carryBadge.classList.add(
-            "hidden"
-        );
+        carryValue.textContent =
+            "";
 
 
-        if (carryNote) {
+        carryBadge
+            .classList
+            .add(
+                "hidden"
+            );
 
-            carryNote.textContent = "";
+
+        if (
+            carryNote
+        ) {
+
+            carryNote.textContent =
+                getCarryMode() ===
+                "none"
+
+                    ? "Tingkat ini belum menggunakan angka simpanan."
+
+                    : "Kerjakan dari kanan ke kiri.";
         }
     }
 
 
     // ==================================================
-    // ARROW
+    // LOCK
     // ==================================================
 
-    function setArrowToOnes() {
+    function lockAfterStep1() {
 
-        guideArrow.classList.remove(
-            "hidden"
+        columnStep2Input.disabled =
+            true;
+
+
+        columnFinalInput.disabled =
+            true;
+
+
+        setLocked(
+            columnStep2Wrap,
+            true
         );
 
-        guideArrow.classList.remove(
-            "arrow-to-tens"
-        );
 
-        guideArrow.classList.add(
-            "arrow-to-ones"
-        );
-
-
-        guideArrowPath.setAttribute(
-            "d",
-            "M 178 132 C 205 112, 210 80, 188 45"
+        setLocked(
+            columnStep3Wrap,
+            true
         );
     }
 
 
-    function setArrowToTens() {
-
-        guideArrow.classList.remove(
-            "hidden"
-        );
-
-        guideArrow.classList.remove(
-            "arrow-to-ones"
-        );
-
-        guideArrow.classList.add(
-            "arrow-to-tens"
-        );
-
-
-        guideArrowPath.setAttribute(
-            "d",
-            "M 178 132 C 150 108, 132 78, 126 45"
-        );
-    }
-
-
-    function hideArrow() {
-
-        guideArrow.classList.add(
-            "hidden"
-        );
-    }
-
-
-    // ==================================================
-    // STEP 2 VISIBILITY
-    // ==================================================
-
-    function setStep2Visible(
-        visible
+    function setLocked(
+        wrapper,
+        locked
     ) {
 
-        columnStep2Wrap.classList.toggle(
-            "column-step-locked",
-            !visible
-        );
+        if (!wrapper) {
+            return;
+        }
 
-        columnStep2Wrap.setAttribute(
+
+        wrapper
+            .classList
+            .toggle(
+                "column-step-locked",
+                locked
+            );
+
+
+        wrapper.setAttribute(
+
             "aria-hidden",
-            visible
-                ? "false"
-                : "true"
+
+            locked
+                ? "true"
+                : "false"
         );
     }
 
 
     // ==================================================
-    // RESET AFTER WRONG STEP 1
+    // CLASSES
     // ==================================================
 
-    function resetAfterIncorrectStep1(
-        expected,
-        clearFeedback = true
+    function clearStepClasses() {
+
+        [
+            columnStep1Input,
+            columnStep2Input,
+            columnFinalInput
+        ]
+
+        .forEach(
+            input => {
+
+                input
+                    .classList
+                    .remove(
+                        "step-correct",
+                        "step-wrong"
+                    );
+            }
+        );
+    }
+
+
+    // ==================================================
+    // CHECK INPUT
+    // ==================================================
+
+    function isCorrect(
+        input,
+        expectedValue
     ) {
 
-        clearTimeout(
-            delayedSubmit
+        const value =
+            input
+                .value
+                .trim();
+
+
+        return (
+            value !== ""
+
+            &&
+
+            Number(
+                value
+            )
+            ===
+            Number(
+                expectedValue
+            )
         );
-
-        delayedSubmit = null;
-
-
-        columnStep2Input.value = "";
-        columnFinalInput.value = "";
-        columnStep2Input.disabled = true;
-
-
-        columnStep2Input.classList.remove(
-            "step-correct",
-            "step-wrong"
-        );
-
-
-        hideCarry();
-        setStep2Visible(false);
-        setArrowToOnes();
-
-
-        topOnesDigit.classList.add(
-            "column-active-digit"
-        );
-
-        topTensDigit.classList.remove(
-            "column-active-digit"
-        );
-
-
-        columnMethodText.textContent =
-            `Mulai dari belakang: ${expected.multiplier} × ${expected.onesDigit}`;
-
-
-        if (clearFeedback) {
-
-            answerFeedback.textContent = "";
-            answerFeedback.className =
-                "answer-feedback";
-        }
     }
 
 
     // ==================================================
-    // DIGIT SANITIZER
+    // DIGITS ONLY
     // ==================================================
 
-    function sanitizeDigits(
+    function digitsOnly(
         value,
         maxLength
     ) {
@@ -1671,77 +3182,308 @@
         return String(
             value ?? ""
         )
+
         .replace(
             /\D/g,
             ""
         )
+
         .slice(
             0,
             Math.max(
                 1,
-                Number(maxLength) || 1
+                Number(
+                    maxLength
+                )
+                ||
+                1
             )
         );
     }
 
 
     // ==================================================
-    // CAPTURE LISTENERS
-    //
-    // Didaftarkan sebelum practice-navigation-fix.js,
-    // sehingga handler kolom lama tidak ikut berjalan.
+    // FOCUS
     // ==================================================
 
-    columnStep1Input.addEventListener(
-        "input",
-        handleColumn2x1Input,
-        true
-    );
+    function focusInput(
+        input
+    ) {
 
-    columnStep2Input.addEventListener(
-        "input",
-        handleColumn2x1Input,
-        true
-    );
+        input.disabled =
+            false;
 
-    columnFinalInput.addEventListener(
-        "input",
-        event => {
 
-            if (!isColumnMode()) {
-                return;
+        input.focus({
+
+            preventScroll:
+                true
+
+        });
+
+
+        input.select();
+    }
+
+
+    // ==================================================
+    // ACTIVE DIGIT
+    // ==================================================
+
+    function clearActiveDigits() {
+
+        [
+            topHundredsDigit,
+            topTensDigit,
+            topOnesDigit
+        ]
+
+        .forEach(
+            element => {
+
+                element
+                    .classList
+                    .remove(
+                        "column-active-digit"
+                    );
+            }
+        );
+    }
+
+
+    function setActiveDigit(
+        stepIndex,
+        expected
+    ) {
+
+        clearActiveDigits();
+
+
+        // SATUAN
+
+        if (
+            stepIndex === 0
+        ) {
+
+            topOnesDigit
+                .classList
+                .add(
+                    "column-active-digit"
+                );
+
+
+            return;
+        }
+
+
+        // PULUHAN
+
+        if (
+            stepIndex === 1
+        ) {
+
+            topTensDigit
+                .classList
+                .add(
+                    "column-active-digit"
+                );
+
+
+            return;
+        }
+
+
+        // RATUSAN
+
+        if (
+            stepIndex === 2
+
+            &&
+
+            expected
+                .digitCount === 3
+        ) {
+
+            topHundredsDigit
+                .classList
+                .add(
+                    "column-active-digit"
+                );
+        }
+    }
+
+
+    // ==================================================
+    // PANAH
+    // ==================================================
+
+    function setArrow(
+        stepIndex,
+        expected
+    ) {
+
+        guideArrow
+            .classList
+            .remove(
+                "hidden",
+                "arrow-to-ones",
+                "arrow-to-tens",
+                "arrow-to-hundreds"
+            );
+
+
+        let cssClass;
+        let path;
+
+
+        // ==============================================
+        // 3 DIGIT
+        // ==============================================
+
+        if (
+            expected
+                .digitCount === 3
+        ) {
+
+            // SATUAN
+
+            if (
+                stepIndex === 0
+            ) {
+
+                cssClass =
+                    "arrow-to-ones";
+
+
+                path =
+                    "M 210 132 C 222 110, 222 78, 210 45";
+
+
+            // PULUHAN
+
+            } else if (
+                stepIndex === 1
+            ) {
+
+                cssClass =
+                    "arrow-to-tens";
+
+
+                path =
+                    "M 210 132 C 186 108, 170 76, 152 45";
+
+
+            // RATUSAN
+
+            } else {
+
+                cssClass =
+                    "arrow-to-hundreds";
+
+
+                path =
+                    "M 210 132 C 166 106, 126 74, 94 45";
             }
 
-            event.stopImmediatePropagation();
-        },
-        true
-    );
+
+        // ==============================================
+        // 2 DIGIT
+        // ==============================================
+
+        } else {
+
+            // SATUAN
+
+            if (
+                stepIndex === 0
+            ) {
+
+                cssClass =
+                    "arrow-to-ones";
 
 
-    columnStep1Input.addEventListener(
-        "keydown",
-        handleColumn2x1Keydown,
-        true
-    );
+                path =
+                    "M 178 132 C 205 112, 210 80, 188 45";
 
-    columnStep2Input.addEventListener(
-        "keydown",
-        handleColumn2x1Keydown,
-        true
-    );
 
-    columnFinalInput.addEventListener(
-        "keydown",
-        event => {
+            // PULUHAN
 
-            if (!isColumnMode()) {
-                return;
+            } else {
+
+                cssClass =
+                    "arrow-to-tens";
+
+
+                path =
+                    "M 178 132 C 150 108, 132 78, 126 45";
             }
+        }
 
-            event.preventDefault();
-            event.stopImmediatePropagation();
-        },
-        true
+
+        guideArrowPath.setAttribute(
+            "d",
+            path
+        );
+
+
+        // Restart animasi dari pangkal.
+
+        void guideArrow
+            .getBoundingClientRect();
+
+
+        guideArrow
+            .classList
+            .add(
+                cssClass
+            );
+    }
+
+
+    function hideArrow() {
+
+        guideArrow
+            .classList
+            .add(
+                "hidden"
+            );
+    }
+
+
+    // ==================================================
+    // CAPTURE LISTENERS
+    //
+    // Harus menang sebelum listener lama.
+    // ==================================================
+
+    [
+        columnStep1Input,
+        columnStep2Input,
+        columnFinalInput
+    ]
+
+    .forEach(
+        input => {
+
+            input.addEventListener(
+
+                "input",
+
+                handleInput,
+
+                true
+            );
+
+
+            input.addEventListener(
+
+                "keydown",
+
+                handleKeydown,
+
+                true
+            );
+        }
     );
 
 })();
