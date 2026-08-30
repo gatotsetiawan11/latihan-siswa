@@ -154,10 +154,8 @@
     topHundredsDigit.hidden =
         true;
 
-    topGrid.insertBefore(
-        topHundredsDigit,
-        topTensDigit
-    );
+    // Jangan langsung dimasukkan ke grid.
+    // Elemen ratusan hanya dipasang saat mode 3 digit aktif.
 
 
     const bottomSpacer2 =
@@ -171,10 +169,8 @@
     bottomSpacer2.hidden =
         true;
 
-    bottomGrid.insertBefore(
-        bottomSpacer2,
-        bottomSingleDigit
-    );
+    // Jangan langsung dimasukkan ke grid.
+    // Spacer tambahan hanya dipasang saat mode 3 digit aktif.
 
 
     // ==================================================
@@ -225,10 +221,8 @@
         columnFinalInput
     );
 
-    resultGrid.insertBefore(
-        columnStep3Wrap,
-        columnStep2Wrap
-    );
+    // Jangan langsung dimasukkan ke result grid.
+    // Langkah 3 hanya dipasang saat mode 3 digit aktif.
 
 
     // ==================================================
@@ -269,20 +263,33 @@
            ================================================== */
 
         .column-board-2x1:not(.column-board-3digit)
+        .column-number-grid {
+            width: 174px;
+            grid-template-columns: 48px 58px 58px;
+            grid-auto-flow: row;
+        }
+
+        .column-board-2x1:not(.column-board-3digit)
         .column-result-grid {
             width: 174px;
             grid-template-columns: 48px 58px 58px;
+            grid-template-rows: auto;
+            grid-auto-flow: row;
             gap: 0;
+            align-items: end;
         }
 
         .column-board-2x1:not(.column-board-3digit)
         .column-result-ones {
             grid-column: 3;
+            grid-row: 1;
+            width: 58px;
         }
 
         .column-board-2x1:not(.column-board-3digit)
         #columnStep2Wrap.column-step2-single {
             grid-column: 2;
+            grid-row: 1;
             width: 58px;
         }
 
@@ -295,6 +302,7 @@
         .column-board-2x1:not(.column-board-3digit)
         #columnStep2Wrap.column-step2-double {
             grid-column: 1 / span 2;
+            grid-row: 1;
             width: 106px;
         }
 
@@ -422,10 +430,17 @@
         @media (max-width: 600px) {
 
             .column-board-2x1:not(.column-board-3digit)
+            .column-number-grid,
+            .column-board-2x1:not(.column-board-3digit)
             .column-result-grid {
                 width: 156px;
                 grid-template-columns: 42px 52px 52px;
                 gap: 0;
+            }
+
+            .column-board-2x1:not(.column-board-3digit)
+            .column-result-ones {
+                width: 52px;
             }
 
             .column-board-2x1:not(.column-board-3digit)
@@ -501,6 +516,19 @@
 
 
         @media (max-width: 390px) {
+
+            /*
+               Base CSS memberi transform: scale(.95) pada grid di
+               HP sempit. Untuk Tingkat 10/11 transform ini dihapus
+               agar pusat kolom angka dan input benar-benar identik.
+            */
+            .column-board-2x1:not(.column-board-3digit)
+            .column-number-grid,
+            .column-board-2x1:not(.column-board-3digit)
+            .column-result-grid {
+                transform: none !important;
+            }
+
 
             .column-board-2x1.column-board-3digit {
                 width: 278px;
@@ -1068,19 +1096,74 @@
             );
 
 
-        topHundredsDigit.hidden =
-            !isThree;
-
-
-        bottomSpacer2.hidden =
-            !isThree;
-
-
-        columnStep3Wrap.hidden =
-            !isThree;
-
+        // ==================================================
+        // MODE 3 DIGIT
+        //
+        // Elemen tambahan benar-benar DIMASUKKAN ke DOM hanya
+        // saat dibutuhkan. Ini menghindari elemen [hidden]
+        // tetap mengambil slot grid karena bentrok CSS mobile.
+        // ==================================================
 
         if (isThree) {
+
+            if (
+                topHundredsDigit.parentNode !==
+                topGrid
+            ) {
+
+                topGrid.insertBefore(
+                    topHundredsDigit,
+                    topTensDigit
+                );
+            }
+
+
+            topHundredsDigit.hidden =
+                false;
+
+
+            if (
+                bottomSpacer2.parentNode !==
+                bottomGrid
+            ) {
+
+                bottomGrid.insertBefore(
+                    bottomSpacer2,
+                    bottomSingleDigit
+                );
+            }
+
+
+            bottomSpacer2.hidden =
+                false;
+
+
+            if (
+                columnStep3Wrap.parentNode !==
+                resultGrid
+            ) {
+
+                resultGrid.insertBefore(
+                    columnStep3Wrap,
+                    columnStep2Wrap
+                );
+            }
+
+
+            columnStep3Wrap.hidden =
+                false;
+
+
+            if (
+                columnFinalInput.parentNode !==
+                columnStep3Wrap
+            ) {
+
+                columnStep3Wrap.appendChild(
+                    columnFinalInput
+                );
+            }
+
 
             columnFinalInput.className =
                 "column-final-input column-step-input column-front-input column-step3-visible";
@@ -1095,22 +1178,81 @@
             columnFinalInput.tabIndex =
                 0;
 
-        } else {
-
-            columnFinalInput.className =
-                "column-final-input column-final-engine-input";
-
-
-            columnFinalInput
-                .setAttribute(
-                    "aria-hidden",
-                    "true"
-                );
-
-
-            columnFinalInput.tabIndex =
-                -1;
+            return;
         }
+
+
+        // ==================================================
+        // MODE 2 DIGIT - TINGKAT 10 / 11
+        //
+        // Jangan sekadar hidden. Keluarkan elemen 3-digit dari
+        // DOM supaya grid hanya mempunyai tepat 3 kolom:
+        // [tanda] [puluhan] [satuan].
+        // ==================================================
+
+        topHundredsDigit.hidden =
+            true;
+
+
+        if (
+            topHundredsDigit.parentNode
+        ) {
+
+            topHundredsDigit.remove();
+        }
+
+
+        bottomSpacer2.hidden =
+            true;
+
+
+        if (
+            bottomSpacer2.parentNode
+        ) {
+
+            bottomSpacer2.remove();
+        }
+
+
+        // Kembalikan final engine input ke board sebelum
+        // wrapper Langkah 3 dilepas dari DOM.
+        if (
+            columnFinalInput.parentNode !==
+            columnBoard
+        ) {
+
+            resultGrid.insertAdjacentElement(
+                "afterend",
+                columnFinalInput
+            );
+        }
+
+
+        columnStep3Wrap.hidden =
+            true;
+
+
+        if (
+            columnStep3Wrap.parentNode
+        ) {
+
+            columnStep3Wrap.remove();
+        }
+
+
+        columnFinalInput.className =
+            "column-final-input column-final-engine-input";
+
+
+        columnFinalInput
+            .setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+
+        columnFinalInput.tabIndex =
+            -1;
     }
 
 
