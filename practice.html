@@ -239,6 +239,7 @@
 
             <!-- ========================================= -->
             <!-- COLUMN QUESTION                           -->
+            <!-- 2 DIGIT x 1 DIGIT                        -->
             <!-- ========================================= -->
 
             <div
@@ -246,117 +247,247 @@
                 class="column-question-area hidden"
             >
 
-                <div class="column-practice">
+                <div class="column-practice column-practice-2x1">
 
                     <div class="column-heading">
-                        Hitung secara bersusun
+
+                        <span class="column-heading-label">
+                            PERKALIAN BERSUSUN
+                        </span>
+
+                        <p id="columnMethodText">
+                            Mulai dari angka paling belakang.
+                        </p>
+
                     </div>
 
 
-                    <div class="column-equation">
+                    <!-- ================================= -->
+                    <!-- ENGINE COMPATIBILITY              -->
+                    <!-- Tetap ada agar practice.js lama   -->
+                    <!-- tidak kehilangan ID yang dipakai. -->
+                    <!-- ================================= -->
+
+                    <div
+                        class="column-engine-compat"
+                        aria-hidden="true"
+                    >
+
+                        <span id="columnTopNumber">
+                            17
+                        </span>
+
+                        <span id="columnBottomNumber">
+                            3
+                        </span>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- VISUAL BOARD                      -->
+                    <!-- ================================= -->
+
+                    <div class="column-board-2x1">
+
+                        <!-- PANAH BANTU -->
+
+                        <svg
+                            id="columnGuideArrow"
+                            class="column-guide-arrow arrow-to-ones"
+                            viewBox="0 0 260 170"
+                            aria-hidden="true"
+                        >
+
+                            <defs>
+
+                                <marker
+                                    id="columnArrowHead"
+                                    markerWidth="10"
+                                    markerHeight="10"
+                                    refX="7"
+                                    refY="3"
+                                    orient="auto"
+                                    markerUnits="strokeWidth"
+                                >
+
+                                    <path
+                                        d="M0,0 L0,6 L8,3 z"
+                                        class="column-arrow-head"
+                                    >
+                                    </path>
+
+                                </marker>
+
+                            </defs>
+
+
+                            <path
+                                id="columnGuideArrowPath"
+                                class="column-arrow-path"
+                                d="M 178 132 C 205 112, 210 80, 188 45"
+                                marker-end="url(#columnArrowHead)"
+                            >
+                            </path>
+
+                        </svg>
+
+
+                        <!-- SIMPANAN / CARRY -->
 
                         <div
-                            id="columnTopNumber"
-                            class="column-number"
+                            id="columnCarryBadge"
+                            class="column-carry-badge hidden"
+                            aria-live="polite"
                         >
-                            34
+
+                            <span class="column-carry-caption">
+                                simpan
+                            </span>
+
+                            <strong id="columnCarryValue">
+                            </strong>
+
                         </div>
 
 
-                        <div class="column-second-line">
+                        <!-- TOP NUMBER -->
 
-                            <span class="column-sign">
-                                ×
+                        <div class="column-number-grid column-top-grid">
+
+                            <span class="column-grid-spacer">
                             </span>
 
                             <span
-                                id="columnBottomNumber"
-                                class="column-number"
+                                id="columnTopTensDigit"
+                                class="column-board-digit"
                             >
-                                27
+                                1
+                            </span>
+
+                            <span
+                                id="columnTopOnesDigit"
+                                class="column-board-digit column-active-digit"
+                            >
+                                7
                             </span>
 
                         </div>
 
 
-                        <div class="column-rule">
+                        <!-- BOTTOM NUMBER -->
+
+                        <div class="column-number-grid column-bottom-grid">
+
+                            <span class="column-board-sign">
+                                ×
+                            </span>
+
+                            <span class="column-grid-spacer">
+                            </span>
+
+                            <span
+                                id="columnBottomSingleDigit"
+                                class="column-board-digit column-multiplier-digit"
+                            >
+                                3
+                            </span>
+
                         </div>
 
-                    </div>
+
+                        <div class="column-board-rule">
+                        </div>
 
 
-                    <!-- STEP 1 -->
+                        <!-- RESULT INPUTS -->
 
-                    <div class="column-step">
+                        <div class="column-result-grid">
 
-                        <label
-                            id="columnStep1Label"
-                            for="columnStep1Input"
-                        >
-                            Langkah 1
-                        </label>
+                            <div
+                                id="columnStep2Wrap"
+                                class="column-result-front column-step-locked"
+                                aria-hidden="true"
+                            >
 
-                        <input
-                            id="columnStep1Input"
-                            class="column-step-input"
-                            type="text"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            autocomplete="off"
-                            placeholder="?"
-                        >
+                                <label
+                                    id="columnStep2Label"
+                                    for="columnStep2Input"
+                                    class="column-result-label"
+                                >
+                                    Langkah 2
+                                </label>
 
-                    </div>
+                                <input
+                                    id="columnStep2Input"
+                                    class="column-step-input column-front-input"
+                                    type="text"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    autocomplete="off"
+                                    enterkeyhint="done"
+                                    maxlength="2"
+                                    placeholder=""
+                                    disabled
+                                    aria-label="Hasil bagian depan"
+                                >
 
-
-                    <!-- STEP 2 -->
-
-                    <div class="column-step">
-
-                        <label
-                            id="columnStep2Label"
-                            for="columnStep2Input"
-                        >
-                            Langkah 2
-                        </label>
-
-                        <input
-                            id="columnStep2Input"
-                            class="column-step-input"
-                            type="text"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            autocomplete="off"
-                            placeholder="?"
-                        >
-
-                    </div>
+                            </div>
 
 
-                    <!-- FINAL -->
+                            <div class="column-result-ones">
 
-                    <div class="column-final-step">
+                                <label
+                                    id="columnStep1Label"
+                                    for="columnStep1Input"
+                                    class="column-result-label"
+                                >
+                                    Langkah 1
+                                </label>
 
-                        <label for="columnFinalInput">
-                            Hasil akhir
-                        </label>
+                                <input
+                                    id="columnStep1Input"
+                                    class="column-step-input column-ones-input"
+                                    type="text"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    autocomplete="off"
+                                    enterkeyhint="next"
+                                    maxlength="1"
+                                    placeholder="?"
+                                    aria-label="Angka hasil paling belakang"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- HIDDEN FINAL FOR ENGINE -->
 
                         <input
                             id="columnFinalInput"
-                            class="column-final-input"
+                            class="column-final-input column-final-engine-input"
                             type="text"
                             inputmode="numeric"
-                            pattern="[0-9]*"
                             autocomplete="off"
-                            placeholder="?"
+                            tabindex="-1"
+                            aria-hidden="true"
                         >
 
                     </div>
 
 
-                    <p class="column-help">
-                        Isi setiap langkah dari atas ke bawah.
-                    </p>
+                    <div class="column-learning-note">
+
+                        <span class="column-learning-dot">
+                        </span>
+
+                        <span id="columnCarryNote">
+                            Kerjakan digit paling kanan terlebih dahulu.
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -576,6 +707,8 @@
     <script src="js/config.js"></script>
 
     <script src="js/practice.js"></script>
+
+    <script src="js/practice-column-2x1.js"></script>
 
     <script src="js/practice-navigation-fix.js"></script>
 
