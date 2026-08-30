@@ -1,0 +1,16 @@
+/* ==========================================================
+   LATIHAN SISWA
+   FIX TAMPILAN SOAL BERSUSUN
+   ========================================================== */
+
+body.column-mode-active #directQuestionArea {
+    display: none !important;
+}
+
+body.column-mode-active #columnQuestionArea {
+    display: block !important;
+}
+
+body.column-mode-active #columnQuestionArea.hidden {
+    display: block !important;
+}
