@@ -45,7 +45,7 @@
        DIRECT QUESTION
        ===================================================== */
 
-    .direct-question-area {
+    .direct-question-area:not(.hidden) {
         width: 100% !important;
 
         min-height: 0 !important;
@@ -141,34 +141,6 @@
 
     .big-question {
         margin-bottom: 14px !important;
-    }
-
-}
-
-
-/* =========================================================
-   PHONE LANDSCAPE / KEYBOARD HEIGHT KECIL
-   ========================================================= */
-
-@media (
-    max-width: 700px
-)
-and (
-    max-height: 750px
-) {
-
-    .practice-stage {
-        padding-top: 14px !important;
-    }
-
-
-    .direct-question-area {
-        padding-top: 4px !important;
-    }
-
-
-    .big-question {
-        margin-bottom: 10px !important;
     }
 
 }
