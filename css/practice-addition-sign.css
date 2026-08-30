@@ -1,0 +1,189 @@
+/* ==========================================================
+   LATIHAN SISWA
+   PENANDA OPERASI PENJUMLAHAN
+
+   Tujuan:
+   - Tanda + berada di sebelah kanan garis penjumlahan.
+   - Warna dibuat mencolok agar siswa sadar bahwa
+     Step 3 adalah PENJUMLAHAN, bukan perkalian.
+   ========================================================== */
+
+
+/* ==========================================================
+   HILANGKAN TANDA + LAMA DI SEBELAH KIRI
+   ========================================================== */
+
+.lm22-source-row-2::before {
+    content: none !important;
+    display: none !important;
+}
+
+
+/* ==========================================================
+   GARIS PENJUMLAHAN
+   ========================================================== */
+
+.lm22-add-rule {
+    position: relative;
+
+    margin-top: 7px !important;
+    margin-bottom: 12px !important;
+}
+
+
+/* ==========================================================
+   TANDA + BARU DI SEBELAH KANAN GARIS
+   ========================================================== */
+
+.lm22-add-rule::after {
+    content: "+";
+
+    position: absolute;
+
+    top: 50%;
+    right: -34px;
+
+    transform:
+        translateY(-52%);
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        #fff0e6;
+
+    border:
+        2px solid
+        #ff6b00;
+
+    color:
+        #e94b00;
+
+    font-family: inherit;
+
+    font-size: 25px;
+    line-height: 1;
+
+    font-weight: 900;
+
+    box-shadow:
+        0 4px 12px
+        rgba(
+            255,
+            107,
+            0,
+            0.22
+        );
+
+    z-index: 5;
+}
+
+
+/* ==========================================================
+   LABEL STEP 3
+   ========================================================== */
+
+.lm22-add:not(.lm22-locked)
+.lm22-label {
+    color:
+        #d9480f;
+
+    font-weight:
+        900;
+
+    font-size:
+        12px;
+
+    letter-spacing:
+        0.045em;
+}
+
+
+/* ==========================================================
+   SAAT STEP 3 MASIH TERKUNCI
+   tanda + tidak perlu terlalu terlihat
+   ========================================================== */
+
+.lm22-add.lm22-locked
+.lm22-add-rule::after {
+    opacity: 0.25;
+}
+
+
+/* ==========================================================
+   SAAT STEP 3 AKTIF
+   tanda + muncul lebih jelas
+   ========================================================== */
+
+.lm22-add:not(.lm22-locked)
+.lm22-add-rule::after {
+    opacity: 1;
+
+    animation:
+        additionSignAppear
+        0.35s
+        ease-out;
+}
+
+
+@keyframes additionSignAppear {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(-52%)
+            scale(0.65);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(-52%)
+            scale(1);
+    }
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+    .lm22-add-rule::after {
+
+        right: -31px;
+
+        width: 26px;
+        height: 26px;
+
+        font-size: 23px;
+    }
+}
+
+
+/* ==========================================================
+   LAYAR SANGAT KECIL
+   ========================================================== */
+
+@media (max-width: 390px) {
+
+    .lm22-add-rule::after {
+
+        right: -27px;
+
+        width: 24px;
+        height: 24px;
+
+        font-size: 21px;
+    }
+}
