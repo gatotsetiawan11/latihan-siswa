@@ -1,14 +1,10 @@
 // ======================================================
-// LATIHAN SISWA
-// LONG MULTIPLICATION 2x2 PATCH V1
+// LATIHAN SISWA - LONG MULTIPLICATION 2 DIGIT x 2 DIGIT V2
+// Tingkat 14: tanpa carry
+// Tingkat 15: carry diperbolehkan
+// Semua input satu digit, dikerjakan dari kanan ke kiri.
 //
-// Tingkat 14:
-// 2 digit x 2 digit, tanpa carry
-//
-// Tingkat 15:
-// 2 digit x 2 digit, carry diperbolehkan
-//
-// File ini WAJIB dimuat:
+// Urutan script:
 // practice.js
 // practice-column-2x1.js
 // practice-column-2x2.js
@@ -17,11 +13,12 @@
 
 (() => {
 
-    const STEP_DELAY = 420;
-    const SUBMIT_DELAY = 850;
+    const MOVE_DELAY = 430;
+    const SUBMIT_DELAY = 900;
+
 
     // ==================================================
-    // GUARD
+    // ENGINE CHECK
     // ==================================================
 
     if (
@@ -30,318 +27,552 @@
         typeof getColumnExpected !== "function" ||
         typeof submitColumnAnswer !== "function"
     ) {
-        console.error("2x2 patch: practice engine belum siap.");
+
+        console.error(
+            "2x2 V2: practice engine belum siap."
+        );
+
         return;
     }
+
+
+    // ==================================================
+    // DOM
+    // ==================================================
 
     const columnPractice =
-        document.querySelector(".column-practice");
+        document.querySelector(
+            ".column-practice"
+        );
 
     const existingBoard =
-        document.querySelector(".column-board-2x1");
+        document.querySelector(
+            ".column-board-2x1"
+        );
 
-    const columnMethodText =
-        document.getElementById("columnMethodText");
+    const methodText =
+        document.getElementById(
+            "columnMethodText"
+        );
 
     const carryNote =
-        document.getElementById("columnCarryNote");
+        document.getElementById(
+            "columnCarryNote"
+        );
 
-    if (!columnPractice || !existingBoard || !columnMethodText) {
-        console.error("2x2 patch: area bersusun tidak ditemukan.");
+
+    if (
+        !columnPractice ||
+        !existingBoard ||
+        !methodText
+    ) {
+
+        console.error(
+            "2x2 V2: area bersusun tidak ditemukan."
+        );
+
         return;
     }
 
-    // ==================================================
-    // ORIGINAL / PREVIOUS OVERRIDES
-    // ==================================================
-
-    const previousGenerateMultiDigitQuestions =
-        generateMultiDigitQuestions;
-
-    const previousRenderColumnQuestion =
-        renderColumnQuestion;
-
-    const previousGetColumnExpected =
-        getColumnExpected;
-
-    const previousResetQuestionInputs =
-        resetQuestionInputs;
-
-    const previousClearCurrentInputValues =
-        clearCurrentInputValues;
-
-    const previousGetColumnInputs =
-        getColumnInputs;
-
-    const previousHasAnyColumnInput =
-        hasAnyColumnInput;
-
-    const previousColumnInputsAreCorrect =
-        columnInputsAreCorrect;
-
-    const previousRefreshColumnLiveMarkers =
-        refreshColumnLiveMarkers;
-
-    const previousFocusCurrentInput =
-        focusCurrentInput;
-
-    const previousDisableColumnInputs =
-        disableColumnInputs;
-
-    const previousSubmitColumnAnswer =
-        submitColumnAnswer;
 
     // ==================================================
-    // MODE
+    // SIMPAN ENGINE SEBELUMNYA
     // ==================================================
 
-    function isLong2x2Mode() {
+    const prev = {
+
+        generate:
+            generateMultiDigitQuestions,
+
+        render:
+            renderColumnQuestion,
+
+        expected:
+            getColumnExpected,
+
+        reset:
+            resetQuestionInputs,
+
+        clear:
+            clearCurrentInputValues,
+
+        focus:
+            focusCurrentInput,
+
+        disable:
+            disableColumnInputs,
+
+        submit:
+            submitColumnAnswer,
+
+        getInputs:
+            typeof getColumnInputs === "function"
+                ? getColumnInputs
+                : null,
+
+        hasAny:
+            typeof hasAnyColumnInput === "function"
+                ? hasAnyColumnInput
+                : null,
+
+        inputsCorrect:
+            typeof columnInputsAreCorrect === "function"
+                ? columnInputsAreCorrect
+                : null,
+
+        refresh:
+            typeof refreshColumnLiveMarkers === "function"
+                ? refreshColumnLiveMarkers
+                : null
+
+    };
+
+
+    // ==================================================
+    // MODE CHECK
+    // ==================================================
+
+    function is2x2() {
+
         return (
-            isColumnMode() &&
+
+            typeof isColumnMode === "function"
+
+            &&
+
+            isColumnMode()
+
+            &&
+
             String(
-                levelData?.config?.column_method || ""
-            ) === "long_multiplication_2x2"
+                levelData
+                    ?.config
+                    ?.column_method
+                ||
+                ""
+            )
+            ===
+            "long_multiplication_2x2"
+
         );
     }
 
+
     // ==================================================
-    // MATH
+    // ANALISIS MATEMATIKA
     // ==================================================
 
-    function analyzeLong2x2(a, b) {
+    function analyze(
+        a,
+        b
+    ) {
 
-        const aTens = Math.floor(a / 10);
-        const aOnes = a % 10;
-
-        const bTens = Math.floor(b / 10);
-        const bOnes = b % 10;
-
-        // STEP 1
-        const row1FirstProduct =
-            bOnes * aOnes;
-
-        const row1Ones =
-            row1FirstProduct % 10;
-
-        const row1Carry =
+        const aT =
             Math.floor(
-                row1FirstProduct / 10
+                a / 10
             );
 
-        const row1Front =
-            bOnes * aTens +
-            row1Carry;
+        const aO =
+            a % 10;
+
+
+        const bT =
+            Math.floor(
+                b / 10
+            );
+
+        const bO =
+            b % 10;
+
+
+        // ==============================================
+        // STEP 1
+        // digit satuan pengali
+        // ==============================================
+
+        const r1s1 =
+            bO * aO;
+
+        const r1O =
+            r1s1 % 10;
+
+        const r1c1 =
+            Math.floor(
+                r1s1 / 10
+            );
+
+
+        const r1s2 =
+            bO * aT
+            +
+            r1c1;
+
+        const r1T =
+            r1s2 % 10;
+
+        const r1c2 =
+            Math.floor(
+                r1s2 / 10
+            );
+
 
         const row1 =
-            a * bOnes;
+            a * bO;
 
+
+        // ==============================================
         // STEP 2
-        const row2FirstProduct =
-            bTens * aOnes;
+        // digit puluhan pengali
+        // ==============================================
 
-        const row2OnesRaw =
-            row2FirstProduct % 10;
+        const r2s1 =
+            bT * aO;
 
-        const row2Carry =
+        const r2T =
+            r2s1 % 10;
+
+        const r2c1 =
             Math.floor(
-                row2FirstProduct / 10
+                r2s1 / 10
             );
 
-        const row2Front =
-            bTens * aTens +
-            row2Carry;
+
+        const r2s2 =
+            bT * aT
+            +
+            r2c1;
+
+        const r2H =
+            r2s2 % 10;
+
+        const r2c2 =
+            Math.floor(
+                r2s2 / 10
+            );
+
 
         const row2Raw =
-            a * bTens;
+            a * bT;
 
-        const row2Shifted =
+
+        // Bergeser 1 tempat ke kiri.
+        const row2 =
             row2Raw * 10;
 
-        // STEP 3
-        const additionSteps = [];
 
-        let additionCarry = 0;
+        // ==============================================
+        // STEP 3
+        // PENJUMLAHAN
+        // ==============================================
+
+        const final =
+            a * b;
+
+
+        const finalLength =
+            String(
+                final
+            ).length;
+
+
+        const add = [];
+
+
+        let carry =
+            0;
+
 
         for (
-            let column = 0;
-            column < 4;
-            column++
+            let col = 0;
+            col < finalLength;
+            col++
         ) {
 
-            const power =
-                10 ** column;
+            const p =
+                10 ** col;
 
-            const row1Digit =
-                Math.floor(
-                    row1 / power
-                ) % 10;
 
-            const row2Digit =
+            const d1 =
                 Math.floor(
-                    row2Shifted / power
-                ) % 10;
+                    row1 / p
+                )
+                %
+                10;
+
+
+            const d2 =
+                Math.floor(
+                    row2 / p
+                )
+                %
+                10;
+
 
             const carryIn =
-                additionCarry;
+                carry;
 
-            const sum =
-                row1Digit +
-                row2Digit +
+
+            const total =
+                d1
+                +
+                d2
+                +
                 carryIn;
 
-            const writeDigit =
-                sum % 10;
+
+            const write =
+                total % 10;
+
 
             const carryOut =
                 Math.floor(
-                    sum / 10
+                    total / 10
                 );
 
-            additionSteps.push({
-                column,
-                row1Digit,
-                row2Digit,
+
+            add.push({
+
+                col,
+
+                d1,
+
+                d2,
+
                 carryIn,
-                sum,
-                writeDigit,
+
+                total,
+
+                write,
+
                 carryOut
+
             });
 
-            additionCarry =
+
+            carry =
                 carryOut;
         }
 
+
         const hasCarry =
-            row1Carry > 0 ||
-            row2Carry > 0 ||
-            additionSteps.some(
+
+            r1c1 > 0
+
+            ||
+
+            r1c2 > 0
+
+            ||
+
+            r2c1 > 0
+
+            ||
+
+            r2c2 > 0
+
+            ||
+
+            add.some(
                 step =>
                     step.carryOut > 0
             );
 
+
         return {
+
             a,
+
             b,
 
-            aTens,
-            aOnes,
-            bTens,
-            bOnes,
+            aT,
 
-            row1FirstProduct,
-            row1Ones,
-            row1Carry,
-            row1Front,
+            aO,
+
+            bT,
+
+            bO,
+
+
+            r1s1,
+
+            r1O,
+
+            r1c1,
+
+            r1s2,
+
+            r1T,
+
+            r1c2,
+
             row1,
 
-            row2FirstProduct,
-            row2OnesRaw,
-            row2Carry,
-            row2Front,
+
+            r2s1,
+
+            r2T,
+
+            r2c1,
+
+            r2s2,
+
+            r2H,
+
+            r2c2,
+
             row2Raw,
-            row2Shifted,
 
-            additionSteps,
+            row2,
 
-            final:
-                a * b,
+
+            add,
+
+            final,
+
+            finalLength,
 
             hasCarry
+
         };
     }
 
-    function noCarryLong2x2(a, b) {
-        return !analyzeLong2x2(
-            a,
-            b
-        ).hasCarry;
-    }
 
-    function shuffle(items) {
+    // ==================================================
+    // SHUFFLE
+    // ==================================================
+
+    function shuffle(
+        arr
+    ) {
 
         for (
-            let i = items.length - 1;
+            let i =
+                arr.length - 1;
+
             i > 0;
+
             i--
         ) {
 
             const j =
                 Math.floor(
-                    Math.random() *
-                    (i + 1)
+                    Math.random()
+                    *
+                    (
+                        i + 1
+                    )
                 );
 
+
             [
-                items[i],
-                items[j]
-            ] = [
-                items[j],
-                items[i]
+                arr[i],
+                arr[j]
+            ]
+            =
+            [
+                arr[j],
+                arr[i]
             ];
         }
 
-        return items;
+
+        return arr;
     }
 
+
     // ==================================================
-    // QUESTION GENERATOR
+    // GENERATOR SOAL
     // ==================================================
 
     generateMultiDigitQuestions =
-        function generateMultiDigitQuestions2x2(
+        function (
             level
         ) {
 
-            const config =
-                level?.config || {};
+            const c =
+                level?.config
+                ||
+                {};
+
 
             if (
                 String(
-                    config.column_method || ""
-                ) !==
+                    c.column_method
+                    ||
+                    ""
+                )
+                !==
                 "long_multiplication_2x2"
             ) {
 
-                return previousGenerateMultiDigitQuestions(
+                return prev.generate(
                     level
                 );
             }
 
+
             const minA =
                 Math.max(
                     10,
-                    Number(config.min_a) || 10
+                    Number(
+                        c.min_a
+                    )
+                    ||
+                    10
                 );
+
 
             const maxA =
                 Math.min(
                     99,
-                    Number(config.max_a) || 99
+                    Number(
+                        c.max_a
+                    )
+                    ||
+                    99
                 );
+
 
             const minB =
                 Math.max(
                     10,
-                    Number(config.min_b) || 10
+                    Number(
+                        c.min_b
+                    )
+                    ||
+                    10
                 );
+
 
             const maxB =
                 Math.min(
                     99,
-                    Number(config.max_b) || 99
+                    Number(
+                        c.max_b
+                    )
+                    ||
+                    99
                 );
+
 
             const carryMode =
                 String(
-                    config.carry_mode || "allowed"
+                    c.carry_mode
+                    ||
+                    "allowed"
                 );
+
 
             const target =
                 Number(
-                    level.question_count
+                    level
+                        .question_count
                 );
 
-            const candidates = [];
+
+            const candidates =
+                [];
+
 
             for (
                 let a = minA;
@@ -349,42 +580,66 @@
                 a++
             ) {
 
-                // Supaya dua langkah tetap bermakna.
-                if (a % 10 === 0) {
-                    continue;
-                }
-
                 for (
                     let b = minB;
                     b <= maxB;
                     b++
                 ) {
 
-                    // Hindari pengali satuan 0.
-                    if (b % 10 === 0) {
-                        continue;
-                    }
+                    // Hindari angka yang berakhir 0
+                    // agar semua langkah tetap bermakna.
 
                     if (
-                        carryMode === "none" &&
-                        !noCarryLong2x2(
-                            a,
-                            b
-                        )
+                        a % 10 === 0
+                        ||
+                        b % 10 === 0
                     ) {
+
                         continue;
                     }
 
+
+                    const x =
+                        analyze(
+                            a,
+                            b
+                        );
+
+
+                    // Tingkat 14:
+                    // tidak boleh membutuhkan carry.
+
+                    if (
+                        carryMode ===
+                            "none"
+
+                        &&
+
+                        x.hasCarry
+                    ) {
+
+                        continue;
+                    }
+
+
                     candidates.push({
+
                         a,
+
                         b,
+
                         answer:
                             a * b
+
                     });
                 }
             }
 
-            shuffle(candidates);
+
+            shuffle(
+                candidates
+            );
+
 
             return candidates.slice(
                 0,
@@ -392,2139 +647,2717 @@
             );
         };
 
+
     // ==================================================
-    // EXPECTED OVERRIDE
+    // EXPECTED
     // ==================================================
 
     getColumnExpected =
-        function getColumnExpected2x2(
+        function (
             question
         ) {
 
-            if (!isLong2x2Mode()) {
-                return previousGetColumnExpected(
+            if (
+                !is2x2()
+            ) {
+
+                return prev.expected(
                     question
                 );
             }
 
-            const expected =
-                analyzeLong2x2(
-                    Number(question.a),
-                    Number(question.b)
+
+            const x =
+                analyze(
+
+                    Number(
+                        question.a
+                    ),
+
+                    Number(
+                        question.b
+                    )
+
                 );
 
-            return {
-                ...expected,
 
-                // Kompatibilitas dengan engine lama.
+            return {
+
+                ...x,
+
                 partial1:
-                    expected.row1,
+                    x.row1,
 
                 partial2:
-                    expected.row2Shifted,
+                    x.row2,
 
                 final:
-                    expected.final
+                    x.final
+
             };
         };
 
+
     // ==================================================
     // CREATE UI
+    //
+    // 4 kolom:
+    // ribuan | ratusan | puluhan | satuan
     // ==================================================
 
-    const longBoard =
-        document.createElement("div");
+    const board =
+        document.createElement(
+            "div"
+        );
 
-    longBoard.id =
+
+    board.id =
         "columnLong2x2Board";
 
-    longBoard.className =
-        "long2x2-board hidden";
 
-    longBoard.innerHTML = `
+    board.className =
+        "lm22-board hidden";
+
+
+    board.innerHTML = `
+
         <svg
-            id="long2x2Arrow"
-            class="long2x2-arrow hidden"
-            viewBox="0 0 320 185"
+            id="lm22Arrow"
+            class="lm22-arrow hidden"
+            viewBox="0 0 340 220"
             aria-hidden="true"
         >
+
             <path
-                id="long2x2ArrowPath"
-                class="long2x2-arrow-path"
+                id="lm22ArrowPath"
+                class="lm22-arrow-path"
                 pathLength="1"
-                d="M221 135 C221 112 221 90 221 68"
             ></path>
 
             <path
-                id="long2x2ArrowHead"
-                class="long2x2-arrow-head"
-                d="M215 75 L221 67 L227 75"
+                id="lm22ArrowHead"
+                class="lm22-arrow-head"
             ></path>
+
         </svg>
 
+
         <div
-            class="long2x2-carry-row"
-            aria-hidden="true"
+            id="lm22Carry"
+            class="lm22-carry hidden"
+            aria-live="polite"
         >
+
+            <span>
+                simpan
+            </span>
+
+            <strong
+                id="lm22CarryValue"
+            ></strong>
+
+        </div>
+
+
+        <!-- ANGKA ATAS -->
+
+        <div
+            class="lm22-grid lm22-number-row"
+        >
+
             <span></span>
+
+            <span></span>
+
+            <strong
+                id="lm22TopT"
+                class="lm22-number"
+            ></strong>
+
+            <strong
+                id="lm22TopO"
+                class="lm22-number"
+            ></strong>
+
+        </div>
+
+
+        <!-- ANGKA BAWAH -->
+
+        <div
+            class="lm22-grid lm22-number-row"
+        >
+
             <span></span>
 
             <span
-                id="long2x2MultiplyCarry"
-                class="long2x2-carry-value hidden"
-            ></span>
-
-            <span></span>
-        </div>
-
-        <div class="long2x2-number-row">
-            <span></span>
-            <span></span>
-
-            <strong
-                id="long2x2TopTens"
-            >1</strong>
-
-            <strong
-                id="long2x2TopOnes"
-            >5</strong>
-        </div>
-
-        <div class="long2x2-number-row">
-            <span></span>
-
-            <span class="long2x2-sign">
+                class="lm22-times"
+            >
                 ×
             </span>
 
             <strong
-                id="long2x2BottomTens"
-            >1</strong>
+                id="lm22BottomT"
+                class="lm22-number"
+            ></strong>
 
             <strong
-                id="long2x2BottomOnes"
-            >2</strong>
+                id="lm22BottomO"
+                class="lm22-number"
+            ></strong>
+
         </div>
 
-        <div class="long2x2-rule"></div>
-
-        <!-- STEP 1 -->
 
         <div
-            id="long2x2Phase1"
-            class="long2x2-partial-row"
-        >
+            class="lm22-rule"
+        ></div>
 
-            <div
-                id="long2x2Row1FrontWrap"
-                class="long2x2-front-wrap long2x2-locked"
-            >
-                <input
-                    id="long2x2Row1Front"
-                    class="long2x2-front-input"
-                    type="text"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    autocomplete="off"
-                    disabled
-                >
-            </div>
+
+        <!-- ==========================================
+             STEP 1
+             digit satuan pengali
+             ========================================== -->
+
+        <div class="lm22-label">
+            Step 1
+        </div>
+
+
+        <div
+            class="lm22-grid lm22-work-row"
+        >
 
             <span></span>
 
+            <span
+                id="lm22R1Lead"
+                class="lm22-auto"
+            ></span>
+
             <input
-                id="long2x2Row1Ones"
-                class="long2x2-digit-input"
+                id="lm22R1T"
+                class="lm22-input"
                 type="text"
                 inputmode="numeric"
-                pattern="[0-9]*"
-                autocomplete="off"
                 maxlength="1"
+                autocomplete="off"
+                disabled
+                aria-label="Baris pertama puluhan"
             >
+
+            <input
+                id="lm22R1O"
+                class="lm22-input"
+                type="text"
+                inputmode="numeric"
+                maxlength="1"
+                autocomplete="off"
+                aria-label="Baris pertama satuan"
+            >
+
         </div>
 
-        <!-- STEP 2 -->
+
+        <!-- ==========================================
+             STEP 2
+             digit puluhan pengali
+             ========================================== -->
 
         <div
-            id="long2x2Phase2"
-            class="long2x2-partial-row long2x2-phase-locked"
+            id="lm22Step2"
+            class="lm22-phase lm22-locked"
         >
 
+            <div class="lm22-label">
+                Step 2
+            </div>
+
+
             <div
-                id="long2x2Row2FrontWrap"
-                class="long2x2-front-wrap long2x2-locked"
+                class="lm22-grid lm22-work-row"
             >
+
+                <span
+                    id="lm22R2Lead"
+                    class="lm22-auto"
+                ></span>
+
                 <input
-                    id="long2x2Row2Front"
-                    class="long2x2-front-input"
+                    id="lm22R2H"
+                    class="lm22-input"
                     type="text"
                     inputmode="numeric"
-                    pattern="[0-9]*"
+                    maxlength="1"
                     autocomplete="off"
                     disabled
+                    aria-label="Baris kedua ratusan"
                 >
+
+                <input
+                    id="lm22R2T"
+                    class="lm22-input"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="1"
+                    autocomplete="off"
+                    disabled
+                    aria-label="Baris kedua puluhan"
+                >
+
+                <span
+                    class="lm22-zero"
+                >
+                    0
+                </span>
+
             </div>
 
-            <input
-                id="long2x2Row2Ones"
-                class="long2x2-digit-input"
-                type="text"
-                inputmode="numeric"
-                pattern="[0-9]*"
-                autocomplete="off"
-                maxlength="1"
-                disabled
-            >
-
-            <span
-                class="long2x2-auto-zero"
-            >0</span>
         </div>
 
-        <!-- STEP 3 -->
+
+        <!-- ==========================================
+             STEP 3
+             PENJUMLAHAN
+             ========================================== -->
 
         <div
-            id="long2x2AdditionBlock"
-            class="long2x2-addition long2x2-phase-locked"
+            id="lm22Add"
+            class="lm22-add lm22-locked"
         >
 
-            <div class="long2x2-add-title">
-                Step 3 • Jumlahkan dua baris
+            <div class="lm22-label">
+                Step 3 • Jumlahkan
             </div>
 
+
             <div
-                class="long2x2-add-carry-row"
+                class="lm22-grid lm22-add-carries"
                 aria-hidden="true"
             >
+
                 <span
-                    id="long2x2AddCarry1000"
-                    class="long2x2-add-carry hidden"
+                    id="lm22C1000"
+                    class="lm22-add-carry hidden"
                 ></span>
 
                 <span
-                    id="long2x2AddCarry100"
-                    class="long2x2-add-carry hidden"
+                    id="lm22C100"
+                    class="lm22-add-carry hidden"
                 ></span>
 
                 <span
-                    id="long2x2AddCarry10"
-                    class="long2x2-add-carry hidden"
+                    id="lm22C10"
+                    class="lm22-add-carry hidden"
                 ></span>
 
                 <span></span>
+
             </div>
 
-            <div class="long2x2-add-row">
-                <span id="long2x2AddR1Thousands"></span>
-                <span id="long2x2AddR1Hundreds"></span>
-                <span id="long2x2AddR1Tens"></span>
-                <span id="long2x2AddR1Ones"></span>
+
+            <!-- BARIS HASIL 1 -->
+
+            <div
+                class="lm22-grid lm22-source-row"
+            >
+
+                <span
+                    id="lm22A1K"
+                ></span>
+
+                <span
+                    id="lm22A1H"
+                ></span>
+
+                <span
+                    id="lm22A1T"
+                ></span>
+
+                <span
+                    id="lm22A1O"
+                ></span>
+
             </div>
 
-            <div class="long2x2-add-row long2x2-add-row2">
-                <span id="long2x2AddR2Thousands"></span>
-                <span id="long2x2AddR2Hundreds"></span>
-                <span id="long2x2AddR2Tens"></span>
-                <span id="long2x2AddR2Ones"></span>
+
+            <!-- BARIS HASIL 2 -->
+
+            <div
+                class="
+                    lm22-grid
+                    lm22-source-row
+                    lm22-source-row-2
+                "
+            >
+
+                <span
+                    id="lm22A2K"
+                ></span>
+
+                <span
+                    id="lm22A2H"
+                ></span>
+
+                <span
+                    id="lm22A2T"
+                ></span>
+
+                <span
+                    id="lm22A2O"
+                ></span>
+
             </div>
 
-            <div class="long2x2-add-rule"></div>
 
-            <div class="long2x2-sum-row">
+            <div
+                class="lm22-add-rule"
+            ></div>
+
+
+            <!-- HASIL PENJUMLAHAN -->
+
+            <div
+                class="lm22-grid lm22-sum-row"
+            >
 
                 <input
-                    id="long2x2SumThousands"
-                    class="long2x2-sum-input"
+                    id="lm22SumK"
+                    class="lm22-input lm22-sum"
                     type="text"
                     inputmode="numeric"
                     maxlength="1"
+                    autocomplete="off"
                     disabled
+                    aria-label="Hasil ribuan"
                 >
 
                 <input
-                    id="long2x2SumHundreds"
-                    class="long2x2-sum-input"
+                    id="lm22SumH"
+                    class="lm22-input lm22-sum"
                     type="text"
                     inputmode="numeric"
                     maxlength="1"
+                    autocomplete="off"
                     disabled
+                    aria-label="Hasil ratusan"
                 >
 
                 <input
-                    id="long2x2SumTens"
-                    class="long2x2-sum-input"
+                    id="lm22SumT"
+                    class="lm22-input lm22-sum"
                     type="text"
                     inputmode="numeric"
                     maxlength="1"
+                    autocomplete="off"
                     disabled
+                    aria-label="Hasil puluhan"
                 >
 
                 <input
-                    id="long2x2SumOnes"
-                    class="long2x2-sum-input"
+                    id="lm22SumO"
+                    class="lm22-input lm22-sum"
                     type="text"
                     inputmode="numeric"
                     maxlength="1"
+                    autocomplete="off"
                     disabled
+                    aria-label="Hasil satuan"
                 >
 
             </div>
+
         </div>
+
     `;
+
+
+    // ==================================================
+    // INSERT BOARD
+    // ==================================================
 
     const learningNote =
         columnPractice.querySelector(
             ".column-learning-note"
         );
 
+
     columnPractice.insertBefore(
-        longBoard,
+        board,
         learningNote
     );
 
+
     // ==================================================
-    // LONG DOM
+    // DOM SHORTCUT
     // ==================================================
 
-    const longArrow =
-        document.getElementById(
-            "long2x2Arrow"
-        );
+    const $ =
+        id =>
+            document.getElementById(
+                id
+            );
 
-    const longArrowPath =
-        document.getElementById(
-            "long2x2ArrowPath"
-        );
 
-    const longArrowHead =
-        document.getElementById(
-            "long2x2ArrowHead"
-        );
+    const el = {
 
-    const multiplyCarry =
-        document.getElementById(
-            "long2x2MultiplyCarry"
-        );
+        arrow:
+            $("lm22Arrow"),
 
-    const topTens =
-        document.getElementById(
-            "long2x2TopTens"
-        );
+        arrowPath:
+            $("lm22ArrowPath"),
 
-    const topOnes =
-        document.getElementById(
-            "long2x2TopOnes"
-        );
+        arrowHead:
+            $("lm22ArrowHead"),
 
-    const bottomTens =
-        document.getElementById(
-            "long2x2BottomTens"
-        );
 
-    const bottomOnes =
-        document.getElementById(
-            "long2x2BottomOnes"
-        );
+        carry:
+            $("lm22Carry"),
 
-    const phase2 =
-        document.getElementById(
-            "long2x2Phase2"
-        );
+        carryValue:
+            $("lm22CarryValue"),
 
-    const additionBlock =
-        document.getElementById(
-            "long2x2AdditionBlock"
-        );
 
-    const row1FrontWrap =
-        document.getElementById(
-            "long2x2Row1FrontWrap"
-        );
+        topT:
+            $("lm22TopT"),
 
-    const row1Front =
-        document.getElementById(
-            "long2x2Row1Front"
-        );
+        topO:
+            $("lm22TopO"),
 
-    const row1Ones =
-        document.getElementById(
-            "long2x2Row1Ones"
-        );
+        bottomT:
+            $("lm22BottomT"),
 
-    const row2FrontWrap =
-        document.getElementById(
-            "long2x2Row2FrontWrap"
-        );
+        bottomO:
+            $("lm22BottomO"),
 
-    const row2Front =
-        document.getElementById(
-            "long2x2Row2Front"
-        );
 
-    const row2Ones =
-        document.getElementById(
-            "long2x2Row2Ones"
-        );
+        r1Lead:
+            $("lm22R1Lead"),
 
-    const addR1Thousands =
-        document.getElementById(
-            "long2x2AddR1Thousands"
-        );
+        r1T:
+            $("lm22R1T"),
 
-    const addR1Hundreds =
-        document.getElementById(
-            "long2x2AddR1Hundreds"
-        );
+        r1O:
+            $("lm22R1O"),
 
-    const addR1Tens =
-        document.getElementById(
-            "long2x2AddR1Tens"
-        );
 
-    const addR1Ones =
-        document.getElementById(
-            "long2x2AddR1Ones"
-        );
+        step2:
+            $("lm22Step2"),
 
-    const addR2Thousands =
-        document.getElementById(
-            "long2x2AddR2Thousands"
-        );
 
-    const addR2Hundreds =
-        document.getElementById(
-            "long2x2AddR2Hundreds"
-        );
+        r2Lead:
+            $("lm22R2Lead"),
 
-    const addR2Tens =
-        document.getElementById(
-            "long2x2AddR2Tens"
-        );
+        r2H:
+            $("lm22R2H"),
 
-    const addR2Ones =
-        document.getElementById(
-            "long2x2AddR2Ones"
-        );
+        r2T:
+            $("lm22R2T"),
 
-    const sumThousands =
-        document.getElementById(
-            "long2x2SumThousands"
-        );
 
-    const sumHundreds =
-        document.getElementById(
-            "long2x2SumHundreds"
-        );
+        add:
+            $("lm22Add"),
 
-    const sumTens =
-        document.getElementById(
-            "long2x2SumTens"
-        );
 
-    const sumOnes =
-        document.getElementById(
-            "long2x2SumOnes"
-        );
+        a1K:
+            $("lm22A1K"),
 
-    const addCarry1000 =
-        document.getElementById(
-            "long2x2AddCarry1000"
-        );
+        a1H:
+            $("lm22A1H"),
 
-    const addCarry100 =
-        document.getElementById(
-            "long2x2AddCarry100"
-        );
+        a1T:
+            $("lm22A1T"),
 
-    const addCarry10 =
-        document.getElementById(
-            "long2x2AddCarry10"
-        );
+        a1O:
+            $("lm22A1O"),
 
-    const visibleInputs = [
-        row1Ones,
-        row1Front,
-        row2Ones,
-        row2Front,
-        sumOnes,
-        sumTens,
-        sumHundreds,
-        sumThousands
+
+        a2K:
+            $("lm22A2K"),
+
+        a2H:
+            $("lm22A2H"),
+
+        a2T:
+            $("lm22A2T"),
+
+        a2O:
+            $("lm22A2O"),
+
+
+        c1000:
+            $("lm22C1000"),
+
+        c100:
+            $("lm22C100"),
+
+        c10:
+            $("lm22C10"),
+
+
+        sumK:
+            $("lm22SumK"),
+
+        sumH:
+            $("lm22SumH"),
+
+        sumT:
+            $("lm22SumT"),
+
+        sumO:
+            $("lm22SumO")
+
+    };
+
+
+    const multInputs = [
+
+        el.r1O,
+
+        el.r1T,
+
+        el.r2T,
+
+        el.r2H
+
     ];
 
+
+    const sumsLTR = [
+
+        el.sumK,
+
+        el.sumH,
+
+        el.sumT,
+
+        el.sumO
+
+    ];
+
+
+    const allInputs = [
+
+        ...multInputs,
+
+        ...sumsLTR
+
+    ];
+
+
     // ==================================================
-    // CSS
+    // STYLE
     // ==================================================
 
     const style =
-        document.createElement("style");
+        document.createElement(
+            "style"
+        );
+
 
     style.textContent = `
-        .long2x2-board {
+
+        .lm22-board {
             position: relative;
-            width: 320px;
-            margin: 0 auto;
-            padding: 18px 20px 22px;
+            width: 340px;
             box-sizing: border-box;
-            border: 1px solid #e4e8f0;
-            border-radius: 22px;
-            background: #fff;
-            box-shadow: 0 12px 34px rgba(23,32,51,.07);
+            margin: 0 auto;
+            padding: 20px 22px 24px;
+
+            border:
+                1px solid
+                #e4e8f0;
+
+            border-radius:
+                22px;
+
+            background:
+                #ffffff;
+
+            box-shadow:
+                0 12px 34px
+                rgba(
+                    23,
+                    32,
+                    51,
+                    0.07
+                );
         }
 
-        .long2x2-board.hidden {
+
+        .lm22-board.hidden {
             display: none !important;
         }
 
-        .long2x2-number-row,
-        .long2x2-partial-row,
-        .long2x2-add-row,
-        .long2x2-sum-row,
-        .long2x2-carry-row,
-        .long2x2-add-carry-row {
-            width: 236px;
+
+        .lm22-grid {
+            width: 248px;
             margin: 0 auto;
+
             display: grid;
-            grid-template-columns: repeat(4, 52px);
-            column-gap: 9px;
-            align-items: center;
-            justify-items: center;
+
+            grid-template-columns:
+                repeat(
+                    4,
+                    52px
+                );
+
+            column-gap:
+                10px;
+
+            align-items:
+                center;
+
+            justify-items:
+                center;
         }
 
-        .long2x2-number-row {
+
+        .lm22-number-row {
             min-height: 47px;
         }
 
-        .long2x2-number-row strong {
+
+        .lm22-number {
             width: 52px;
-            min-height: 43px;
+            min-height: 44px;
+
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #172033;
-            font-size: 38px;
-            line-height: 1;
-            font-weight: 850;
-            font-variant-numeric: tabular-nums;
-            transition: color .18s ease, transform .18s ease;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            color:
+                #172033;
+
+            font-size:
+                38px;
+
+            font-weight:
+                850;
+
+            line-height:
+                1;
+
+            font-variant-numeric:
+                tabular-nums;
+
+            transition:
+                0.18s;
         }
 
-        .long2x2-active-digit {
-            color: #2457e6 !important;
-            transform: scale(1.08);
+
+        .lm22-times {
+            font-size:
+                27px;
+
+            font-weight:
+                850;
+
+            color:
+                #566175;
         }
 
-        .long2x2-sign {
-            color: #566175;
-            font-size: 26px;
-            font-weight: 850;
+
+        .lm22-active-number {
+            color:
+                #2457e6
+                !important;
+
+            transform:
+                scale(
+                    1.08
+                );
         }
 
-        .long2x2-rule,
-        .long2x2-add-rule {
-            width: 236px;
-            height: 3px;
-            margin: 7px auto 10px;
-            border-radius: 999px;
-            background: #172033;
+
+        .lm22-rule,
+        .lm22-add-rule {
+            width:
+                248px;
+
+            height:
+                3px;
+
+            margin:
+                8px auto 10px;
+
+            border-radius:
+                999px;
+
+            background:
+                #172033;
         }
 
-        .long2x2-partial-row {
-            min-height: 58px;
-            margin-top: 7px;
+
+        .lm22-label {
+            width:
+                248px;
+
+            margin:
+                8px auto 5px;
+
+            color:
+                #6b7689;
+
+            font-size:
+                10px;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                0.05em;
+
+            text-transform:
+                uppercase;
+
+            text-align:
+                left;
         }
 
-        .long2x2-front-wrap {
-            grid-column: 2 / 4;
-            width: 113px;
-            display: flex;
-            justify-content: flex-end;
+
+        .lm22-work-row {
+            min-height:
+                54px;
         }
 
-        #long2x2Phase2 .long2x2-front-wrap {
-            grid-column: 1 / 3;
+
+        .lm22-input {
+            width:
+                52px;
+
+            height:
+                48px;
+
+            box-sizing:
+                border-box;
+
+            padding:
+                5px;
+
+            border:
+                2px solid
+                #d9deea;
+
+            border-radius:
+                11px;
+
+            outline:
+                none;
+
+            background:
+                #ffffff;
+
+            color:
+                #172033;
+
+            text-align:
+                center;
+
+            font-family:
+                inherit;
+
+            font-size:
+                27px;
+
+            font-weight:
+                850;
+
+            line-height:
+                1;
+
+            font-variant-numeric:
+                tabular-nums;
+
+            caret-color:
+                #2457e6;
+
+            transition:
+                0.16s;
         }
 
-        #long2x2Phase1 #long2x2Row1Ones {
-            grid-column: 4;
+
+        .lm22-input:focus {
+            border-color:
+                #4f5cff;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(
+                    79,
+                    92,
+                    255,
+                    0.11
+                );
+
+            transform:
+                translateY(
+                    -1px
+                );
         }
 
-        #long2x2Phase2 #long2x2Row2Ones {
-            grid-column: 3;
+
+        .lm22-input.lm22-correct {
+            border-color:
+                #36a569;
+
+            background:
+                #effbf4;
+
+            color:
+                #167744;
         }
 
-        #long2x2Phase2 .long2x2-auto-zero {
-            grid-column: 4;
+
+        .lm22-input:disabled {
+            opacity:
+                0.34;
         }
 
-        .long2x2-digit-input,
-        .long2x2-front-input,
-        .long2x2-sum-input {
-            box-sizing: border-box;
-            min-height: 48px;
-            padding: 6px;
-            border: 2px solid #d9deea;
-            border-radius: 12px;
-            outline: none;
-            background: #fff;
-            color: #172033;
-            text-align: center;
-            font-family: inherit;
-            font-size: 27px;
-            line-height: 1;
-            font-weight: 850;
-            caret-color: #2457e6;
-            font-variant-numeric: tabular-nums;
-            transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+
+        .lm22-input.lm22-correct:disabled {
+            opacity:
+                1;
         }
 
-        .long2x2-digit-input,
-        .long2x2-sum-input {
-            width: 52px;
+
+        .lm22-phase,
+        .lm22-add {
+            transition:
+                opacity
+                0.18s;
         }
 
-        .long2x2-front-input {
-            width: 113px;
-            padding-right: 12px;
-            text-align: right;
-            letter-spacing: .18em;
+
+        .lm22-locked {
+            opacity:
+                0.28;
+
+            pointer-events:
+                none;
         }
 
-        .long2x2-digit-input:focus,
-        .long2x2-front-input:focus,
-        .long2x2-sum-input:focus {
-            border-color: #4f5cff;
-            box-shadow: 0 0 0 4px rgba(79,92,255,.11);
+
+        .lm22-auto,
+        .lm22-zero {
+            width:
+                52px;
+
+            min-height:
+                48px;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            border-radius:
+                11px;
+
+            font-size:
+                27px;
+
+            font-weight:
+                850;
+
+            line-height:
+                1;
+
+            font-variant-numeric:
+                tabular-nums;
         }
 
-        .long2x2-correct {
-            border-color: #36a569 !important;
-            background: #effbf4 !important;
-            color: #167744 !important;
+
+        .lm22-auto {
+            color:
+                #b45309;
         }
 
-        .long2x2-wrong {
-            border-color: #d85c5c !important;
-            background: #fff4f4 !important;
-            color: #b73535 !important;
+
+        .lm22-auto:empty {
+            visibility:
+                hidden;
         }
 
-        .long2x2-locked,
-        .long2x2-phase-locked {
-            opacity: .28;
-            pointer-events: none;
+
+        .lm22-zero {
+            border:
+                1px dashed
+                #d3d9e4;
+
+            background:
+                #f5f7fa;
+
+            color:
+                #8a94a6;
         }
 
-        .long2x2-addition.long2x2-phase-locked
-        .long2x2-add-row,
-        .long2x2-addition.long2x2-phase-locked
-        .long2x2-add-carry-row,
-        .long2x2-addition.long2x2-phase-locked
-        .long2x2-add-rule,
-        .long2x2-addition.long2x2-phase-locked
-        .long2x2-sum-row {
-            visibility: hidden;
+
+        /* CARRY PERKALIAN */
+
+        .lm22-carry {
+            position:
+                absolute;
+
+            z-index:
+                12;
+
+            top:
+                16px;
+
+            right:
+                12px;
+
+            min-width:
+                46px;
+
+            min-height:
+                45px;
+
+            padding:
+                5px 7px;
+
+            box-sizing:
+                border-box;
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            border:
+                1.5px solid
+                #f4a51c;
+
+            border-radius:
+                13px;
+
+            background:
+                #fff7dc;
+
+            color:
+                #b45309;
+
+            box-shadow:
+                0 6px 16px
+                rgba(
+                    245,
+                    158,
+                    11,
+                    0.18
+                );
+
+            animation:
+                lm22CarryPop
+                0.24s
+                ease-out;
         }
 
-        .long2x2-auto-zero {
-            width: 52px;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: #f4f6fa;
-            color: #8a94a6;
-            font-size: 27px;
-            font-weight: 850;
+
+        .lm22-carry.hidden {
+            display:
+                none !important;
         }
 
-        .long2x2-carry-row {
-            min-height: 23px;
+
+        .lm22-carry span {
+            font-size:
+                7px;
+
+            font-weight:
+                850;
+
+            text-transform:
+                uppercase;
         }
 
-        .long2x2-carry-value,
-        .long2x2-add-carry {
-            min-width: 23px;
-            height: 23px;
-            padding: 0 5px;
-            box-sizing: border-box;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #f4a51c;
-            border-radius: 999px;
-            background: #fff7dc;
-            color: #b45309;
-            font-size: 14px;
-            line-height: 1;
-            font-weight: 900;
-            box-shadow: 0 4px 10px rgba(245,158,11,.16);
+
+        .lm22-carry strong {
+            margin-top:
+                2px;
+
+            font-size:
+                21px;
+
+            font-weight:
+                900;
         }
 
-        .long2x2-carry-value.hidden,
-        .long2x2-add-carry.hidden {
-            visibility: hidden !important;
-        }
 
-        .long2x2-arrow {
-            position: absolute;
-            z-index: 10;
-            inset: 0;
-            width: 100%;
-            height: 185px;
-            overflow: visible;
-            pointer-events: none;
-        }
+        @keyframes lm22CarryPop {
 
-        .long2x2-arrow.hidden {
-            opacity: 0;
-        }
-
-        .long2x2-arrow-path {
-            fill: none;
-            stroke: #f59e0b;
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-dasharray: 1;
-            stroke-dashoffset: 1;
-            vector-effect: non-scaling-stroke;
-        }
-
-        .long2x2-arrow-head {
-            fill: none;
-            stroke: #f59e0b;
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            opacity: 0;
-            vector-effect: non-scaling-stroke;
-        }
-
-        .long2x2-arrow.long2x2-draw .long2x2-arrow-path {
-            animation: long2x2ArrowDraw .44s cubic-bezier(.22,.8,.32,1) forwards;
-        }
-
-        .long2x2-arrow.long2x2-draw .long2x2-arrow-head {
-            animation: long2x2ArrowHead .10s ease-out .36s forwards;
-        }
-
-        @keyframes long2x2ArrowDraw {
             from {
-                stroke-dashoffset: 1;
-                opacity: .35;
+                opacity:
+                    0;
+
+                transform:
+                    translateY(
+                        4px
+                    )
+                    scale(
+                        0.82
+                    );
             }
 
             to {
-                stroke-dashoffset: 0;
-                opacity: 1;
-            }
-        }
+                opacity:
+                    1;
 
-        @keyframes long2x2ArrowHead {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .long2x2-addition {
-            margin-top: 14px;
-            padding-top: 11px;
-            border-top: 1px dashed #dfe4ec;
-        }
-
-        .long2x2-add-title {
-            margin-bottom: 7px;
-            color: #647084;
-            font-size: 11px;
-            line-height: 1.35;
-            font-weight: 750;
-            text-align: center;
-        }
-
-        .long2x2-add-carry-row {
-            min-height: 25px;
-            margin-bottom: 2px;
-        }
-
-        .long2x2-add-row {
-            min-height: 39px;
-            color: #172033;
-            font-size: 27px;
-            line-height: 1;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .long2x2-add-row2 {
-            position: relative;
-        }
-
-        .long2x2-add-row2::before {
-            content: "+";
-            position: absolute;
-            left: -4px;
-            color: #566175;
-            font-size: 23px;
-            font-weight: 850;
-        }
-
-        .long2x2-add-rule {
-            margin-top: 3px;
-            margin-bottom: 8px;
-        }
-
-        .long2x2-sum-row {
-            min-height: 50px;
-        }
-
-        .long2x2-leading-hidden {
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
-
-        .long2x2-active-sum {
-            border-color: #4f5cff !important;
-            box-shadow: 0 0 0 4px rgba(79,92,255,.09);
-        }
-
-        @media (max-width: 600px) {
-
-            .long2x2-board {
-                width: 286px;
-                padding-left: 13px;
-                padding-right: 13px;
-                border-radius: 18px;
+                transform:
+                    none;
             }
 
-            .long2x2-number-row,
-            .long2x2-partial-row,
-            .long2x2-add-row,
-            .long2x2-sum-row,
-            .long2x2-carry-row,
-            .long2x2-add-carry-row {
-                width: 220px;
-                grid-template-columns: repeat(4, 49px);
-                column-gap: 8px;
-            }
-
-            .long2x2-number-row strong {
-                width: 49px;
-                font-size: 35px;
-            }
-
-            .long2x2-rule,
-            .long2x2-add-rule {
-                width: 220px;
-            }
-
-            .long2x2-digit-input,
-            .long2x2-sum-input,
-            .long2x2-auto-zero {
-                width: 49px;
-            }
-
-            .long2x2-front-wrap,
-            .long2x2-front-input {
-                width: 106px;
-            }
-
-            .long2x2-arrow {
-                height: 180px;
-            }
         }
+
+
+        /* PANAH */
+
+        .lm22-arrow {
+            position:
+                absolute;
+
+            z-index:
+                11;
+
+            inset:
+                0;
+
+            width:
+                100%;
+
+            height:
+                220px;
+
+            overflow:
+                visible;
+
+            pointer-events:
+                none;
+        }
+
+
+        .lm22-arrow.hidden {
+            opacity:
+                0;
+        }
+
+
+        .lm22-arrow-path {
+            fill:
+                none;
+
+            stroke:
+                #f59e0b;
+
+            stroke-width:
+                1.65;
+
+            stroke-linecap:
+                round;
+
+            stroke-linejoin:
+                round;
+
+            stroke-dasharray:
+                1;
+
+            stroke-dashoffset:
+                1;
+
+            vector-effect:
+                non-scaling-stroke;
+        }
+
+
+        .lm22-arrow-head {
+            fill:
+                none;
+
+            stroke:
+                #f59e0b;
+
+            stroke-width:
+                1.65;
+
+            stroke-linecap:
+                round;
+
+            stroke-linejoin:
+                round;
+
+            opacity:
+                0;
+
+            vector-effect:
+                non-scaling-stroke;
+        }
+
+
+        .lm22-arrow.lm22-draw
+        .lm22-arrow-path {
+
+            animation:
+                lm22Draw
+                0.44s
+                cubic-bezier(
+                    0.22,
+                    0.8,
+                    0.32,
+                    1
+                )
+                forwards;
+        }
+
+
+        .lm22-arrow.lm22-draw
+        .lm22-arrow-head {
+
+            animation:
+                lm22Head
+                0.1s
+                ease-out
+                0.36s
+                forwards;
+        }
+
+
+        @keyframes lm22Draw {
+
+            from {
+                stroke-dashoffset:
+                    1;
+
+                opacity:
+                    0.35;
+            }
+
+            to {
+                stroke-dashoffset:
+                    0;
+
+                opacity:
+                    1;
+            }
+
+        }
+
+
+        @keyframes lm22Head {
+
+            from {
+                opacity:
+                    0;
+            }
+
+            to {
+                opacity:
+                    1;
+            }
+
+        }
+
+
+        /* STEP 3 */
+
+        .lm22-add {
+            margin-top:
+                14px;
+
+            padding-top:
+                10px;
+
+            border-top:
+                1px dashed
+                #dfe4ec;
+        }
+
+
+        .lm22-add-carries {
+            min-height:
+                25px;
+
+            margin-bottom:
+                2px;
+        }
+
+
+        .lm22-add-carry {
+            min-width:
+                22px;
+
+            height:
+                22px;
+
+            padding:
+                0 5px;
+
+            box-sizing:
+                border-box;
+
+            display:
+                inline-flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            border:
+                1px solid
+                #f4a51c;
+
+            border-radius:
+                999px;
+
+            background:
+                #fff7dc;
+
+            color:
+                #b45309;
+
+            font-size:
+                13px;
+
+            font-weight:
+                900;
+        }
+
+
+        .lm22-add-carry.hidden {
+            visibility:
+                hidden !important;
+        }
+
+
+        .lm22-source-row {
+            min-height:
+                37px;
+
+            color:
+                #172033;
+
+            font-size:
+                27px;
+
+            font-weight:
+                800;
+
+            line-height:
+                1;
+
+            font-variant-numeric:
+                tabular-nums;
+        }
+
+
+        .lm22-source-row-2 {
+            position:
+                relative;
+        }
+
+
+        .lm22-source-row-2::before {
+            content:
+                "+";
+
+            position:
+                absolute;
+
+            left:
+                -2px;
+
+            color:
+                #566175;
+
+            font-size:
+                22px;
+
+            font-weight:
+                850;
+        }
+
+
+        .lm22-add-rule {
+            margin-top:
+                3px;
+
+            margin-bottom:
+                8px;
+        }
+
+
+        .lm22-sum-row {
+            min-height:
+                52px;
+        }
+
+
+        .lm22-hidden-col {
+            visibility:
+                hidden !important;
+
+            pointer-events:
+                none !important;
+        }
+
+
+        .lm22-current {
+            border-color:
+                #4f5cff
+                !important;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(
+                    79,
+                    92,
+                    255,
+                    0.09
+                );
+        }
+
+
+        @media (
+            max-width:
+            600px
+        ) {
+
+            .lm22-board {
+                width:
+                    294px;
+
+                padding:
+                    17px 12px 20px;
+
+                border-radius:
+                    18px;
+            }
+
+
+            .lm22-grid,
+            .lm22-rule,
+            .lm22-add-rule,
+            .lm22-label {
+
+                width:
+                    224px;
+            }
+
+
+            .lm22-grid {
+                grid-template-columns:
+                    repeat(
+                        4,
+                        48px
+                    );
+
+                column-gap:
+                    8px;
+            }
+
+
+            .lm22-number {
+                width:
+                    48px;
+
+                font-size:
+                    35px;
+            }
+
+
+            .lm22-input,
+            .lm22-auto,
+            .lm22-zero {
+
+                width:
+                    48px;
+
+                height:
+                    46px;
+
+                min-height:
+                    46px;
+
+                font-size:
+                    25px;
+            }
+
+
+            .lm22-carry {
+                top:
+                    10px;
+
+                right:
+                    7px;
+            }
+
+
+            .lm22-arrow {
+                height:
+                    210px;
+            }
+
+        }
+
+
+        @media (
+            max-width:
+            390px
+        ) {
+
+            .lm22-board {
+                width:
+                    278px;
+            }
+
+        }
+
     `;
+
 
     document.head.appendChild(
         style
     );
 
+
     // ==================================================
-    // RENDER
+    // RENDER NUMBER
+    // ==================================================
+
+    function renderNumber(
+        value,
+        spans
+    ) {
+
+        const text =
+            String(
+                value
+            )
+            .padStart(
+                4,
+                " "
+            );
+
+
+        spans.forEach(
+            (
+                span,
+                i
+            ) => {
+
+                span.textContent =
+                    text[i] === " "
+                        ? ""
+                        : text[i];
+
+            }
+        );
+    }
+
+
+    // ==================================================
+    // HELP
+    // ==================================================
+
+    function setHelp() {
+
+        const main =
+            document.querySelector(
+                ".practice-help-main"
+            );
+
+
+        const note =
+            document.querySelector(
+                ".practice-help-note"
+            );
+
+
+        if (main) {
+
+            main.textContent =
+                "Kerjakan satu digit dari kanan ke kiri. Carry muncul otomatis.";
+        }
+
+
+        if (note) {
+
+            note.textContent =
+                "Baris kedua bergeser satu tempat ke kiri, lalu jumlahkan kedua baris.";
+        }
+    }
+
+
+    // ==================================================
+    // RENDER QUESTION
     // ==================================================
 
     renderColumnQuestion =
-        function renderColumnQuestion2x2(
+        function (
             question
         ) {
 
-            if (!isLong2x2Mode()) {
+            if (
+                !is2x2()
+            ) {
 
-                longBoard.classList.add(
+                board.classList.add(
                     "hidden"
                 );
+
 
                 existingBoard.classList.remove(
                     "hidden"
                 );
 
-                previousRenderColumnQuestion(
+
+                prev.render(
                     question
                 );
+
 
                 return;
             }
 
-            directQuestionArea.classList.add(
-                "hidden"
-            );
 
-            columnQuestionArea.classList.remove(
-                "hidden"
-            );
-
-            existingBoard.classList.add(
-                "hidden"
-            );
-
-            longBoard.classList.remove(
-                "hidden"
-            );
-
-            const expected =
-                analyzeLong2x2(
-                    Number(question.a),
-                    Number(question.b)
+            directQuestionArea
+                .classList
+                .add(
+                    "hidden"
                 );
+
+
+            columnQuestionArea
+                .classList
+                .remove(
+                    "hidden"
+                );
+
+
+            existingBoard
+                .classList
+                .add(
+                    "hidden"
+                );
+
+
+            board
+                .classList
+                .remove(
+                    "hidden"
+                );
+
+
+            const x =
+                analyze(
+
+                    Number(
+                        question.a
+                    ),
+
+                    Number(
+                        question.b
+                    )
+
+                );
+
 
             columnTopNumber.textContent =
                 formatNumber(
                     question.a
                 );
 
+
             columnBottomNumber.textContent =
                 formatNumber(
                     question.b
                 );
 
-            topTens.textContent =
-                String(
-                    expected.aTens
-                );
 
-            topOnes.textContent =
-                String(
-                    expected.aOnes
-                );
+            el.topT.textContent =
+                x.aT;
 
-            bottomTens.textContent =
-                String(
-                    expected.bTens
-                );
 
-            bottomOnes.textContent =
-                String(
-                    expected.bOnes
-                );
+            el.topO.textContent =
+                x.aO;
 
-            row1Front.maxLength =
-                String(
-                    expected.row1Front
-                ).length;
 
-            row2Front.maxLength =
-                String(
-                    expected.row2Front
-                ).length;
+            el.bottomT.textContent =
+                x.bT;
 
-            clearVisibleInputs();
+
+            el.bottomO.textContent =
+                x.bO;
+
+
+            renderNumber(
+
+                x.row1,
+
+                [
+                    el.a1K,
+                    el.a1H,
+                    el.a1T,
+                    el.a1O
+                ]
+
+            );
+
+
+            renderNumber(
+
+                x.row2,
+
+                [
+                    el.a2K,
+                    el.a2H,
+                    el.a2T,
+                    el.a2O
+                ]
+
+            );
+
+
+            const hidden =
+                4
+                -
+                x.finalLength;
+
+
+            sumsLTR.forEach(
+                (
+                    input,
+                    i
+                ) => {
+
+                    input.classList.toggle(
+
+                        "lm22-hidden-col",
+
+                        i < hidden
+
+                    );
+                }
+            );
+
+
+            clearValues();
 
             resetLocks();
 
-            renderAdditionRows(
-                expected
+            setHelp();
+
+            setTarget(
+                "r1o",
+                x
             );
-
-            setActiveDigits(
-                "row1_ones"
-            );
-
-            setArrow(
-                "row1_ones"
-            );
-
-            columnMethodText.textContent =
-                `Step 1: ${expected.bOnes} × ${expected.aOnes}`;
-
-            if (carryNote) {
-
-                carryNote.textContent =
-                    "Kerjakan baris pertama dari kanan ke kiri.";
-            }
         };
 
-    function renderAdditionRows(
-        expected
-    ) {
-
-        const row1String =
-            String(expected.row1)
-                .padStart(4, "0");
-
-        const row2String =
-            String(
-                expected.row2Shifted
-            )
-                .padStart(4, "0");
-
-        const row1Elements = [
-            addR1Thousands,
-            addR1Hundreds,
-            addR1Tens,
-            addR1Ones
-        ];
-
-        const row2Elements = [
-            addR2Thousands,
-            addR2Hundreds,
-            addR2Tens,
-            addR2Ones
-        ];
-
-        const row1Leading =
-            4 -
-            String(
-                expected.row1
-            ).length;
-
-        const row2Leading =
-            4 -
-            String(
-                expected.row2Shifted
-            ).length;
-
-        row1Elements.forEach(
-            (element, index) => {
-
-                element.textContent =
-                    index < row1Leading
-                        ? ""
-                        : row1String[index];
-            }
-        );
-
-        row2Elements.forEach(
-            (element, index) => {
-
-                element.textContent =
-                    index < row2Leading
-                        ? ""
-                        : row2String[index];
-            }
-        );
-
-        const finalLength =
-            String(
-                expected.final
-            ).length;
-
-        const hiddenLeading =
-            4 - finalLength;
-
-        [
-            sumThousands,
-            sumHundreds,
-            sumTens,
-            sumOnes
-        ].forEach(
-            (input, index) => {
-
-                input.classList.toggle(
-                    "long2x2-leading-hidden",
-                    index < hiddenLeading
-                );
-            }
-        );
-    }
 
     // ==================================================
-    // RESET / CLEAR
+    // RESET INPUT
     // ==================================================
 
     resetQuestionInputs =
-        function resetQuestionInputs2x2() {
+        function () {
 
-            if (!isLong2x2Mode()) {
-                previousResetQuestionInputs();
-                return;
+            if (
+                !is2x2()
+            ) {
+
+                return prev.reset();
             }
+
 
             answerFeedback.textContent =
                 "";
 
+
             answerFeedback.className =
                 "answer-feedback";
 
-            clearVisibleClasses();
+
+            clearClasses();
         };
 
-    clearCurrentInputValues =
-        function clearCurrentInputValues2x2() {
 
-            if (!isLong2x2Mode()) {
-                previousClearCurrentInputValues();
-                return;
+    // ==================================================
+    // CLEAR CURRENT
+    // ==================================================
+
+    clearCurrentInputValues =
+        function () {
+
+            if (
+                !is2x2()
+            ) {
+
+                return prev.clear();
             }
 
-            answerInput.value = "";
 
-            columnStep1Input.value = "";
-            columnStep2Input.value = "";
-            columnFinalInput.value = "";
+            answerInput.value =
+                "";
 
-            clearVisibleInputs();
+
+            columnStep1Input.value =
+                "";
+
+
+            columnStep2Input.value =
+                "";
+
+
+            columnFinalInput.value =
+                "";
+
+
+            clearValues();
 
             resetLocks();
 
-            hideMultiplyCarry();
-            hideAdditionCarries();
 
-            setActiveDigits(
-                "row1_ones"
-            );
+            const x =
+                currentExpected();
 
-            setArrow(
-                "row1_ones"
-            );
+
+            if (x) {
+
+                setTarget(
+                    "r1o",
+                    x
+                );
+            }
         };
 
+
     // ==================================================
-    // ENGINE STATE
+    // ENGINE COMPATIBILITY
     // ==================================================
 
-    getColumnInputs =
-        function getColumnInputs2x2() {
+    if (
+        prev.getInputs
+    ) {
 
-            if (!isLong2x2Mode()) {
-                return previousGetColumnInputs();
-            }
+        getColumnInputs =
+            function () {
 
-            return {
-                partial1:
-                    columnStep1Input.value
-                        .trim(),
+                if (
+                    !is2x2()
+                ) {
 
-                partial2:
-                    columnStep2Input.value
-                        .trim(),
+                    return prev.getInputs();
+                }
 
-                final:
-                    columnFinalInput.value
-                        .trim()
+
+                return {
+
+                    partial1:
+                        columnStep1Input
+                            .value
+                            .trim(),
+
+                    partial2:
+                        columnStep2Input
+                            .value
+                            .trim(),
+
+                    final:
+                        columnFinalInput
+                            .value
+                            .trim()
+
+                };
             };
-        };
-
-    hasAnyColumnInput =
-        function hasAnyColumnInput2x2() {
-
-            if (!isLong2x2Mode()) {
-                return previousHasAnyColumnInput();
-            }
-
-            return visibleInputs.some(
-                input =>
-                    input.value.trim() !== ""
-            );
-        };
-
-    columnInputsAreCorrect =
-        function columnInputsAreCorrect2x2(
-            inputs,
-            expected
-        ) {
-
-            if (!isLong2x2Mode()) {
-
-                return previousColumnInputsAreCorrect(
-                    inputs,
-                    expected
-                );
-            }
-
-            return (
-                row1Complete(expected) &&
-                row2Complete(expected) &&
-                additionComplete(expected)
-            );
-        };
-
-    // ==================================================
-    // SAVE / RESTORE VISUAL STATE
-    // ==================================================
-
-    function syncEngineState() {
-
-        const r1Ones =
-            row1Ones.value.trim();
-
-        const r1Front =
-            row1Front.value.trim();
-
-        const r2Ones =
-            row2Ones.value.trim();
-
-        const r2Front =
-            row2Front.value.trim();
-
-        // Row 1 progress.
-        columnStep1Input.value =
-            r1Front !== ""
-                ? `${r1Front}${r1Ones}`
-                : r1Ones;
-
-        // Row 2 stores RAW product progress.
-        columnStep2Input.value =
-            r2Front !== ""
-                ? `${r2Front}${r2Ones}`
-                : r2Ones;
-
-        // Sum progress is stored in the actual work order:
-        // ones -> tens -> hundreds -> thousands.
-        const progress = [];
-
-        for (
-            const input of getActiveSumInputs()
-        ) {
-
-            if (input.value === "") {
-                break;
-            }
-
-            progress.push(
-                input.value
-            );
-        }
-
-        columnFinalInput.value =
-            progress.join("");
     }
 
-    refreshColumnLiveMarkers =
-        function refreshColumnLiveMarkers2x2() {
 
-            if (!isLong2x2Mode()) {
+    if (
+        prev.hasAny
+    ) {
 
-                previousRefreshColumnLiveMarkers();
+        hasAnyColumnInput =
+            function () {
 
-                return;
-            }
+                if (
+                    !is2x2()
+                ) {
 
-            restoreVisualState();
-        };
+                    return prev.hasAny();
+                }
 
-    function restoreVisualState() {
 
-        const expected =
-            getExpected();
-
-        if (!expected) {
-            return;
-        }
-
-        clearVisibleInputs();
-        resetLocks();
-
-        hideMultiplyCarry();
-        hideAdditionCarries();
-
-        const savedRow1 =
-            String(
-                columnStep1Input.value || ""
-            );
-
-        const savedRow2 =
-            String(
-                columnStep2Input.value || ""
-            );
-
-        const savedSum =
-            String(
-                columnFinalInput.value || ""
-            );
-
-        // Row 1
-        if (savedRow1.length >= 1) {
-
-            row1Ones.value =
-                savedRow1.slice(-1);
-        }
-
-        if (savedRow1.length > 1) {
-
-            row1Front.value =
-                savedRow1.slice(
-                    0,
-                    -1
+                return allInputs.some(
+                    input =>
+                        input
+                            .value
+                            .trim()
+                        !==
+                        ""
                 );
-        }
+            };
+    }
 
-        if (!row1Complete(expected)) {
 
-            if (
-                row1Ones.value !== "" &&
-                Number(row1Ones.value) ===
-                    expected.row1Ones
-            ) {
+    if (
+        prev.inputsCorrect
+    ) {
 
-                row1Ones.classList.add(
-                    "long2x2-correct"
-                );
-
-                unlockRow1Front(
-                    expected
-                );
-
-                showMultiplyCarry(
-                    expected.row1Carry
-                );
-
-                setActiveDigits(
-                    "row1_front"
-                );
-
-                setArrow(
-                    "row1_front"
-                );
-
-            } else {
-
-                setActiveDigits(
-                    "row1_ones"
-                );
-
-                setArrow(
-                    "row1_ones"
-                );
-            }
-
-            return;
-        }
-
-        row1Ones.classList.add(
-            "long2x2-correct"
-        );
-
-        row1Front.classList.add(
-            "long2x2-correct"
-        );
-
-        unlockPhase2();
-
-        // Row 2
-        if (savedRow2.length >= 1) {
-
-            row2Ones.value =
-                savedRow2.slice(-1);
-        }
-
-        if (savedRow2.length > 1) {
-
-            row2Front.value =
-                savedRow2.slice(
-                    0,
-                    -1
-                );
-        }
-
-        if (!row2Complete(expected)) {
-
-            if (
-                row2Ones.value !== "" &&
-                Number(row2Ones.value) ===
-                    expected.row2OnesRaw
-            ) {
-
-                row2Ones.classList.add(
-                    "long2x2-correct"
-                );
-
-                unlockRow2Front(
-                    expected
-                );
-
-                showMultiplyCarry(
-                    expected.row2Carry
-                );
-
-                setActiveDigits(
-                    "row2_front"
-                );
-
-                setArrow(
-                    "row2_front"
-                );
-
-            } else {
-
-                setActiveDigits(
-                    "row2_ones"
-                );
-
-                setArrow(
-                    "row2_ones"
-                );
-            }
-
-            return;
-        }
-
-        row2Ones.classList.add(
-            "long2x2-correct"
-        );
-
-        row2Front.classList.add(
-            "long2x2-correct"
-        );
-
-        unlockAddition(
-            expected
-        );
-
-        const activeInputs =
-            getActiveSumInputs();
-
-        for (
-            let index = 0;
-            index <
-                Math.min(
-                    savedSum.length,
-                    activeInputs.length
-                );
-            index++
-        ) {
-
-            const input =
-                activeInputs[index];
-
-            input.value =
-                savedSum[index];
-
-            if (
-                Number(input.value) ===
+        columnInputsAreCorrect =
+            function (
+                inputs,
                 expected
-                    .additionSteps[index]
-                    .writeDigit
             ) {
 
-                input.classList.add(
-                    "long2x2-correct"
-                );
-            }
-        }
+                if (
+                    !is2x2()
+                ) {
 
-        updateAdditionProgress(
-            expected,
-            false
-        );
+                    return prev.inputsCorrect(
+                        inputs,
+                        expected
+                    );
+                }
+
+
+                return complete(
+                    expected
+                );
+            };
     }
 
+
+    if (
+        prev.refresh
+    ) {
+
+        refreshColumnLiveMarkers =
+            function () {
+
+                if (
+                    !is2x2()
+                ) {
+
+                    return prev.refresh();
+                }
+
+
+                restoreFromEngine();
+            };
+    }
+
+
     // ==================================================
-    // FOCUS / DISABLE
+    // FOCUS
     // ==================================================
 
     focusCurrentInput =
-        function focusCurrentInput2x2() {
+        function () {
 
-            if (!isLong2x2Mode()) {
-                previousFocusCurrentInput();
-                return;
+            if (
+                !is2x2()
+            ) {
+
+                return prev.focus();
             }
 
-            if (answerLocked) {
-                return;
-            }
 
-            focusNextLongInput();
+            if (
+                !answerLocked
+            ) {
+
+                focusNext();
+            }
         };
 
-    disableColumnInputs =
-        function disableColumnInputs2x2() {
 
-            if (!isLong2x2Mode()) {
-                previousDisableColumnInputs();
-                return;
+    // ==================================================
+    // DISABLE
+    // ==================================================
+
+    disableColumnInputs =
+        function () {
+
+            if (
+                !is2x2()
+            ) {
+
+                return prev.disable();
             }
 
-            visibleInputs.forEach(
+
+            allInputs.forEach(
                 input => {
-                    input.disabled = true;
+
+                    input.disabled =
+                        true;
                 }
             );
+
 
             columnStep1Input.disabled =
                 true;
 
+
             columnStep2Input.disabled =
                 true;
+
 
             columnFinalInput.disabled =
                 true;
         };
 
+
     // ==================================================
     // INPUT HANDLER
     // ==================================================
 
-    function handleInput(event) {
+    function handleInput(
+        event
+    ) {
 
-        if (!isLong2x2Mode()) {
+        if (
+            !is2x2()
+        ) {
+
             return;
         }
+
 
         event.stopImmediatePropagation();
 
-        if (answerLocked) {
+
+        if (
+            answerLocked
+        ) {
+
             return;
         }
+
 
         clearTimeout(
             delayedSubmit
         );
 
-        delayedSubmit = null;
 
-        const expected =
-            getExpected();
+        delayedSubmit =
+            null;
 
-        if (!expected) {
+
+        const x =
+            currentExpected();
+
+
+        if (!x) {
+
             return;
         }
+
 
         const input =
             event.currentTarget;
 
+
+        input.value =
+            digits(
+                input.value
+            );
+
+
         input.classList.remove(
-            "long2x2-correct",
-            "long2x2-wrong"
+            "lm22-correct"
         );
 
-        if (input === row1Ones) {
 
-            handleRow1Ones(
-                expected
-            );
-
-        } else if (
-            input === row1Front
+        if (
+            input ===
+            el.r1O
         ) {
 
-            handleRow1Front(
-                expected
+            stepR1O(
+                x
             );
+
 
         } else if (
-            input === row2Ones
+            input ===
+            el.r1T
         ) {
 
-            handleRow2Ones(
-                expected
+            stepR1T(
+                x
             );
+
 
         } else if (
-            input === row2Front
+            input ===
+            el.r2T
         ) {
 
-            handleRow2Front(
-                expected
+            stepR2T(
+                x
             );
+
+
+        } else if (
+            input ===
+            el.r2H
+        ) {
+
+            stepR2H(
+                x
+            );
+
 
         } else {
 
-            handleSumInput(
-                expected,
+            stepAdd(
+                x,
                 input
             );
         }
 
-        syncEngineState();
+
+        syncEngine(
+            x
+        );
+
 
         savePracticeState();
     }
 
-    function handleRow1Ones(
-        expected
+
+    // ==================================================
+    // STEP 1 - SATUAN
+    // ==================================================
+
+    function stepR1O(
+        x
     ) {
 
-        row1Ones.value =
-            digitsOnly(
-                row1Ones.value,
-                1
-            );
-
         if (
-            row1Ones.value === "" ||
-            Number(row1Ones.value) !==
-                expected.row1Ones
+            !eq(
+                el.r1O,
+                x.r1O
+            )
         ) {
 
-            row1Front.value = "";
-            row1Front.disabled = true;
+            el.r1T.value =
+                "";
 
-            row1FrontWrap.classList.add(
-                "long2x2-locked"
+
+            el.r1T.disabled =
+                true;
+
+
+            el.r1Lead.textContent =
+                "";
+
+
+            clearStep2AndAdd();
+
+            hideCarry();
+
+
+            setTarget(
+                "r1o",
+                x
             );
 
-            resetAfterRow1();
-
-            hideMultiplyCarry();
-
-            setActiveDigits(
-                "row1_ones"
-            );
-
-            setArrow(
-                "row1_ones"
-            );
-
-            columnMethodText.textContent =
-                `Step 1: ${expected.bOnes} × ${expected.aOnes}`;
 
             return;
         }
 
-        row1Ones.classList.add(
-            "long2x2-correct"
+
+        correct(
+            el.r1O
         );
 
-        showMultiplyCarry(
-            expected.row1Carry
+
+        el.r1O.disabled =
+            true;
+
+
+        showCarry(
+            x.r1c1
         );
 
-        unlockRow1Front(
-            expected
+
+        el.r1T.disabled =
+            false;
+
+
+        setTarget(
+            "r1t",
+            x
         );
 
-        setActiveDigits(
-            "row1_front"
-        );
 
-        setArrow(
-            "row1_front"
-        );
+        moveFocus(
 
-        columnMethodText.textContent =
-            expected.row1Carry > 0
-                ? `Lanjut: ${expected.bOnes} × ${expected.aTens} + ${expected.row1Carry}`
-                : `Lanjut: ${expected.bOnes} × ${expected.aTens}`;
+            el.r1T,
 
-        setTimeout(
-            () => {
+            () =>
+                eq(
+                    el.r1O,
+                    x.r1O
+                )
 
-                if (
-                    !answerLocked &&
-                    Number(
-                        row1Ones.value
-                    ) ===
-                    expected.row1Ones
-                ) {
-
-                    focusInput(
-                        row1Front
-                    );
-                }
-            },
-            STEP_DELAY
         );
     }
 
-    function handleRow1Front(
-        expected
+
+    // ==================================================
+    // STEP 1 - PULUHAN
+    // ==================================================
+
+    function stepR1T(
+        x
     ) {
 
-        row1Front.value =
-            digitsOnly(
-                row1Front.value,
-                String(
-                    expected.row1Front
-                ).length
-            );
-
         if (
-            row1Front.value === "" ||
-            Number(row1Front.value) !==
-                expected.row1Front
+            !eq(
+                el.r1O,
+                x.r1O
+            )
         ) {
 
-            resetAfterRow1Front();
+            el.r1T.value =
+                "";
 
-            showMultiplyCarry(
-                expected.row1Carry
+
+            focus(
+                el.r1O
             );
 
-            setActiveDigits(
-                "row1_front"
-            );
-
-            setArrow(
-                "row1_front"
-            );
 
             return;
         }
 
-        row1Front.classList.add(
-            "long2x2-correct"
-        );
 
-        hideMultiplyCarry();
+        if (
+            !eq(
+                el.r1T,
+                x.r1T
+            )
+        ) {
 
-        unlockPhase2();
+            el.r1Lead.textContent =
+                "";
 
-        setActiveDigits(
-            "row2_ones"
-        );
 
-        setArrow(
-            "row2_ones"
-        );
+            clearStep2AndAdd();
 
-        columnMethodText.textContent =
-            `Step 2: ${expected.bTens} × ${expected.aOnes}`;
 
-        if (carryNote) {
+            showCarry(
+                x.r1c1
+            );
 
-            carryNote.textContent =
-                "Baris kedua bergeser satu tempat ke kiri. Nol kanan muncul otomatis.";
+
+            setTarget(
+                "r1t",
+                x
+            );
+
+
+            return;
         }
+
+
+        correct(
+            el.r1T
+        );
+
+
+        el.r1T.disabled =
+            true;
+
+
+        // Jika hasil paling kiri masih memiliki carry,
+        // muncul otomatis.
+
+        el.r1Lead.textContent =
+            x.r1c2 > 0
+                ? String(
+                    x.r1c2
+                )
+                : "";
+
+
+        if (
+            x.r1c2 > 0
+        ) {
+
+            showCarry(
+                x.r1c2
+            );
+
+
+        } else {
+
+            hideCarry();
+        }
+
+
+        unlockStep2();
+
+
+        setTarget(
+            "r2t",
+            x
+        );
+
+
+        moveFocus(
+
+            el.r2T,
+
+            () =>
+                row1Done(
+                    x
+                )
+
+        );
+    }
+
+
+    // ==================================================
+    // STEP 2 - SATUAN ANGKA ATAS
+    // hasil berada di kolom puluhan
+    // ==================================================
+
+    function stepR2T(
+        x
+    ) {
+
+        if (
+            !row1Done(
+                x
+            )
+        ) {
+
+            el.r2T.value =
+                "";
+
+
+            focusNext();
+
+            return;
+        }
+
+
+        if (
+            !eq(
+                el.r2T,
+                x.r2T
+            )
+        ) {
+
+            el.r2H.value =
+                "";
+
+
+            el.r2H.disabled =
+                true;
+
+
+            el.r2Lead.textContent =
+                "";
+
+
+            lockAdd();
+
+            hideCarry();
+
+
+            setTarget(
+                "r2t",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r2T
+        );
+
+
+        el.r2T.disabled =
+            true;
+
+
+        showCarry(
+            x.r2c1
+        );
+
+
+        el.r2H.disabled =
+            false;
+
+
+        setTarget(
+            "r2h",
+            x
+        );
+
+
+        moveFocus(
+
+            el.r2H,
+
+            () =>
+                eq(
+                    el.r2T,
+                    x.r2T
+                )
+
+        );
+    }
+
+
+    // ==================================================
+    // STEP 2 - DIGIT DEPAN
+    // ==================================================
+
+    function stepR2H(
+        x
+    ) {
+
+        if (
+            !eq(
+                el.r2T,
+                x.r2T
+            )
+        ) {
+
+            el.r2H.value =
+                "";
+
+
+            focus(
+                el.r2T
+            );
+
+
+            return;
+        }
+
+
+        if (
+            !eq(
+                el.r2H,
+                x.r2H
+            )
+        ) {
+
+            lockAdd();
+
+
+            showCarry(
+                x.r2c1
+            );
+
+
+            setTarget(
+                "r2h",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r2H
+        );
+
+
+        el.r2H.disabled =
+            true;
+
+
+        el.r2Lead.textContent =
+            x.r2c2 > 0
+                ? String(
+                    x.r2c2
+                )
+                : "";
+
+
+        if (
+            x.r2c2 > 0
+        ) {
+
+            showCarry(
+                x.r2c2
+            );
+
+
+        } else {
+
+            hideCarry();
+        }
+
+
+        unlockAdd(
+            x
+        );
+
 
         setTimeout(
             () => {
 
                 if (
-                    !answerLocked &&
-                    row1Complete(
-                        expected
+                    !answerLocked
+                    &&
+                    row2Done(
+                        x
                     )
                 ) {
 
-                    focusInput(
-                        row2Ones
-                    );
+                    focusNext();
                 }
+
             },
-            STEP_DELAY
+            MOVE_DELAY
         );
     }
 
-    function handleRow2Ones(
-        expected
-    ) {
 
-        row2Ones.value =
-            digitsOnly(
-                row2Ones.value,
-                1
-            );
+    // ==================================================
+    // STEP 3 - PENJUMLAHAN
+    // ==================================================
 
-        if (
-            row2Ones.value === "" ||
-            Number(row2Ones.value) !==
-                expected.row2OnesRaw
-        ) {
-
-            row2Front.value = "";
-            row2Front.disabled = true;
-
-            row2FrontWrap.classList.add(
-                "long2x2-locked"
-            );
-
-            resetAdditionOnly();
-
-            hideMultiplyCarry();
-
-            setActiveDigits(
-                "row2_ones"
-            );
-
-            setArrow(
-                "row2_ones"
-            );
-
-            columnMethodText.textContent =
-                `Step 2: ${expected.bTens} × ${expected.aOnes}`;
-
-            return;
-        }
-
-        row2Ones.classList.add(
-            "long2x2-correct"
-        );
-
-        showMultiplyCarry(
-            expected.row2Carry
-        );
-
-        unlockRow2Front(
-            expected
-        );
-
-        setActiveDigits(
-            "row2_front"
-        );
-
-        setArrow(
-            "row2_front"
-        );
-
-        columnMethodText.textContent =
-            expected.row2Carry > 0
-                ? `Lanjut: ${expected.bTens} × ${expected.aTens} + ${expected.row2Carry}`
-                : `Lanjut: ${expected.bTens} × ${expected.aTens}`;
-
-        setTimeout(
-            () => {
-
-                if (
-                    !answerLocked &&
-                    Number(
-                        row2Ones.value
-                    ) ===
-                    expected.row2OnesRaw
-                ) {
-
-                    focusInput(
-                        row2Front
-                    );
-                }
-            },
-            STEP_DELAY
-        );
-    }
-
-    function handleRow2Front(
-        expected
-    ) {
-
-        row2Front.value =
-            digitsOnly(
-                row2Front.value,
-                String(
-                    expected.row2Front
-                ).length
-            );
-
-        if (
-            row2Front.value === "" ||
-            Number(row2Front.value) !==
-                expected.row2Front
-        ) {
-
-            resetAdditionOnly();
-
-            showMultiplyCarry(
-                expected.row2Carry
-            );
-
-            setActiveDigits(
-                "row2_front"
-            );
-
-            setArrow(
-                "row2_front"
-            );
-
-            return;
-        }
-
-        row2Front.classList.add(
-            "long2x2-correct"
-        );
-
-        hideMultiplyCarry();
-        clearActiveDigits();
-        hideArrow();
-
-        unlockAddition(
-            expected
-        );
-
-        setTimeout(
-            () => {
-
-                if (
-                    !answerLocked &&
-                    row2Complete(
-                        expected
-                    )
-                ) {
-
-                    focusNextLongInput();
-                }
-            },
-            STEP_DELAY
-        );
-    }
-
-    function handleSumInput(
-        expected,
+    function stepAdd(
+        x,
         input
     ) {
 
-        input.value =
-            digitsOnly(
-                input.value,
-                1
-            );
+        if (
+            !row2Done(
+                x
+            )
+        ) {
 
-        const activeInputs =
-            getActiveSumInputs();
+            input.value =
+                "";
 
-        const index =
-            activeInputs.indexOf(
-                input
-            );
 
-        if (index < 0) {
+            focusNext();
+
             return;
         }
 
-        // Harus kanan -> kiri.
+
+        const active =
+            addInputs(
+                x
+            );
+
+
+        const idx =
+            active.indexOf(
+                input
+            );
+
+
+        if (
+            idx < 0
+        ) {
+
+            return;
+        }
+
+
+        // Wajib dari kanan ke kiri.
+
         for (
             let i = 0;
-            i < index;
+            i < idx;
             i++
         ) {
 
-            const previousInput =
-                activeInputs[i];
-
-            const previousStep =
-                expected
-                    .additionSteps[i];
-
             if (
-                previousInput.value === "" ||
-                Number(
-                    previousInput.value
-                ) !==
-                previousStep.writeDigit
+                !eq(
+                    active[i],
+                    x.add[i].write
+                )
             ) {
 
-                input.value = "";
+                input.value =
+                    "";
 
-                focusInput(
-                    previousInput
+
+                focus(
+                    active[i]
                 );
+
 
                 return;
             }
         }
 
+
         const step =
-            expected
-                .additionSteps[index];
+            x.add[
+                idx
+            ];
+
 
         if (
-            input.value === "" ||
-            Number(input.value) !==
-                step.writeDigit
-        ) {
-
-            clearSumAfter(
-                index + 1
-            );
-
-            updateAdditionProgress(
-                expected,
-                false
-            );
-
-            return;
-        }
-
-        input.classList.add(
-            "long2x2-correct"
-        );
-
-        clearSumAfter(
-            index + 1
-        );
-
-        updateAdditionProgress(
-            expected,
-            true
-        );
-
-        if (
-            index <
-            activeInputs.length - 1
-        ) {
-
-            setTimeout(
-                () => {
-
-                    if (
-                        !answerLocked &&
-                        Number(
-                            input.value
-                        ) ===
-                        step.writeDigit
-                    ) {
-
-                        focusInput(
-                            activeInputs[
-                                index + 1
-                            ]
-                        );
-                    }
-                },
-                STEP_DELAY
-            );
-
-            return;
-        }
-
-        if (
-            additionComplete(
-                expected
+            !eq(
+                input,
+                step.write
             )
         ) {
 
-            hideAdditionCarries();
+            clearAddAfter(
+                x,
+                idx + 1
+            );
 
-            columnMethodText.textContent =
-                `Hasilnya ${expected.final}.`;
 
-            if (carryNote) {
+            showCarryForAddCurrent(
+                x,
+                idx
+            );
+
+
+            setAddInstruction(
+                step
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            input
+        );
+
+
+        input.disabled =
+            true;
+
+
+        if (
+            step.carryOut > 0
+
+            &&
+
+            idx + 1 <
+            active.length
+        ) {
+
+            showAddCarry(
+
+                idx + 1,
+
+                step.carryOut
+
+            );
+
+
+        } else {
+
+            hideAddCarries();
+        }
+
+
+        // ==============================================
+        // PINDAH KE KOLOM BERIKUTNYA
+        // ==============================================
+
+        if (
+            idx <
+            active.length - 1
+        ) {
+
+            const next =
+                active[
+                    idx + 1
+                ];
+
+
+            next.disabled =
+                false;
+
+
+            setAddInstruction(
+                x.add[
+                    idx + 1
+                ]
+            );
+
+
+            moveFocus(
+
+                next,
+
+                () =>
+                    eq(
+                        input,
+                        step.write
+                    )
+
+            );
+
+
+            return;
+        }
+
+
+        // ==============================================
+        // SELESAI
+        // ==============================================
+
+        if (
+            addDone(
+                x
+            )
+        ) {
+
+            hideAddCarries();
+
+
+            methodText.textContent =
+                `Hasilnya ${x.final}.`;
+
+
+            if (
+                carryNote
+            ) {
 
                 carryNote.textContent =
-                    "Semua langkah benar.";
+                    "Semua langkah sudah benar.";
             }
+
 
             scheduleSubmit();
         }
     }
 
-    // ==================================================
-    // ADDITION PROGRESS
-    // ==================================================
-
-    function updateAdditionProgress(
-        expected,
-        showCarry
-    ) {
-
-        hideAdditionCarries();
-
-        const activeInputs =
-            getActiveSumInputs();
-
-        activeInputs.forEach(
-            input => {
-
-                input.classList.remove(
-                    "long2x2-active-sum"
-                );
-            }
-        );
-
-        let nextIndex = 0;
-
-        while (
-            nextIndex <
-            activeInputs.length
-        ) {
-
-            const input =
-                activeInputs[nextIndex];
-
-            const step =
-                expected
-                    .additionSteps[
-                        nextIndex
-                    ];
-
-            if (
-                input.value !== "" &&
-                Number(input.value) ===
-                    step.writeDigit
-            ) {
-
-                input.classList.add(
-                    "long2x2-correct"
-                );
-
-                nextIndex++;
-
-                continue;
-            }
-
-            break;
-        }
-
-        if (
-            nextIndex <
-            activeInputs.length
-        ) {
-
-            activeInputs[nextIndex]
-                .classList.add(
-                    "long2x2-active-sum"
-                );
-
-            const step =
-                expected
-                    .additionSteps[
-                        nextIndex
-                    ];
-
-            columnMethodText.textContent =
-                step.carryIn > 0
-                    ? `Jumlahkan: ${step.row1Digit} + ${step.row2Digit} + simpanan ${step.carryIn}`
-                    : `Jumlahkan: ${step.row1Digit} + ${step.row2Digit}`;
-        }
-
-        if (
-            nextIndex > 0 &&
-            nextIndex <
-                expected.additionSteps.length
-        ) {
-
-            const currentStep =
-                expected
-                    .additionSteps[
-                        nextIndex
-                    ];
-
-            if (
-                currentStep &&
-                currentStep.carryIn > 0
-            ) {
-
-                showAdditionCarry(
-                    nextIndex,
-                    currentStep.carryIn
-                );
-            }
-        }
-    }
-
-    function clearSumAfter(
-        startIndex
-    ) {
-
-        const activeInputs =
-            getActiveSumInputs();
-
-        for (
-            let index = startIndex;
-            index <
-                activeInputs.length;
-            index++
-        ) {
-
-            activeInputs[index].value =
-                "";
-
-            activeInputs[index]
-                .classList
-                .remove(
-                    "long2x2-correct",
-                    "long2x2-wrong"
-                );
-        }
-    }
 
     // ==================================================
     // ENTER
@@ -2535,246 +3368,1819 @@
     ) {
 
         if (
-            !isLong2x2Mode() ||
-            event.key !== "Enter"
+            !is2x2()
+
+            ||
+
+            event.key !==
+            "Enter"
         ) {
+
             return;
         }
+
 
         event.preventDefault();
+
         event.stopImmediatePropagation();
 
-        if (answerLocked) {
-            return;
-        }
-
-        const expected =
-            getExpected();
-
-        if (!expected) {
-            return;
-        }
-
-        const current =
-            event.currentTarget;
 
         if (
-            current === row1Ones &&
-            Number(current.value) ===
-                expected.row1Ones
+            !answerLocked
         ) {
 
-            focusInput(
-                row1Front
+            focusNext();
+        }
+    }
+
+
+    // ==================================================
+    // TARGET DIGIT
+    // ==================================================
+
+    function setTarget(
+        target,
+        x
+    ) {
+
+        [
+            el.topT,
+            el.topO,
+            el.bottomT,
+            el.bottomO
+        ]
+        .forEach(
+            node => {
+
+                node.classList.remove(
+                    "lm22-active-number"
+                );
+            }
+        );
+
+
+        if (
+            target ===
+            "r1o"
+        ) {
+
+            el.bottomO
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            el.topO
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            methodText.textContent =
+                `Step 1: ${x.bO} × ${x.aO}`;
+
+
+            if (
+                carryNote
+            ) {
+
+                carryNote.textContent =
+                    "Tulis satu digit hasil paling belakang.";
+            }
+
+
+        } else if (
+            target ===
+            "r1t"
+        ) {
+
+            el.bottomO
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            el.topT
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            methodText.textContent =
+                x.r1c1 > 0
+
+                    ? `Step 1: ${x.bO} × ${x.aT} + ${x.r1c1}`
+
+                    : `Step 1: ${x.bO} × ${x.aT}`;
+
+
+        } else if (
+            target ===
+            "r2t"
+        ) {
+
+            el.bottomT
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            el.topO
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            methodText.textContent =
+                `Step 2: ${x.bT} × ${x.aO}`;
+
+
+            if (
+                carryNote
+            ) {
+
+                carryNote.textContent =
+                    "Baris kedua bergeser satu tempat ke kiri. Nol kanan muncul otomatis.";
+            }
+
+
+        } else {
+
+            el.bottomT
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            el.topT
+                .classList
+                .add(
+                    "lm22-active-number"
+                );
+
+
+            methodText.textContent =
+                x.r2c1 > 0
+
+                    ? `Step 2: ${x.bT} × ${x.aT} + ${x.r2c1}`
+
+                    : `Step 2: ${x.bT} × ${x.aT}`;
+        }
+
+
+        drawArrow(
+            target
+        );
+    }
+
+
+    // ==================================================
+    // PANAH
+    // ==================================================
+
+    function drawArrow(
+        target
+    ) {
+
+        const paths = {
+
+            r1o: [
+
+                "M 250 119 C 250 98, 250 75, 250 53",
+
+                "M 244 60 L 250 52 L 256 60"
+
+            ],
+
+
+            r1t: [
+
+                "M 250 119 C 231 95, 211 73, 188 53",
+
+                "M 190 62 L 187 52 L 198 55"
+
+            ],
+
+
+            r2t: [
+
+                "M 188 119 C 207 95, 228 73, 250 53",
+
+                "M 240 55 L 251 52 L 247 63"
+
+            ],
+
+
+            r2h: [
+
+                "M 188 119 C 188 98, 188 75, 188 53",
+
+                "M 182 60 L 188 52 L 194 60"
+
+            ]
+
+        };
+
+
+        const [
+            path,
+            head
+        ] =
+            paths[
+                target
+            ];
+
+
+        el.arrowPath.setAttribute(
+            "d",
+            path
+        );
+
+
+        el.arrowHead.setAttribute(
+            "d",
+            head
+        );
+
+
+        el.arrow.classList.remove(
+            "hidden",
+            "lm22-draw"
+        );
+
+
+        // restart animation
+        void el.arrow
+            .getBoundingClientRect();
+
+
+        el.arrow.classList.add(
+            "lm22-draw"
+        );
+    }
+
+
+    function hideArrow() {
+
+        el.arrow.classList.add(
+            "hidden"
+        );
+
+
+        el.arrow.classList.remove(
+            "lm22-draw"
+        );
+    }
+
+
+    // ==================================================
+    // CARRY PERKALIAN
+    // ==================================================
+
+    function showCarry(
+        value
+    ) {
+
+        if (
+            !Number(
+                value
+            )
+
+            ||
+
+            Number(
+                value
+            ) <= 0
+        ) {
+
+            return hideCarry();
+        }
+
+
+        el.carryValue.textContent =
+            String(
+                value
             );
 
-            return;
-        }
+
+        el.carry.classList.remove(
+            "hidden"
+        );
+
 
         if (
-            current === row1Front &&
-            Number(current.value) ===
-                expected.row1Front
+            carryNote
         ) {
 
-            focusInput(
-                row2Ones
+            carryNote.textContent =
+                `Simpan ${value}, lalu tambahkan pada perkalian berikutnya.`;
+        }
+    }
+
+
+    function hideCarry() {
+
+        el.carryValue.textContent =
+            "";
+
+
+        el.carry.classList.add(
+            "hidden"
+        );
+    }
+
+
+    // ==================================================
+    // UNLOCK STEP 2
+    // ==================================================
+
+    function unlockStep2() {
+
+        hideCarry();
+
+
+        el.step2
+            .classList
+            .remove(
+                "lm22-locked"
             );
 
-            return;
-        }
 
-        if (
-            current === row2Ones &&
-            Number(current.value) ===
-                expected.row2OnesRaw
-        ) {
+        el.r2T.disabled =
+            false;
 
-            focusInput(
-                row2Front
+
+        el.r2H.disabled =
+            true;
+    }
+
+
+    // ==================================================
+    // UNLOCK ADDITION
+    // ==================================================
+
+    function unlockAdd(
+        x
+    ) {
+
+        hideCarry();
+
+        hideArrow();
+
+
+        [
+            el.topT,
+            el.topO,
+            el.bottomT,
+            el.bottomO
+        ]
+        .forEach(
+            node => {
+
+                node.classList.remove(
+                    "lm22-active-number"
+                );
+            }
+        );
+
+
+        el.add
+            .classList
+            .remove(
+                "lm22-locked"
             );
 
-            return;
-        }
+
+        clearAddInputs();
+
+        hideAddCarries();
+
+
+        const active =
+            addInputs(
+                x
+            );
+
 
         if (
-            current === row2Front &&
-            Number(current.value) ===
-                expected.row2Front
+            active[0]
         ) {
 
-            focusNextLongInput();
+            active[0].disabled =
+                false;
+
+
+            active[0]
+                .classList
+                .add(
+                    "lm22-current"
+                );
+        }
+
+
+        setAddInstruction(
+            x.add[0]
+        );
+
+
+        if (
+            carryNote
+        ) {
+
+            carryNote.textContent =
+                "Jumlahkan dari kanan ke kiri. Carry akan muncul otomatis bila diperlukan.";
+        }
+    }
+
+
+    // ==================================================
+    // ADD INSTRUCTION
+    // ==================================================
+
+    function setAddInstruction(
+        step
+    ) {
+
+        if (!step) {
 
             return;
         }
 
+
+        methodText.textContent =
+            step.carryIn > 0
+
+                ? `Step 3: ${step.d1} + ${step.d2} + simpanan ${step.carryIn}`
+
+                : `Step 3: ${step.d1} + ${step.d2}`;
+    }
+
+
+    // ==================================================
+    // ACTIVE SUM INPUTS
+    // kanan -> kiri
+    // ==================================================
+
+    function addInputs(
+        x
+    ) {
+
+        return [
+
+            el.sumO,
+
+            el.sumT,
+
+            el.sumH,
+
+            el.sumK
+
+        ]
+        .slice(
+            0,
+            x.finalLength
+        );
+    }
+
+
+    // ==================================================
+    // CARRY PENJUMLAHAN
+    // ==================================================
+
+    function showAddCarry(
+        nextIdx,
+        value
+    ) {
+
+        hideAddCarries();
+
+
+        const target =
+
+            nextIdx === 1
+
+                ? el.c10
+
+                : nextIdx === 2
+
+                    ? el.c100
+
+                    : nextIdx === 3
+
+                        ? el.c1000
+
+                        : null;
+
+
         if (
-            getActiveSumInputs()
-                .includes(current) &&
-            additionComplete(
-                expected
+            !target
+
+            ||
+
+            !Number(
+                value
             )
         ) {
 
-            submitColumnAnswer();
+            return;
+        }
+
+
+        target.textContent =
+            String(
+                value
+            );
+
+
+        target.classList.remove(
+            "hidden"
+        );
+    }
+
+
+    function showCarryForAddCurrent(
+        x,
+        idx
+    ) {
+
+        if (
+            idx <= 0
+        ) {
+
+            return hideAddCarries();
+        }
+
+
+        const step =
+            x.add[
+                idx
+            ];
+
+
+        if (
+            step
+            ?.carryIn
+            > 0
+        ) {
+
+            showAddCarry(
+                idx,
+                step.carryIn
+            );
+
+
+        } else {
+
+            hideAddCarries();
         }
     }
+
+
+    function hideAddCarries() {
+
+        [
+            el.c1000,
+            el.c100,
+            el.c10
+        ]
+        .forEach(
+            node => {
+
+                node.textContent =
+                    "";
+
+
+                node.classList.add(
+                    "hidden"
+                );
+            }
+        );
+    }
+
+
+    // ==================================================
+    // CLEAR ADDITION
+    // ==================================================
+
+    function clearAddInputs() {
+
+        sumsLTR.forEach(
+            input => {
+
+                input.value =
+                    "";
+
+
+                input.disabled =
+                    true;
+
+
+                input.classList.remove(
+                    "lm22-correct",
+                    "lm22-current"
+                );
+            }
+        );
+    }
+
+
+    function clearAddAfter(
+        x,
+        start
+    ) {
+
+        const active =
+            addInputs(
+                x
+            );
+
+
+        for (
+            let i = start;
+            i < active.length;
+            i++
+        ) {
+
+            active[i].value =
+                "";
+
+
+            active[i].disabled =
+                true;
+
+
+            active[i]
+                .classList
+                .remove(
+                    "lm22-correct",
+                    "lm22-current"
+                );
+        }
+
+
+        active.forEach(
+            input => {
+
+                input.classList.remove(
+                    "lm22-current"
+                );
+            }
+        );
+
+
+        if (
+            start - 1 >= 0
+
+            &&
+
+            start - 1 <
+            active.length
+        ) {
+
+            active[
+                start - 1
+            ]
+            .classList
+            .add(
+                "lm22-current"
+            );
+        }
+    }
+
+
+    // ==================================================
+    // LOCK
+    // ==================================================
+
+    function lockAdd() {
+
+        el.add
+            .classList
+            .add(
+                "lm22-locked"
+            );
+
+
+        clearAddInputs();
+
+        hideAddCarries();
+    }
+
+
+    function clearStep2AndAdd() {
+
+        el.r2T.value =
+            "";
+
+
+        el.r2H.value =
+            "";
+
+
+        el.r2Lead.textContent =
+            "";
+
+
+        el.r2T.disabled =
+            true;
+
+
+        el.r2H.disabled =
+            true;
+
+
+        el.step2
+            .classList
+            .add(
+                "lm22-locked"
+            );
+
+
+        lockAdd();
+    }
+
+
+    // ==================================================
+    // CLEAR VALUES
+    // ==================================================
+
+    function clearValues() {
+
+        allInputs.forEach(
+            input => {
+
+                input.value =
+                    "";
+            }
+        );
+
+
+        el.r1Lead.textContent =
+            "";
+
+
+        el.r2Lead.textContent =
+            "";
+
+
+        clearClasses();
+
+        hideCarry();
+
+        hideAddCarries();
+
+        hideArrow();
+
+
+        [
+            el.topT,
+            el.topO,
+            el.bottomT,
+            el.bottomO
+        ]
+        .forEach(
+            node => {
+
+                node.classList.remove(
+                    "lm22-active-number"
+                );
+            }
+        );
+    }
+
+
+    function clearClasses() {
+
+        allInputs.forEach(
+            input => {
+
+                input.classList.remove(
+                    "lm22-correct",
+                    "lm22-current"
+                );
+            }
+        );
+    }
+
+
+    // ==================================================
+    // RESET LOCKS
+    // ==================================================
+
+    function resetLocks() {
+
+        el.r1O.disabled =
+            false;
+
+
+        el.r1T.disabled =
+            true;
+
+
+        el.r2T.disabled =
+            true;
+
+
+        el.r2H.disabled =
+            true;
+
+
+        el.step2
+            .classList
+            .add(
+                "lm22-locked"
+            );
+
+
+        el.add
+            .classList
+            .add(
+                "lm22-locked"
+            );
+
+
+        sumsLTR.forEach(
+            input => {
+
+                input.disabled =
+                    true;
+            }
+        );
+    }
+
+
+    // ==================================================
+    // COMPLETION CHECK
+    // ==================================================
+
+    function row1Done(
+        x
+    ) {
+
+        return (
+
+            eq(
+                el.r1O,
+                x.r1O
+            )
+
+            &&
+
+            eq(
+                el.r1T,
+                x.r1T
+            )
+
+        );
+    }
+
+
+    function row2Done(
+        x
+    ) {
+
+        return (
+
+            eq(
+                el.r2T,
+                x.r2T
+            )
+
+            &&
+
+            eq(
+                el.r2H,
+                x.r2H
+            )
+
+        );
+    }
+
+
+    function addDone(
+        x
+    ) {
+
+        return addInputs(
+            x
+        )
+        .every(
+            (
+                input,
+                idx
+            ) =>
+
+                eq(
+                    input,
+                    x.add[
+                        idx
+                    ].write
+                )
+        );
+    }
+
+
+    function complete(
+        x
+    ) {
+
+        return (
+
+            row1Done(
+                x
+            )
+
+            &&
+
+            row2Done(
+                x
+            )
+
+            &&
+
+            addDone(
+                x
+            )
+
+        );
+    }
+
+
+    // ==================================================
+    // TYPED VALUES
+    // ==================================================
+
+    function typedRow1() {
+
+        if (
+            !el.r1O.value
+
+            &&
+
+            !el.r1T.value
+        ) {
+
+            return "";
+        }
+
+
+        return (
+            `${el.r1Lead.textContent.trim()}`
+            +
+            `${el.r1T.value}`
+            +
+            `${el.r1O.value}`
+        );
+    }
+
+
+    function typedRow2() {
+
+        if (
+            !el.r2T.value
+
+            &&
+
+            !el.r2H.value
+        ) {
+
+            return "";
+        }
+
+
+        return (
+            `${el.r2Lead.textContent.trim()}`
+            +
+            `${el.r2H.value}`
+            +
+            `${el.r2T.value}`
+            +
+            `0`
+        );
+    }
+
+
+    function typedFinal(
+        x
+    ) {
+
+        const active =
+            addInputs(
+                x
+            );
+
+
+        if (
+            active.some(
+                input =>
+                    input.value === ""
+            )
+        ) {
+
+            return "";
+        }
+
+
+        return active
+
+            .slice()
+
+            .reverse()
+
+            .map(
+                input =>
+                    input.value
+            )
+
+            .join("");
+    }
+
+
+    // ==================================================
+    // SYNC ENGINE
+    // ==================================================
+
+    function syncEngine(
+        x
+    ) {
+
+        columnStep1Input.value =
+            typedRow1();
+
+
+        columnStep2Input.value =
+            typedRow2();
+
+
+        columnFinalInput.value =
+            typedFinal(
+                x
+            );
+    }
+
+
+    // ==================================================
+    // RESTORE
+    // ==================================================
+
+    function restoreFromEngine() {
+
+        const x =
+            currentExpected();
+
+
+        if (!x) {
+
+            return;
+        }
+
+
+        const r1 =
+            String(
+                columnStep1Input
+                    .value
+                ||
+                ""
+            );
+
+
+        const r2s =
+            String(
+                columnStep2Input
+                    .value
+                ||
+                ""
+            );
+
+
+        const fin =
+            String(
+                columnFinalInput
+                    .value
+                ||
+                ""
+            );
+
+
+        clearValues();
+
+        resetLocks();
+
+
+        // ==============================================
+        // RESTORE ROW 1
+        // ==============================================
+
+        if (
+            r1.length >= 1
+        ) {
+
+            el.r1O.value =
+                r1.slice(
+                    -1
+                );
+        }
+
+
+        if (
+            r1.length >= 2
+        ) {
+
+            el.r1T.value =
+                r1.slice(
+                    -2,
+                    -1
+                );
+        }
+
+
+        if (
+            r1.length >= 3
+        ) {
+
+            el.r1Lead.textContent =
+                r1.slice(
+                    0,
+                    -2
+                );
+        }
+
+
+        if (
+            !eq(
+                el.r1O,
+                x.r1O
+            )
+        ) {
+
+            setTarget(
+                "r1o",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r1O
+        );
+
+
+        el.r1O.disabled =
+            true;
+
+
+        el.r1T.disabled =
+            false;
+
+
+        if (
+            !eq(
+                el.r1T,
+                x.r1T
+            )
+        ) {
+
+            showCarry(
+                x.r1c1
+            );
+
+
+            setTarget(
+                "r1t",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r1T
+        );
+
+
+        el.r1T.disabled =
+            true;
+
+
+        el.r1Lead.textContent =
+            x.r1c2 > 0
+
+                ? String(
+                    x.r1c2
+                )
+
+                : "";
+
+
+        unlockStep2();
+
+
+        // ==============================================
+        // RESTORE ROW 2
+        // ==============================================
+
+        const raw2 =
+            r2s.endsWith(
+                "0"
+            )
+
+                ? r2s.slice(
+                    0,
+                    -1
+                )
+
+                : r2s;
+
+
+        if (
+            raw2.length >= 1
+        ) {
+
+            el.r2T.value =
+                raw2.slice(
+                    -1
+                );
+        }
+
+
+        if (
+            raw2.length >= 2
+        ) {
+
+            el.r2H.value =
+                raw2.slice(
+                    -2,
+                    -1
+                );
+        }
+
+
+        if (
+            raw2.length >= 3
+        ) {
+
+            el.r2Lead.textContent =
+                raw2.slice(
+                    0,
+                    -2
+                );
+        }
+
+
+        if (
+            !eq(
+                el.r2T,
+                x.r2T
+            )
+        ) {
+
+            setTarget(
+                "r2t",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r2T
+        );
+
+
+        el.r2T.disabled =
+            true;
+
+
+        el.r2H.disabled =
+            false;
+
+
+        if (
+            !eq(
+                el.r2H,
+                x.r2H
+            )
+        ) {
+
+            showCarry(
+                x.r2c1
+            );
+
+
+            setTarget(
+                "r2h",
+                x
+            );
+
+
+            return;
+        }
+
+
+        correct(
+            el.r2H
+        );
+
+
+        el.r2H.disabled =
+            true;
+
+
+        el.r2Lead.textContent =
+            x.r2c2 > 0
+
+                ? String(
+                    x.r2c2
+                )
+
+                : "";
+
+
+        unlockAdd(
+            x
+        );
+
+
+        // ==============================================
+        // RESTORE FINAL
+        // ==============================================
+
+        if (
+            fin
+        ) {
+
+            const digitsRTL =
+                fin
+                    .split("")
+                    .reverse();
+
+
+            const active =
+                addInputs(
+                    x
+                );
+
+
+            for (
+                let i = 0;
+
+                i <
+                Math.min(
+                    active.length,
+                    digitsRTL.length
+                );
+
+                i++
+            ) {
+
+                active[i].value =
+                    digitsRTL[i];
+
+
+                if (
+                    eq(
+                        active[i],
+                        x.add[
+                            i
+                        ].write
+                    )
+                ) {
+
+                    correct(
+                        active[i]
+                    );
+
+
+                    active[i].disabled =
+                        true;
+
+
+                } else {
+
+                    break;
+                }
+            }
+        }
+
+
+        focusNext();
+    }
+
+
+    // ==================================================
+    // NEXT FOCUS
+    // ==================================================
+
+    function focusNext() {
+
+        const x =
+            currentExpected();
+
+
+        if (!x) {
+
+            return;
+        }
+
+
+        // ==============================================
+        // ROW 1 SATUAN
+        // ==============================================
+
+        if (
+            !eq(
+                el.r1O,
+                x.r1O
+            )
+        ) {
+
+            el.r1O.disabled =
+                false;
+
+
+            setTarget(
+                "r1o",
+                x
+            );
+
+
+            return focus(
+                el.r1O
+            );
+        }
+
+
+        // ==============================================
+        // ROW 1 PULUHAN
+        // ==============================================
+
+        if (
+            !eq(
+                el.r1T,
+                x.r1T
+            )
+        ) {
+
+            el.r1T.disabled =
+                false;
+
+
+            showCarry(
+                x.r1c1
+            );
+
+
+            setTarget(
+                "r1t",
+                x
+            );
+
+
+            return focus(
+                el.r1T
+            );
+        }
+
+
+        // ==============================================
+        // ROW 2
+        // ==============================================
+
+        unlockStep2();
+
+
+        if (
+            !eq(
+                el.r2T,
+                x.r2T
+            )
+        ) {
+
+            el.r2T.disabled =
+                false;
+
+
+            setTarget(
+                "r2t",
+                x
+            );
+
+
+            return focus(
+                el.r2T
+            );
+        }
+
+
+        if (
+            !eq(
+                el.r2H,
+                x.r2H
+            )
+        ) {
+
+            el.r2H.disabled =
+                false;
+
+
+            showCarry(
+                x.r2c1
+            );
+
+
+            setTarget(
+                "r2h",
+                x
+            );
+
+
+            return focus(
+                el.r2H
+            );
+        }
+
+
+        // ==============================================
+        // ADDITION
+        // ==============================================
+
+        el.add
+            .classList
+            .remove(
+                "lm22-locked"
+            );
+
+
+        hideCarry();
+
+        hideArrow();
+
+
+        [
+            el.topT,
+            el.topO,
+            el.bottomT,
+            el.bottomO
+        ]
+        .forEach(
+            node => {
+
+                node.classList.remove(
+                    "lm22-active-number"
+                );
+            }
+        );
+
+
+        const active =
+            addInputs(
+                x
+            );
+
+
+        for (
+            let idx = 0;
+
+            idx <
+            active.length;
+
+            idx++
+        ) {
+
+            if (
+                !eq(
+                    active[idx],
+                    x.add[
+                        idx
+                    ].write
+                )
+            ) {
+
+                active[idx].disabled =
+                    false;
+
+
+                active.forEach(
+                    input => {
+
+                        input.classList.remove(
+                            "lm22-current"
+                        );
+                    }
+                );
+
+
+                active[idx]
+                    .classList
+                    .add(
+                        "lm22-current"
+                    );
+
+
+                showCarryForAddCurrent(
+                    x,
+                    idx
+                );
+
+
+                setAddInstruction(
+                    x.add[
+                        idx
+                    ]
+                );
+
+
+                return focus(
+                    active[
+                        idx
+                    ]
+                );
+            }
+        }
+    }
+
 
     // ==================================================
     // SUBMIT
     // ==================================================
 
     submitColumnAnswer =
-        function submitColumnAnswer2x2() {
+        function () {
 
-            if (!isLong2x2Mode()) {
-                previousSubmitColumnAnswer();
+            if (
+                !is2x2()
+            ) {
+
+                return prev.submit();
+            }
+
+
+            if (
+                answerLocked
+            ) {
+
                 return;
             }
 
-            if (answerLocked) {
-                return;
-            }
 
             const question =
                 questions[
                     currentQuestionIndex
                 ];
 
+
             if (!question) {
-                return;
-            }
-
-            if (!hasAnyColumnInput()) {
-
-                submitTimeout();
 
                 return;
             }
 
-            const expected =
-                analyzeLong2x2(
-                    Number(question.a),
-                    Number(question.b)
+
+            const x =
+                analyze(
+
+                    Number(
+                        question.a
+                    ),
+
+                    Number(
+                        question.b
+                    )
+
                 );
 
-            const row1Correct =
-                row1Complete(
-                    expected
+
+            const hasAny =
+                allInputs.some(
+                    input =>
+                        input
+                            .value
+                            .trim()
+                        !==
+                        ""
                 );
 
-            const row2Correct =
-                row2Complete(
-                    expected
+
+            if (
+                !hasAny
+            ) {
+
+                return submitTimeout();
+            }
+
+
+            const ok =
+                complete(
+                    x
                 );
 
-            const sumCorrect =
-                additionComplete(
-                    expected
-                );
-
-            const fullyCorrect =
-                row1Correct &&
-                row2Correct &&
-                sumCorrect;
 
             const finalValue =
-                getFinalTypedValue();
+                typedFinal(
+                    x
+                );
 
-            answerLocked = true;
+
+            answerLocked =
+                true;
+
 
             clearTimer();
+
 
             clearTimeout(
                 delayedSubmit
             );
 
-            delayedSubmit = null;
+
+            delayedSubmit =
+                null;
+
 
             disableColumnInputs();
 
-            hideMultiplyCarry();
-            hideAdditionCarries();
+            hideCarry();
+
+            hideAddCarries();
+
             hideArrow();
-            clearActiveDigits();
 
-            markResult(
-                row1Ones,
-                Number(
-                    row1Ones.value
-                ) === expected.row1Ones
-            );
-
-            markResult(
-                row1Front,
-                Number(
-                    row1Front.value
-                ) === expected.row1Front
-            );
-
-            markResult(
-                row2Ones,
-                Number(
-                    row2Ones.value
-                ) === expected.row2OnesRaw
-            );
-
-            markResult(
-                row2Front,
-                Number(
-                    row2Front.value
-                ) === expected.row2Front
-            );
-
-            getActiveSumInputs()
-                .forEach(
-                    (input, index) => {
-
-                        markResult(
-                            input,
-                            input.value !== "" &&
-                            Number(
-                                input.value
-                            ) ===
-                            expected
-                                .additionSteps[
-                                    index
-                                ]
-                                .writeDigit
-                        );
-                    }
-                );
 
             let status;
 
-            if (fullyCorrect) {
+
+            if (
+                ok
+            ) {
 
                 status =
                     "correct";
 
+
                 correctCount++;
+
 
                 answerFeedback.textContent =
                     "✓ Semua langkah benar";
 
+
                 answerFeedback.className =
                     "answer-feedback feedback-correct";
+
 
             } else {
 
                 status =
                     "wrong";
 
+
                 wrongCount++;
+
 
                 answerFeedback.textContent =
                     `Belum tepat • Hasil akhir ${formatNumber(
-                        expected.final
+                        x.final
                     )}`;
+
 
                 answerFeedback.className =
                     "answer-feedback feedback-wrong";
             }
+
+
+            const responseTime =
+                typeof getResponseTime ===
+                    "function"
+
+                    ? getResponseTime()
+
+                    : Math.max(
+
+                        0,
+
+                        Date.now()
+                        -
+                        Number(
+                            questionStartedAt
+                            ||
+                            Date.now()
+                        )
+
+                    );
+
 
             answers.push({
 
@@ -2790,46 +5196,68 @@
                 steps: {
 
                     partial_1:
-                        row1Correct
-                            ? String(
-                                expected.row1
-                            )
-                            : getTypedRow1(),
+                        typedRow1(),
 
                     partial_2:
-                        row2Correct
-                            ? String(
-                                expected.row2Shifted
-                            )
-                            : getTypedRow2Shifted(),
+                        typedRow2(),
 
                     final:
                         finalValue
+
                 },
 
                 response_time_ms:
-                    getResponseTime(),
+                    responseTime,
 
                 client_status:
                     status
+
             });
+
 
             liveCorrect.textContent =
                 String(
                     correctCount
                 );
 
-            closeCurrentQuestionState();
+
+            if (
+                typeof closeCurrentQuestionState ===
+                "function"
+            ) {
+
+                closeCurrentQuestionState();
+
+
+            } else {
+
+                questionStartedAt =
+                    0;
+
+
+                questionDeadline =
+                    0;
+            }
+
 
             savePracticeState();
 
+
             setTimeout(
+
                 nextQuestion,
-                fullyCorrect
+
+                ok
                     ? 1000
                     : 1200
+
             );
         };
+
+
+    // ==================================================
+    // AUTO SUBMIT
+    // ==================================================
 
     function scheduleSubmit() {
 
@@ -2837,845 +5265,209 @@
             delayedSubmit
         );
 
+
         delayedSubmit =
             setTimeout(
                 () => {
 
-                    if (answerLocked) {
+                    if (
+                        answerLocked
+                    ) {
+
                         return;
                     }
 
-                    const expected =
-                        getExpected();
+
+                    const x =
+                        currentExpected();
+
 
                     if (
-                        expected &&
-                        row1Complete(
-                            expected
-                        ) &&
-                        row2Complete(
-                            expected
-                        ) &&
-                        additionComplete(
-                            expected
+                        x
+
+                        &&
+
+                        complete(
+                            x
                         )
                     ) {
 
+                        syncEngine(
+                            x
+                        );
+
+
                         submitColumnAnswer();
                     }
+
                 },
                 SUBMIT_DELAY
             );
     }
 
+
     // ==================================================
-    // COMPLETION
+    // CURRENT EXPECTED
     // ==================================================
 
-    function row1Complete(
-        expected
-    ) {
-
-        return (
-            row1Ones.value !== "" &&
-            Number(
-                row1Ones.value
-            ) === expected.row1Ones &&
-            row1Front.value !== "" &&
-            Number(
-                row1Front.value
-            ) === expected.row1Front
-        );
-    }
-
-    function row2Complete(
-        expected
-    ) {
-
-        return (
-            row2Ones.value !== "" &&
-            Number(
-                row2Ones.value
-            ) === expected.row2OnesRaw &&
-            row2Front.value !== "" &&
-            Number(
-                row2Front.value
-            ) === expected.row2Front
-        );
-    }
-
-    function additionComplete(
-        expected
-    ) {
-
-        const activeInputs =
-            getActiveSumInputs();
-
-        return activeInputs.every(
-            (input, index) =>
-                input.value !== "" &&
-                Number(
-                    input.value
-                ) ===
-                expected
-                    .additionSteps[
-                        index
-                    ]
-                    .writeDigit
-        );
-    }
-
-    function getExpected() {
+    function currentExpected() {
 
         const question =
             questions[
                 currentQuestionIndex
             ];
 
-        if (!question) {
-            return null;
-        }
 
-        return analyzeLong2x2(
-            Number(question.a),
-            Number(question.b)
-        );
-    }
+        return question
 
-    // ==================================================
-    // LOCKS
-    // ==================================================
+            ? analyze(
 
-    function resetLocks() {
+                Number(
+                    question.a
+                ),
 
-        row1Ones.disabled = false;
-
-        row1Front.disabled = true;
-
-        row2Ones.disabled = true;
-
-        row2Front.disabled = true;
-
-        row1FrontWrap.classList.add(
-            "long2x2-locked"
-        );
-
-        row2FrontWrap.classList.add(
-            "long2x2-locked"
-        );
-
-        phase2.classList.add(
-            "long2x2-phase-locked"
-        );
-
-        additionBlock.classList.add(
-            "long2x2-phase-locked"
-        );
-
-        [
-            sumThousands,
-            sumHundreds,
-            sumTens,
-            sumOnes
-        ].forEach(
-            input => {
-                input.disabled = true;
-            }
-        );
-    }
-
-    function unlockRow1Front(
-        expected
-    ) {
-
-        row1Front.disabled = false;
-
-        row1Front.maxLength =
-            String(
-                expected.row1Front
-            ).length;
-
-        row1FrontWrap.classList.remove(
-            "long2x2-locked"
-        );
-    }
-
-    function unlockPhase2() {
-
-        phase2.classList.remove(
-            "long2x2-phase-locked"
-        );
-
-        row2Ones.disabled = false;
-
-        row2Front.disabled = true;
-
-        row2FrontWrap.classList.add(
-            "long2x2-locked"
-        );
-    }
-
-    function unlockRow2Front(
-        expected
-    ) {
-
-        row2Front.disabled = false;
-
-        row2Front.maxLength =
-            String(
-                expected.row2Front
-            ).length;
-
-        row2FrontWrap.classList.remove(
-            "long2x2-locked"
-        );
-    }
-
-    function unlockAddition(
-        expected
-    ) {
-
-        additionBlock.classList.remove(
-            "long2x2-phase-locked"
-        );
-
-        getActiveSumInputs()
-            .forEach(
-                input => {
-                    input.disabled = false;
-                }
-            );
-
-        hideMultiplyCarry();
-        hideArrow();
-        clearActiveDigits();
-
-        columnMethodText.textContent =
-            "Step 3: jumlahkan dua baris dari kanan ke kiri.";
-
-        if (carryNote) {
-
-            carryNote.textContent =
-                "Jika hasil penjumlahan 2 digit, angka depan menjadi simpanan.";
-        }
-
-        updateAdditionProgress(
-            expected,
-            false
-        );
-    }
-
-    function resetAfterRow1() {
-
-        row2Ones.value = "";
-        row2Front.value = "";
-
-        row2Ones.disabled = true;
-        row2Front.disabled = true;
-
-        phase2.classList.add(
-            "long2x2-phase-locked"
-        );
-
-        resetAdditionOnly();
-    }
-
-    function resetAfterRow1Front() {
-
-        row2Ones.value = "";
-        row2Front.value = "";
-
-        row2Ones.disabled = true;
-        row2Front.disabled = true;
-
-        phase2.classList.add(
-            "long2x2-phase-locked"
-        );
-
-        resetAdditionOnly();
-    }
-
-    function resetAdditionOnly() {
-
-        additionBlock.classList.add(
-            "long2x2-phase-locked"
-        );
-
-        [
-            sumThousands,
-            sumHundreds,
-            sumTens,
-            sumOnes
-        ].forEach(
-            input => {
-
-                input.value = "";
-                input.disabled = true;
-
-                input.classList.remove(
-                    "long2x2-correct",
-                    "long2x2-wrong",
-                    "long2x2-active-sum"
-                );
-            }
-        );
-
-        hideAdditionCarries();
-    }
-
-    // ==================================================
-    // CARRY
-    // ==================================================
-
-    function showMultiplyCarry(
-        value
-    ) {
-
-        if (
-            !value ||
-            Number(value) <= 0
-        ) {
-
-            hideMultiplyCarry();
-
-            return;
-        }
-
-        multiplyCarry.textContent =
-            String(value);
-
-        multiplyCarry.classList.remove(
-            "hidden"
-        );
-
-        if (carryNote) {
-
-            carryNote.textContent =
-                `Simpan ${value}, lalu tambahkan pada perkalian berikutnya.`;
-        }
-    }
-
-    function hideMultiplyCarry() {
-
-        multiplyCarry.textContent = "";
-
-        multiplyCarry.classList.add(
-            "hidden"
-        );
-    }
-
-    function hideAdditionCarries() {
-
-        [
-            addCarry1000,
-            addCarry100,
-            addCarry10
-        ].forEach(
-            element => {
-
-                element.textContent = "";
-
-                element.classList.add(
-                    "hidden"
-                );
-            }
-        );
-    }
-
-    function showAdditionCarry(
-        nextIndex,
-        value
-    ) {
-
-        hideAdditionCarries();
-
-        if (
-            !value ||
-            Number(value) <= 0
-        ) {
-            return;
-        }
-
-        const target =
-            nextIndex === 1
-                ? addCarry10
-                : nextIndex === 2
-                    ? addCarry100
-                    : nextIndex === 3
-                        ? addCarry1000
-                        : null;
-
-        if (!target) {
-            return;
-        }
-
-        target.textContent =
-            String(value);
-
-        target.classList.remove(
-            "hidden"
-        );
-    }
-
-    // ==================================================
-    // ACTIVE DIGITS + ARROW
-    // ==================================================
-
-    function clearActiveDigits() {
-
-        [
-            topTens,
-            topOnes,
-            bottomTens,
-            bottomOnes
-        ].forEach(
-            element => {
-
-                element.classList.remove(
-                    "long2x2-active-digit"
-                );
-            }
-        );
-    }
-
-    function setActiveDigits(
-        step
-    ) {
-
-        clearActiveDigits();
-
-        if (step === "row1_ones") {
-
-            bottomOnes.classList.add(
-                "long2x2-active-digit"
-            );
-
-            topOnes.classList.add(
-                "long2x2-active-digit"
-            );
-
-            return;
-        }
-
-        if (step === "row1_front") {
-
-            bottomOnes.classList.add(
-                "long2x2-active-digit"
-            );
-
-            topTens.classList.add(
-                "long2x2-active-digit"
-            );
-
-            return;
-        }
-
-        if (step === "row2_ones") {
-
-            bottomTens.classList.add(
-                "long2x2-active-digit"
-            );
-
-            topOnes.classList.add(
-                "long2x2-active-digit"
-            );
-
-            return;
-        }
-
-        bottomTens.classList.add(
-            "long2x2-active-digit"
-        );
-
-        topTens.classList.add(
-            "long2x2-active-digit"
-        );
-    }
-
-    function setArrow(
-        step
-    ) {
-
-        let path;
-        let head;
-
-        if (step === "row1_ones") {
-
-            path =
-                "M 221 137 C 221 115, 221 91, 221 69";
-
-            head =
-                "M 215 76 L 221 68 L 227 76";
-
-        } else if (
-            step === "row1_front"
-        ) {
-
-            path =
-                "M 221 137 C 205 111, 187 87, 160 69";
-
-            head =
-                "M 162 78 L 159 68 L 169 70";
-
-        } else if (
-            step === "row2_ones"
-        ) {
-
-            path =
-                "M 160 137 C 177 111, 195 87, 221 69";
-
-            head =
-                "M 211 70 L 222 68 L 219 79";
-
-        } else {
-
-            path =
-                "M 160 137 C 160 115, 160 91, 160 69";
-
-            head =
-                "M 154 76 L 160 68 L 166 76";
-        }
-
-        longArrowPath.setAttribute(
-            "d",
-            path
-        );
-
-        longArrowHead.setAttribute(
-            "d",
-            head
-        );
-
-        longArrow.classList.remove(
-            "hidden",
-            "long2x2-draw"
-        );
-
-        void longArrow.getBoundingClientRect();
-
-        longArrow.classList.add(
-            "long2x2-draw"
-        );
-    }
-
-    function hideArrow() {
-
-        longArrow.classList.add(
-            "hidden"
-        );
-
-        longArrow.classList.remove(
-            "long2x2-draw"
-        );
-    }
-
-    // ==================================================
-    // VALUES
-    // ==================================================
-
-    function getActiveSumInputs() {
-
-        return [
-            sumOnes,
-            sumTens,
-            sumHundreds,
-            sumThousands
-        ].filter(
-            input =>
-                !input.classList.contains(
-                    "long2x2-leading-hidden"
+                Number(
+                    question.b
                 )
-        );
-    }
 
-    function getTypedRow1() {
-
-        const front =
-            row1Front.value.trim();
-
-        const ones =
-            row1Ones.value.trim();
-
-        if (
-            front === "" &&
-            ones === ""
-        ) {
-            return "";
-        }
-
-        return `${front}${ones}`;
-    }
-
-    function getTypedRow2Raw() {
-
-        const front =
-            row2Front.value.trim();
-
-        const ones =
-            row2Ones.value.trim();
-
-        if (
-            front === "" &&
-            ones === ""
-        ) {
-            return "";
-        }
-
-        return `${front}${ones}`;
-    }
-
-    function getTypedRow2Shifted() {
-
-        const raw =
-            getTypedRow2Raw();
-
-        if (raw === "") {
-            return "";
-        }
-
-        return `${raw}0`;
-    }
-
-    function getFinalTypedValue() {
-
-        const leftToRight =
-            [
-                sumThousands,
-                sumHundreds,
-                sumTens,
-                sumOnes
-            ].filter(
-                input =>
-                    !input.classList.contains(
-                        "long2x2-leading-hidden"
-                    )
-            );
-
-        if (
-            leftToRight.some(
-                input =>
-                    input.value === ""
             )
-        ) {
-            return "";
-        }
 
-        return leftToRight
-            .map(
-                input =>
-                    input.value
-            )
-            .join("");
+            : null;
     }
+
 
     // ==================================================
-    // UI HELPERS
+    // HELPERS
     // ==================================================
 
-    function clearVisibleInputs() {
-
-        visibleInputs.forEach(
-            input => {
-
-                input.value = "";
-
-                input.classList.remove(
-                    "long2x2-correct",
-                    "long2x2-wrong",
-                    "long2x2-active-sum"
-                );
-            }
-        );
-    }
-
-    function clearVisibleClasses() {
-
-        visibleInputs.forEach(
-            input => {
-
-                input.classList.remove(
-                    "long2x2-correct",
-                    "long2x2-wrong",
-                    "long2x2-active-sum"
-                );
-            }
-        );
-    }
-
-    function markResult(
+    function eq(
         input,
-        correct
+        value
     ) {
 
-        input.classList.remove(
-            "long2x2-correct",
-            "long2x2-wrong"
+        return (
+
+            input.value !== ""
+
+            &&
+
+            Number(
+                input.value
+            )
+            ===
+            Number(
+                value
+            )
+
         );
+    }
+
+
+    function correct(
+        input
+    ) {
 
         input.classList.add(
-            correct
-                ? "long2x2-correct"
-                : "long2x2-wrong"
+            "lm22-correct"
+        );
+
+
+        input.classList.remove(
+            "lm22-current"
         );
     }
 
-    function digitsOnly(
-        value,
-        maxLength
+
+    function digits(
+        value
     ) {
 
         return String(
             value ?? ""
         )
-            .replace(
-                /\D/g,
-                ""
-            )
-            .slice(
-                0,
-                Math.max(
-                    1,
-                    Number(maxLength) || 1
-                )
-            );
+
+        .replace(
+            /\D/g,
+            ""
+        )
+
+        .slice(
+            0,
+            1
+        );
     }
 
-    function focusInput(
+
+    function focus(
         input
     ) {
 
-        input.disabled = false;
+        input.disabled =
+            false;
+
 
         input.focus({
-            preventScroll: true
+
+            preventScroll:
+                true
+
         });
+
 
         input.select();
     }
 
-    function focusNextLongInput() {
 
-        const expected =
-            getExpected();
+    function moveFocus(
+        input,
+        condition
+    ) {
 
-        if (!expected) {
-            return;
-        }
+        setTimeout(
+            () => {
 
-        if (
-            row1Ones.value === "" ||
-            Number(row1Ones.value) !==
-                expected.row1Ones
-        ) {
+                if (
+                    !answerLocked
 
-            focusInput(
-                row1Ones
-            );
+                    &&
 
-            return;
-        }
+                    condition()
+                ) {
 
-        if (
-            row1Front.value === "" ||
-            Number(row1Front.value) !==
-                expected.row1Front
-        ) {
+                    focus(
+                        input
+                    );
+                }
 
-            unlockRow1Front(
-                expected
-            );
-
-            focusInput(
-                row1Front
-            );
-
-            return;
-        }
-
-        unlockPhase2();
-
-        if (
-            row2Ones.value === "" ||
-            Number(row2Ones.value) !==
-                expected.row2OnesRaw
-        ) {
-
-            focusInput(
-                row2Ones
-            );
-
-            return;
-        }
-
-        if (
-            row2Front.value === "" ||
-            Number(row2Front.value) !==
-                expected.row2Front
-        ) {
-
-            unlockRow2Front(
-                expected
-            );
-
-            focusInput(
-                row2Front
-            );
-
-            return;
-        }
-
-        unlockAddition(
-            expected
+            },
+            MOVE_DELAY
         );
-
-        const activeInputs =
-            getActiveSumInputs();
-
-        for (
-            let index = 0;
-            index <
-                activeInputs.length;
-            index++
-        ) {
-
-            const input =
-                activeInputs[index];
-
-            const step =
-                expected
-                    .additionSteps[index];
-
-            if (
-                input.value === "" ||
-                Number(input.value) !==
-                    step.writeDigit
-            ) {
-
-                focusInput(
-                    input
-                );
-
-                return;
-            }
-        }
     }
 
+
     // ==================================================
-    // EVENTS
+    // EVENT LISTENERS
     // ==================================================
 
-    visibleInputs.forEach(
+    allInputs.forEach(
         input => {
 
             input.addEventListener(
+
                 "input",
+
                 handleInput,
+
                 true
             );
 
+
             input.addEventListener(
+
                 "keydown",
+
                 handleKeydown,
+
                 true
             );
         }
