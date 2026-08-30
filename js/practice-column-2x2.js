@@ -2790,10 +2790,8 @@
         );
 
 
-        el.r1O.disabled =
-            true;
-
-
+        // Jangan disable input aktif sebelum fokus berpindah.
+        // Keyboard mobile tetap terbuka dan viewport tidak meloncat.
         showCarry(
             x.r1c1
         );
@@ -2885,10 +2883,9 @@
         );
 
 
-        el.r1T.disabled =
-            true;
-
-
+        // Input yang sudah benar tetap aktif secara DOM agar keyboard
+        // tidak kehilangan fokus sebelum Step 2 mendapat fokus.
+        // Jika disentuh ulang, dependency engine tetap memvalidasi ulang.
         // Jika hasil paling kiri masih memiliki carry,
         // muncul otomatis.
 
@@ -3001,10 +2998,7 @@
         );
 
 
-        el.r2T.disabled =
-            true;
-
-
+        // Pertahankan fokus/keyboard sampai digit berikutnya difokuskan.
         showCarry(
             x.r2c1
         );
@@ -3092,10 +3086,7 @@
         );
 
 
-        el.r2H.disabled =
-            true;
-
-
+        // Jangan tutup keyboard sebelum Step 3 siap menerima fokus.
         el.r2Lead.textContent =
             x.r2c2 > 0
                 ? String(
@@ -3257,10 +3248,8 @@
         );
 
 
-        input.disabled =
-            true;
-
-
+        // Digit penjumlahan yang benar tidak di-disable saat keyboard
+        // masih digunakan untuk kolom berikutnya.
         if (
             step.carryOut > 0
 
@@ -3548,6 +3537,21 @@
     function drawArrow(
         target
     ) {
+
+        // Level 1-5 memakai bantuan panah.
+        // Level 6+ tidak menjalankan SVG/animasi panah.
+        // Dengan demikian tidak ada forced layout dari restart animasi.
+        if (
+            Number.isInteger(
+                Number(levelNumber)
+            )
+            &&
+            Number(levelNumber) >= 6
+        ) {
+
+            hideArrow();
+            return;
+        }
 
         const paths = {
 
