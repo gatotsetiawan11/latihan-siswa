@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Per Siswa - Latihan Siswa</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin-student-report.css">
+</head>
+<body class="asr-page">
+    <header class="asr-header">
+        <div class="asr-header-inner">
+            <a href="admin.html" class="asr-back">← Admin</a>
+            <div>
+                <span class="asr-eyebrow">LAPORAN ADMIN</span>
+                <h1>Laporan Per Siswa</h1>
+                <p>Ringkasan perkembangan dan detail latihan penjumlahan.</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="asr-shell">
+        <section id="reportLoading" class="asr-state">
+            <div class="asr-spinner"></div>
+            <p>Menyiapkan laporan siswa...</p>
+        </section>
+
+        <section id="reportError" class="asr-state asr-error" hidden>
+            <h2>Laporan tidak dapat dimuat</h2>
+            <p id="reportErrorMessage">Terjadi kesalahan.</p>
+            <a href="admin.html" class="asr-button">Kembali ke Admin</a>
+        </section>
+
+        <div id="reportContent" hidden>
+            <section class="asr-student-card">
+                <div>
+                    <span class="asr-eyebrow">SISWA</span>
+                    <h2 id="studentName">-</h2>
+                    <p id="studentStatus">-</p>
+                </div>
+                <div class="asr-last">
+                    <span>Terakhir latihan</span>
+                    <strong id="lastPracticeAt">-</strong>
+                </div>
+            </section>
+
+            <section class="asr-summary-grid">
+                <article class="asr-summary-card">
+                    <span>Total sesi</span>
+                    <strong id="totalSessions">0</strong>
+                </article>
+                <article class="asr-summary-card">
+                    <span>Level dikuasai</span>
+                    <strong id="masteredLevels">0</strong>
+                </article>
+                <article class="asr-summary-card">
+                    <span>Akurasi keseluruhan</span>
+                    <strong id="overallAccuracy">-</strong>
+                </article>
+                <article class="asr-summary-card">
+                    <span>Rata-rata respons</span>
+                    <strong id="averageResponse">-</strong>
+                </article>
+            </section>
+
+            <section class="asr-section">
+                <div class="asr-section-heading">
+                    <div>
+                        <span class="asr-eyebrow">PERKALIAN</span>
+                        <h2>Ringkasan Latihan</h2>
+                    </div>
+                </div>
+                <div class="asr-topic-summary">
+                    <div><span>Sesi</span><strong id="multiplicationSessions">0</strong></div>
+                    <div><span>Level dikuasai</span><strong id="multiplicationMastered">0</strong></div>
+                    <div><span>Akurasi</span><strong id="multiplicationAccuracy">-</strong></div>
+                    <div><span>Rata-rata respons</span><strong id="multiplicationResponse">-</strong></div>
+                </div>
+                <p class="asr-note">
+                    Ringkasan perkalian memakai data monitoring admin yang sudah ada.
+                </p>
+            </section>
+
+            <section class="asr-section">
+                <div class="asr-section-heading">
+                    <div>
+                        <span class="asr-eyebrow">PENJUMLAHAN</span>
+                        <h2>Detail Tingkat dan Level</h2>
+                    </div>
+                    <div class="asr-topic-badge" id="additionTopicSummary">0 level lulus</div>
+                </div>
+                <div id="additionStages" class="asr-stage-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-student-report.js"></script>
+</body>
+</html>
