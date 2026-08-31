@@ -399,7 +399,9 @@ async function loadLevels() {
             const accessRpc =
                 topicCode === "addition"
                     ? "student_can_access_addition_level"
-                    : "student_can_access_level";
+                    : topicCode === "subtraction"
+                        ? "student_can_access_subtraction_level"
+                        : "student_can_access_level";
 
 
             const {
@@ -453,7 +455,9 @@ async function loadLevels() {
             const progressRpc =
                 topicCode === "addition"
                     ? "get_student_addition_level_progress"
-                    : "get_student_level_progress";
+                    : topicCode === "subtraction"
+                        ? "get_student_subtraction_level_progress"
+                        : "get_student_level_progress";
 
 
             const {
@@ -977,7 +981,9 @@ function createLevelCard(
                 const practicePage =
                     topicCode === "addition"
                         ? "./addition-practice.html"
-                        : "./practice.html";
+                        : topicCode === "subtraction"
+                            ? "./subtraction-practice.html"
+                            : "./practice.html";
 
 
                 const url =

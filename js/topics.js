@@ -393,6 +393,17 @@ function renderTopics(
             }
 
 
+            if (
+                topic.code ===
+                "subtraction"
+            ) {
+
+                symbol =
+                    "−";
+
+            }
+
+
             // ------------------------------
             // ICON ELEMENT
             // ------------------------------

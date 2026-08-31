@@ -361,7 +361,9 @@ async function loadStages() {
             const progressRpc =
                 topicCode === "addition"
                     ? "get_student_addition_topic_progress"
-                    : "get_student_topic_progress";
+                    : topicCode === "subtraction"
+                        ? "get_student_subtraction_topic_progress"
+                        : "get_student_topic_progress";
 
 
             const {
