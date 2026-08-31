@@ -382,6 +382,17 @@ function renderTopics(
             }
 
 
+            if (
+                topic.code ===
+                "addition"
+            ) {
+
+                symbol =
+                    "+";
+
+            }
+
+
             // ------------------------------
             // ICON ELEMENT
             // ------------------------------

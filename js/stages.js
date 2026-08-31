@@ -358,12 +358,18 @@ async function loadStages() {
             loginMode === "student"
         ) {
 
+            const progressRpc =
+                topicCode === "addition"
+                    ? "get_student_addition_topic_progress"
+                    : "get_student_topic_progress";
+
+
             const {
                 data,
                 error
             } =
                 await window.db.rpc(
-                    "get_student_topic_progress",
+                    progressRpc,
                     {
 
                         p_token:

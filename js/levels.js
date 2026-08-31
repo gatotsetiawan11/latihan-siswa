@@ -396,12 +396,18 @@ async function loadLevels() {
             levels.length > 0
         ) {
 
+            const accessRpc =
+                topicCode === "addition"
+                    ? "student_can_access_addition_level"
+                    : "student_can_access_level";
+
+
             const {
                 data: canAccess,
                 error: accessError
             } =
                 await window.db.rpc(
-                    "student_can_access_level",
+                    accessRpc,
                     {
 
                         p_token:
@@ -444,12 +450,18 @@ async function loadLevels() {
             loginMode === "student"
         ) {
 
+            const progressRpc =
+                topicCode === "addition"
+                    ? "get_student_addition_level_progress"
+                    : "get_student_level_progress";
+
+
             const {
                 data,
                 error
             } =
                 await window.db.rpc(
-                    "get_student_level_progress",
+                    progressRpc,
                     {
 
                         p_token:
@@ -962,8 +974,14 @@ function createLevelCard(
             "click",
             () => {
 
+                const practicePage =
+                    topicCode === "addition"
+                        ? "./addition-practice.html"
+                        : "./practice.html";
+
+
                 const url =
-                    "./practice.html" +
+                    practicePage +
 
                     "?subject=" +
                     encodeURIComponent(
