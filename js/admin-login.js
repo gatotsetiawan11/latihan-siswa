@@ -51,6 +51,36 @@ const adminLoginButton =
     );
 
 
+
+// ======================================================
+// REDIRECT TARGET
+// ======================================================
+
+function getAdminLoginDestination() {
+
+    const next =
+        new URLSearchParams(
+            window.location.search
+        ).get(
+            "next"
+        );
+
+
+    if (
+        next ===
+        "english-demo"
+    ) {
+
+        return "./english-conversation.html?subject=english&topic=english_conversation&stage=1&level=1&demo=admin";
+
+    }
+
+
+    return "admin.html";
+
+}
+
+
 // ======================================================
 // INITIALIZE
 // ======================================================
@@ -108,7 +138,7 @@ async function initializeAdminLogin() {
         ) {
 
             window.location.href =
-                "admin.html";
+                getAdminLoginDestination();
 
             return;
 
@@ -470,7 +500,7 @@ async function handleAdminLogin(
         // --------------------------------------------------
 
         window.location.href =
-            "admin.html";
+            getAdminLoginDestination();
 
 
     } catch (error) {

@@ -28,7 +28,7 @@ const subjectCode = params.get("subject") || "english";
 const topicCode = params.get("topic") || "english_conversation";
 const stageNumber = Number(params.get("stage") || 1);
 const levelNumber = Number(params.get("level") || 1);
-const levelId = params.get("id");
+let levelId = params.get("id");
 
 const loginMode = sessionStorage.getItem("login_mode");
 const sessionToken = sessionStorage.getItem("student_session_token");
@@ -59,7 +59,7 @@ let startedAt = 0;
 let currentAudio = null;
 
 async function init() {
-  if (topicCode !== "english_conversation" || !levelId) return goBack();
+  if (topicCode !== "english_conversation") return goBack();
 
   if (!isStudentMode && !isAdminDemoMode) {
     loadingScreen.textContent =
@@ -68,6 +68,21 @@ async function init() {
   }
 
   if (!(await checkSession())) return;
+
+  if (!levelId && isAdminDemoMode) {
+    levelId = await resolveAdminDemoLevelId();
+
+    if (!levelId) {
+      loadingScreen.textContent =
+        "Level Conversation Introduction belum ditemukan.";
+      return;
+    }
+  }
+
+  if (!levelId) {
+    loadingScreen.textContent = "Level Conversation tidak valid.";
+    return;
+  }
 
   if (isStudentMode && !(await checkAccess())) {
     loadingScreen.textContent = "Level masih terkunci.";
@@ -136,6 +151,51 @@ async function checkSession() {
     return false;
   }
 }
+
+async function resolveAdminDemoLevelId() {
+  try {
+    const { data: topics, error: topicError } = await window.db
+      .from("topics")
+      .select("id")
+      .eq("code", "english_conversation")
+      .eq("is_active", true)
+      .limit(1);
+
+    if (topicError || !topics || topics.length === 0) {
+      throw topicError || new Error("topic");
+    }
+
+    const { data: stages, error: stageError } = await window.db
+      .from("stages")
+      .select("id")
+      .eq("topic_id", topics[0].id)
+      .eq("stage_number", stageNumber)
+      .eq("is_active", true)
+      .limit(1);
+
+    if (stageError || !stages || stages.length === 0) {
+      throw stageError || new Error("stage");
+    }
+
+    const { data: levels, error: levelError } = await window.db
+      .from("levels")
+      .select("id")
+      .eq("stage_id", stages[0].id)
+      .eq("level_number", levelNumber)
+      .eq("is_active", true)
+      .limit(1);
+
+    if (levelError || !levels || levels.length === 0) {
+      throw levelError || new Error("level");
+    }
+
+    return levels[0].id;
+  } catch (error) {
+    console.error("Resolve admin demo level:", error);
+    return null;
+  }
+}
+
 
 async function checkAccess() {
   try {
