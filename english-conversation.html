@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Conversation AI</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/english-conversation.css">
+</head>
+<body>
+<main class="ec-page">
+  <section id="loadingScreen" class="ec-card ec-loading">
+    Menyiapkan English Conversation...
+  </section>
+
+  <section id="startScreen" class="ec-card ec-start hidden">
+    <div class="ec-start-copy">
+      <div class="ec-kicker">ENGLISH CONVERSATION</div>
+      <h1>Introduction</h1>
+      <p>
+        Mode hands-free untuk layar kelas. Kamera hanya digunakan untuk
+        mendeteksi keberadaan seseorang di depan layar dan tidak digunakan
+        untuk mengenali identitas.
+      </p>
+    </div>
+    <button id="startButton" class="ec-primary ec-start-button" type="button">
+      Mulai Percakapan
+    </button>
+    <small>
+      Tekan satu kali untuk memberi izin kamera dan mikrofon. Setelah itu
+      percakapan berjalan tanpa menekan tombol mikrofon.
+    </small>
+  </section>
+
+  <section id="conversationScreen" class="ec-card ec-conversation hidden">
+    <header class="ec-header">
+      <div>
+        <div class="ec-kicker">BAHASA INGGRIS • CONVERSATION</div>
+        <h1>Introduction</h1>
+        <p id="levelText">Tingkat 1 • Level 1</p>
+      </div>
+      <div class="ec-turn"><span id="turnText">0</span>/6</div>
+    </header>
+
+    <section class="ec-stage">
+      <div class="ec-avatar-column">
+        <div id="avatar" class="ec-avatar waiting" aria-label="Karakter AI">
+          <svg viewBox="0 0 260 320" role="img" aria-hidden="true">
+            <circle cx="130" cy="116" r="78" class="av-face"/>
+            <path d="M58 108C64 44 104 22 137 25c42 3 72 33 69 86-22-24-55-35-92-32-22 2-40 12-56 29Z" class="av-hair"/>
+            <ellipse cx="101" cy="117" rx="7" ry="9" class="av-eye"/>
+            <ellipse cx="159" cy="117" rx="7" ry="9" class="av-eye"/>
+            <path d="M112 149 Q130 163 148 149" class="av-mouth"/>
+            <rect x="78" y="193" width="104" height="105" rx="38" class="av-shirt"/>
+            <path d="M90 217 Q130 244 170 217" class="av-collar"/>
+          </svg>
+          <div class="ec-avatar-name">Alex</div>
+        </div>
+
+        <div class="ec-state">
+          <span id="stateDot" class="ec-state-dot"></span>
+          <strong id="stateText">Waiting</strong>
+        </div>
+      </div>
+
+      <div class="ec-camera-column">
+        <div class="ec-camera-frame">
+          <video id="cameraVideo" autoplay muted playsinline></video>
+          <canvas id="detectCanvas" width="320" height="180"></canvas>
+          <div id="cameraOverlay" class="ec-camera-overlay">
+            <span>Waiting for someone...</span>
+          </div>
+        </div>
+        <div class="ec-camera-note">
+          Kamera diproses di perangkat untuk presence detection.
+        </div>
+      </div>
+    </section>
+
+    <section class="ec-dialogue">
+      <div id="assistantBubble" class="ec-main-bubble">
+        <span class="ec-label">ALEX</span>
+        <div id="assistantText">Stand in front of the camera.</div>
+      </div>
+
+      <div id="heardBox" class="ec-heard hidden">
+        <span class="ec-label">YOU SAID</span>
+        <div id="heardText"></div>
+      </div>
+
+      <div id="feedbackBox" class="ec-feedback hidden"></div>
+    </section>
+
+    <div id="speechStatus" class="ec-status">
+      Waiting for someone...
+    </div>
+
+    <details class="ec-fallback">
+      <summary>Fallback jika mikrofon TV tidak terbaca</summary>
+      <div class="ec-input-row">
+        <input id="answerInput" type="text" autocomplete="off"
+          placeholder="Ketik jawaban Bahasa Inggris">
+        <button id="sendButton" type="button">Kirim</button>
+      </div>
+    </details>
+
+    <button id="exitButton" class="ec-exit" type="button">Keluar Latihan</button>
+  </section>
+
+  <section id="resultScreen" class="ec-card ec-result hidden">
+    <div class="ec-result-icon">✓</div>
+    <h1>Percakapan Selesai</h1>
+    <p id="resultMessage"></p>
+    <div class="ec-score-grid">
+      <div><span>Skor</span><strong id="resultScore">0%</strong></div>
+      <div><span>Respons sesuai</span><strong id="resultRelevant">0/6</strong></div>
+      <div><span>Giliran</span><strong id="resultTurns">0</strong></div>
+    </div>
+    <div id="resultFeedback" class="ec-result-feedback"></div>
+    <div class="ec-result-actions">
+      <button id="retryButton" type="button">Ulangi</button>
+      <button id="backButton" class="ec-secondary" type="button">Kembali ke Level</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/english-conversation.js"></script>
+</body>
+</html>
