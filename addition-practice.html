@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Penjumlahan Bersusun - Latihan Siswa</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/addition-practice.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <small id="practiceTopic">PENJUMLAHAN</small>
+      <strong id="practiceLevel">Memuat...</strong>
+    </div>
+    <button id="backButton" class="back-button" type="button">Kembali</button>
+  </header>
+
+  <main class="addition-page">
+    <section id="loadingScreen" class="addition-loading">Menyiapkan latihan...</section>
+
+    <section id="gameScreen" class="addition-card hidden">
+      <div class="addition-status">
+        <div><span class="status-label">Soal</span><strong id="questionProgress">1 / 10</strong></div>
+        <div><span class="status-label">Benar</span><strong id="liveCorrect">0</strong></div>
+        <div><span class="status-label">Waktu</span><strong id="timerText">--</strong></div>
+      </div>
+
+      <section id="additionBoard" class="addition-board" aria-label="Penjumlahan bersusun"></section>
+
+      <p id="instructionText" class="addition-instruction">
+        Mulai dari satuan. Setelah digit benar, posisi aktif bergerak otomatis ke kiri.
+      </p>
+      <p id="feedbackText" class="addition-feedback" aria-live="polite"></p>
+    </section>
+
+    <section id="resultScreen" class="addition-card result-card hidden">
+      <div id="resultIcon" class="result-big-icon">✓</div>
+      <h1 id="resultTitle">Latihan selesai</h1>
+      <p id="resultMessage"></p>
+      <div class="result-grid">
+        <div><span>Akurasi</span><strong id="resultAccuracy">0%</strong></div>
+        <div><span>Benar</span><strong id="resultCorrect">0</strong></div>
+        <div><span>Salah</span><strong id="resultWrong">0</strong></div>
+        <div><span>Waktu habis</span><strong id="resultTimeout">0</strong></div>
+      </div>
+      <div id="bestScoreBox" class="best-score hidden"></div>
+      <div class="result-actions">
+        <button id="retryButton" class="button button-secondary" type="button">Ulangi</button>
+        <button id="continueButton" class="button button-primary" type="button">Kembali ke Level</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/addition-practice.js"></script>
+</body>
+</html>
