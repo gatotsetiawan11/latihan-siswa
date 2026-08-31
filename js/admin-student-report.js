@@ -19,7 +19,7 @@ async function initAdminStudentReport() {
             return;
         }
 
-        const [monitoringResult, additionResult] = await Promise.all([
+        const [monitoringResult, additionResult, subtractionResult] = await Promise.all([
             window.db.rpc("get_admin_student_monitoring", {
                 p_token: adminToken,
                 p_class_name: "2"
@@ -27,11 +27,16 @@ async function initAdminStudentReport() {
             window.db.rpc("get_admin_student_addition_report", {
                 p_token: adminToken,
                 p_student_id: String(studentId)
+            }),
+            window.db.rpc("get_admin_student_subtraction_report", {
+                p_token: adminToken,
+                p_student_id: String(studentId)
             })
         ]);
 
         if (monitoringResult.error) throw monitoringResult.error;
         if (additionResult.error) throw additionResult.error;
+        if (subtractionResult.error) throw subtractionResult.error;
 
         const monitoring = normalizeRows(monitoringResult.data);
         const student = monitoring.find(row => String(row.student_id) === String(studentId));
@@ -41,7 +46,8 @@ async function initAdminStudentReport() {
         }
 
         const addition = normalizeObject(additionResult.data) || {};
-        render(student, addition);
+        const subtraction = normalizeObject(subtractionResult.data) || {};
+        render(student, addition, subtraction);
 
         el("reportLoading").hidden = true;
         el("reportContent").hidden = false;
@@ -51,7 +57,7 @@ async function initAdminStudentReport() {
     }
 }
 
-function render(student, addition) {
+function render(student, addition, subtraction) {
     el("studentName").textContent = student.full_name || "Siswa";
     el("studentStatus").textContent = student.activation_status || "-";
     el("lastPracticeAt").textContent = formatDateTime(student.last_practice_at);
@@ -68,30 +74,41 @@ function render(student, addition) {
     const addAccuracy = nullableNumber(addSummary.accuracy);
     const addResponse = nullableNumber(addSummary.average_response_time_ms);
 
+    const subSummary = subtraction.summary || {};
+    const subSessions = number(subSummary.practice_sessions);
+    const subMastered = number(subSummary.mastered_levels);
+    const subAnswers = number(subSummary.total_answers);
+    const subAccuracy = nullableNumber(subSummary.accuracy);
+    const subResponse = nullableNumber(subSummary.average_response_time_ms);
+
     const multAnswers = number(student.total_answers);
-    const combinedAnswers = multAnswers + addAnswers;
+    const combinedAnswers = multAnswers + addAnswers + subAnswers;
     let combinedAccuracy = null;
     if (combinedAnswers > 0) {
         combinedAccuracy =
-            ((multAccuracy || 0) * multAnswers + (addAccuracy || 0) * addAnswers) /
+            ((multAccuracy || 0) * multAnswers +
+             (addAccuracy || 0) * addAnswers +
+             (subAccuracy || 0) * subAnswers) /
             combinedAnswers;
     }
 
-    const totalSessions = multSessions + addSessions;
-    const totalMastered = multMastered + addMastered;
+    const totalSessions = multSessions + addSessions + subSessions;
+    const totalMastered = multMastered + addMastered + subMastered;
 
     el("totalSessions").textContent = String(totalSessions);
     el("masteredLevels").textContent = String(totalMastered);
     el("overallAccuracy").textContent = combinedAccuracy === null ? "-" : `${Math.round(combinedAccuracy)}%`;
 
     let combinedResponse = null;
-    if (multAnswers + addAnswers > 0) {
+    if (multAnswers + addAnswers + subAnswers > 0) {
         const weighted =
             (multResponse || 0) * multAnswers +
-            (addResponse || 0) * addAnswers;
+            (addResponse || 0) * addAnswers +
+            (subResponse || 0) * subAnswers;
         const weightedCount =
             (multResponse === null ? 0 : multAnswers) +
-            (addResponse === null ? 0 : addAnswers);
+            (addResponse === null ? 0 : addAnswers) +
+            (subResponse === null ? 0 : subAnswers);
         if (weightedCount > 0) combinedResponse = weighted / weightedCount;
     }
     el("averageResponse").textContent = formatResponse(combinedResponse);
@@ -102,11 +119,20 @@ function render(student, addition) {
     el("multiplicationResponse").textContent = formatResponse(multResponse);
 
     el("additionTopicSummary").textContent = `${addMastered} level lulus`;
-    renderAdditionStages(Array.isArray(addition.stages) ? addition.stages : []);
+    renderTopicStages(
+        "additionStages",
+        Array.isArray(addition.stages) ? addition.stages : []
+    );
+
+    el("subtractionTopicSummary").textContent = `${subMastered} level lulus`;
+    renderTopicStages(
+        "subtractionStages",
+        Array.isArray(subtraction.stages) ? subtraction.stages : []
+    );
 }
 
-function renderAdditionStages(stages) {
-    const root = el("additionStages");
+function renderTopicStages(rootId, stages) {
+    const root = el(rootId);
     root.innerHTML = "";
 
     if (stages.length === 0) {
