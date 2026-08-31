@@ -46,3 +46,5 @@ body{margin:0;background:#f4f7fb;color:#172033;font-family:Arial,sans-serif}
 @keyframes think{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes blink{0%,45%,50%,100%{transform:scaleY(1)}47%{transform:scaleY(.12)}}
 @media(max-width:780px){.ec-page{padding:10px}.ec-card{padding:16px;border-radius:18px}.ec-stage{grid-template-columns:1fr}.ec-avatar-column{display:grid;grid-template-columns:180px 1fr;align-items:center}.ec-avatar-name{font-size:18px}.ec-main-bubble,.ec-heard{font-size:20px}.ec-score-grid{grid-template-columns:1fr}.ec-input-row{flex-direction:column}}
+
+.ec-demo-badge{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:#fff4d6;border:1px solid #ecd58d;color:#7a5a00;font-size:12px;font-weight:900;letter-spacing:.05em}
