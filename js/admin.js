@@ -1300,16 +1300,54 @@ function createStudentRow(
 
         <td>
 
-            <button
-                type="button"
-                class="admin-reset-button"
-            >
-                Reset PIN
-            </button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+
+                <button
+                    type="button"
+                    class="admin-report-button"
+                >
+                    Laporan
+                </button>
+
+                <button
+                    type="button"
+                    class="admin-reset-button"
+                >
+                    Reset PIN
+                </button>
+
+            </div>
 
         </td>
 
     `;
+
+
+    row
+        .querySelector(
+            ".admin-report-button"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                if (!student?.student_id) {
+                    return;
+                }
+
+                const params =
+                    new URLSearchParams({
+                        student:
+                            String(
+                                student.student_id
+                            )
+                    });
+
+                window.location.href =
+                    `admin-student-report.html?${params.toString()}`;
+
+            }
+        );
 
 
     row
