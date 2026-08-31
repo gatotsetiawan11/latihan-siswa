@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Demo Bahasa Inggris - Latihan Siswa</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body class="admin-login-page">
+
+    <main class="admin-login-shell">
+
+        <section class="admin-login-card">
+
+            <div class="admin-login-badge">
+                DEMO
+            </div>
+
+            <h1>
+                Bahasa Inggris
+            </h1>
+
+            <p class="admin-login-description">
+                Masuk sebagai admin untuk membuka Conversation Demo.
+                Halaman ini tidak menuju dashboard admin dan tidak menyimpan
+                progres siswa.
+            </p>
+
+            <form
+                id="englishAdminLoginForm"
+                class="admin-login-form"
+            >
+
+                <label class="admin-field">
+                    <span>Username Admin</span>
+                    <input
+                        id="englishAdminUsername"
+                        type="text"
+                        autocomplete="username"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        required
+                    >
+                </label>
+
+                <label class="admin-field">
+                    <span>Password</span>
+                    <input
+                        id="englishAdminPassword"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </label>
+
+                <div
+                    id="englishAdminLoginMessage"
+                    class="admin-login-message"
+                    aria-live="polite"
+                ></div>
+
+                <button
+                    id="englishAdminLoginButton"
+                    class="admin-primary-button"
+                    type="submit"
+                >
+                    Masuk ke Conversation
+                </button>
+
+            </form>
+
+            <div class="admin-login-footer">
+                <a href="index.html">
+                    ← Kembali ke halaman siswa
+                </a>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/english-admin-login.js"></script>
+
+</body>
+</html>
