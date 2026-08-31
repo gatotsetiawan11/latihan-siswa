@@ -401,7 +401,9 @@ async function loadLevels() {
                     ? "student_can_access_addition_level"
                     : topicCode === "subtraction"
                         ? "student_can_access_subtraction_level"
-                        : "student_can_access_level";
+                        : topicCode === "english_conversation"
+                            ? "student_can_access_english_conversation_level"
+                            : "student_can_access_level";
 
 
             const {
@@ -457,7 +459,9 @@ async function loadLevels() {
                     ? "get_student_addition_level_progress"
                     : topicCode === "subtraction"
                         ? "get_student_subtraction_level_progress"
-                        : "get_student_level_progress";
+                        : topicCode === "english_conversation"
+                            ? "get_student_english_conversation_level_progress"
+                            : "get_student_level_progress";
 
 
             const {
@@ -983,7 +987,9 @@ function createLevelCard(
                         ? "./addition-practice.html"
                         : topicCode === "subtraction"
                             ? "./subtraction-practice.html"
-                            : "./practice.html";
+                            : topicCode === "english_conversation"
+                                ? "./english-conversation.html"
+                                : "./practice.html";
 
 
                 const url =

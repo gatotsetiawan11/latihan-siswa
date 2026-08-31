@@ -1,0 +1,552 @@
+document.addEventListener("DOMContentLoaded", init);
+
+const $ = id => document.getElementById(id);
+const loadingScreen = $("loadingScreen");
+const startScreen = $("startScreen");
+const conversationScreen = $("conversationScreen");
+const resultScreen = $("resultScreen");
+const startButton = $("startButton");
+const cameraVideo = $("cameraVideo");
+const detectCanvas = $("detectCanvas");
+const cameraOverlay = $("cameraOverlay");
+const avatar = $("avatar");
+const assistantText = $("assistantText");
+const heardBox = $("heardBox");
+const heardText = $("heardText");
+const feedbackBox = $("feedbackBox");
+const speechStatus = $("speechStatus");
+const turnText = $("turnText");
+const levelText = $("levelText");
+const answerInput = $("answerInput");
+const sendButton = $("sendButton");
+const exitButton = $("exitButton");
+const retryButton = $("retryButton");
+const backButton = $("backButton");
+
+const params = new URLSearchParams(location.search);
+const subjectCode = params.get("subject") || "english";
+const topicCode = params.get("topic") || "english_conversation";
+const stageNumber = Number(params.get("stage") || 1);
+const levelNumber = Number(params.get("level") || 1);
+const levelId = params.get("id");
+
+const loginMode = sessionStorage.getItem("login_mode");
+const sessionToken = sessionStorage.getItem("student_session_token");
+
+const MAX_TURNS = 6;
+const PERSON_CONFIDENCE = 0.58;
+const PERSON_STABLE_MS = 1400;
+const PERSON_LOST_RESET_MS = 7000;
+
+let stream = null;
+let detector = null;
+let detectTimer = null;
+let personFirstSeen = 0;
+let lastPersonSeen = 0;
+let greetingStarted = false;
+let recognition = null;
+let recognitionActive = false;
+let busy = false;
+let turn = 0;
+let relevantCount = 0;
+let lastAssistantText = "";
+let history = [];
+let startedAt = 0;
+let currentAudio = null;
+
+async function init() {
+  if (topicCode !== "english_conversation" || !levelId) return goBack();
+
+  if (loginMode !== "student" || !sessionToken) {
+    loadingScreen.textContent =
+      "Conversation AI tersedia untuk siswa yang login.";
+    return;
+  }
+
+  if (!(await checkSession())) return;
+  if (!(await checkAccess())) {
+    loadingScreen.textContent = "Level masih terkunci.";
+    return;
+  }
+
+  levelText.textContent = `Tingkat ${stageNumber} • Level ${levelNumber}`;
+  setupRecognition();
+
+  startButton.addEventListener("click", startClassroomMode);
+  sendButton.addEventListener("click", () => submitUserAnswer(answerInput.value));
+  answerInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") submitUserAnswer(answerInput.value);
+  });
+  exitButton.addEventListener("click", goBack);
+  backButton.addEventListener("click", goBack);
+  retryButton.addEventListener("click", () => location.reload());
+
+  loadingScreen.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+}
+
+async function checkSession() {
+  try {
+    const { data, error } = await window.db.rpc("get_student_session", {
+      p_token: sessionToken
+    });
+    if (error || !data || data.length === 0) throw error || new Error("session");
+    return true;
+  } catch {
+    sessionStorage.clear();
+    location.href = "./index.html";
+    return false;
+  }
+}
+
+async function checkAccess() {
+  try {
+    const { data, error } = await window.db.rpc(
+      "student_can_access_english_conversation_level",
+      { p_token: sessionToken, p_level_id: levelId }
+    );
+    if (error) throw error;
+    return data === true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+async function startClassroomMode() {
+  startButton.disabled = true;
+  startButton.textContent = "Menyiapkan kamera...";
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } },
+      audio: true
+    });
+
+    cameraVideo.srcObject = stream;
+    await cameraVideo.play();
+
+    startScreen.classList.add("hidden");
+    conversationScreen.classList.remove("hidden");
+    startedAt = Date.now();
+
+    setState("waiting", "Waiting");
+    assistantText.textContent = "Stand in front of the camera.";
+    speechStatus.textContent = "Waiting for someone...";
+    cameraOverlay.querySelector("span").textContent = "Waiting for someone...";
+
+    await loadPersonDetector();
+    beginPresenceLoop();
+  } catch (error) {
+    console.error(error);
+    startButton.disabled = false;
+    startButton.textContent = "Coba Lagi";
+    alert("Kamera atau mikrofon belum dapat digunakan. Periksa izin browser TV.");
+  }
+}
+
+async function loadPersonDetector() {
+  if (!window.cocoSsd) throw new Error("Person detector gagal dimuat.");
+  detector = await window.cocoSsd.load({ base: "lite_mobilenet_v2" });
+}
+
+function beginPresenceLoop() {
+  clearInterval(detectTimer);
+  detectTimer = setInterval(runPresenceDetection, 850);
+}
+
+async function runPresenceDetection() {
+  if (!detector || cameraVideo.readyState < 2) return;
+
+  try {
+    const predictions = await detector.detect(cameraVideo, 6, 0.45);
+    const person = predictions
+      .filter(p => p.class === "person" && p.score >= PERSON_CONFIDENCE)
+      .sort((a,b) => b.score - a.score)[0];
+
+    drawPersonBox(person);
+
+    const now = Date.now();
+    if (person) {
+      lastPersonSeen = now;
+      if (!personFirstSeen) personFirstSeen = now;
+
+      cameraOverlay.querySelector("span").textContent =
+        greetingStarted ? "Person detected" : "Hello!";
+
+      if (!greetingStarted && now - personFirstSeen >= PERSON_STABLE_MS) {
+        greetingStarted = true;
+        await beginGreeting();
+      }
+    } else {
+      personFirstSeen = 0;
+      cameraOverlay.querySelector("span").textContent =
+        greetingStarted ? "Conversation active" : "Waiting for someone...";
+
+      if (greetingStarted && lastPersonSeen && now - lastPersonSeen > PERSON_LOST_RESET_MS) {
+        // Do not restart the same session; just show the camera state.
+        cameraOverlay.querySelector("span").textContent = "Come back into the frame";
+      }
+    }
+  } catch (error) {
+    console.warn("Presence detection:", error);
+  }
+}
+
+function drawPersonBox(person) {
+  const ctx = detectCanvas.getContext("2d");
+  const w = detectCanvas.width;
+  const h = detectCanvas.height;
+  ctx.clearRect(0,0,w,h);
+  if (!person || !cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+
+  const sx = w / cameraVideo.videoWidth;
+  const sy = h / cameraVideo.videoHeight;
+  const [x,y,bw,bh] = person.bbox;
+
+  // mirrored to match the mirrored video
+  const mx = w - (x + bw) * sx;
+  ctx.strokeStyle = "rgba(255,255,255,.92)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8,5]);
+  ctx.strokeRect(mx, y*sy, bw*sx, bh*sy);
+  ctx.setLineDash([]);
+}
+
+async function beginGreeting() {
+  if (busy) return;
+  busy = true;
+  setState("thinking", "Thinking");
+  speechStatus.textContent = "Alex noticed someone...";
+
+  try {
+    const data = await callConversationAI({
+      action: "start",
+      level_id: levelId,
+      stage_number: stageNumber,
+      level_number: levelNumber,
+      turn: 0,
+      history: []
+    });
+
+    lastAssistantText = clean(data.assistant_text);
+    assistantText.textContent = lastAssistantText;
+    await speakAI(lastAssistantText);
+    beginAutoListening();
+  } catch (error) {
+    console.error(error);
+    assistantText.textContent = "Hello! Good morning. What is your name?";
+    lastAssistantText = assistantText.textContent;
+    await speakBrowser(lastAssistantText);
+    beginAutoListening();
+  } finally {
+    busy = false;
+  }
+}
+
+function setupRecognition() {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    recognition = null;
+    return;
+  }
+
+  recognition = new Recognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    recognitionActive = true;
+    setState("listening", "Listening");
+    speechStatus.textContent = "Listening... Please answer in English.";
+    heardBox.classList.add("hidden");
+  };
+
+  recognition.onresult = event => {
+    let transcript = "";
+    let finalTranscript = "";
+
+    for (let i=event.resultIndex;i<event.results.length;i++) {
+      const text = event.results[i][0].transcript;
+      transcript += text;
+      if (event.results[i].isFinal) finalTranscript += text;
+    }
+
+    heardText.textContent = transcript.trim();
+    heardBox.classList.remove("hidden");
+
+    if (finalTranscript.trim()) {
+      answerInput.value = finalTranscript.trim();
+    }
+  };
+
+  recognition.onerror = event => {
+    console.warn("Speech recognition:", event.error);
+    recognitionActive = false;
+    setState("waiting", "Try again");
+
+    if (event.error === "not-allowed") {
+      speechStatus.textContent =
+        "Izin Speech Recognition ditolak. Gunakan fallback ketik.";
+    } else {
+      speechStatus.textContent =
+        "Suara belum terbaca. Saya akan mendengarkan lagi...";
+      setTimeout(beginAutoListening, 1100);
+    }
+  };
+
+  recognition.onend = () => {
+    recognitionActive = false;
+    const text = clean(answerInput.value);
+
+    if (text && !busy) {
+      submitUserAnswer(text);
+    } else if (!busy && greetingStarted && turn < MAX_TURNS) {
+      setTimeout(beginAutoListening, 650);
+    }
+  };
+}
+
+function beginAutoListening() {
+  if (busy || turn >= MAX_TURNS) return;
+
+  if (!recognition) {
+    setState("waiting", "Type fallback");
+    speechStatus.textContent =
+      "Speech Recognition tidak tersedia di browser ini. Gunakan fallback ketik.";
+    return;
+  }
+
+  try {
+    answerInput.value = "";
+    recognition.start();
+  } catch {
+    setTimeout(beginAutoListening, 700);
+  }
+}
+
+async function submitUserAnswer(rawText) {
+  const userText = clean(rawText);
+  if (!userText || busy || turn >= MAX_TURNS) return;
+
+  busy = true;
+  answerInput.value = "";
+  if (recognitionActive) {
+    try { recognition.stop(); } catch {}
+  }
+
+  heardText.textContent = userText;
+  heardBox.classList.remove("hidden");
+  setState("thinking", "Thinking");
+  speechStatus.textContent = "Thinking...";
+
+  history.push({ role: "assistant", text: lastAssistantText });
+  history.push({ role: "user", text: userText });
+
+  try {
+    const data = await callConversationAI({
+      action: "reply",
+      level_id: levelId,
+      stage_number: stageNumber,
+      level_number: levelNumber,
+      turn: turn + 1,
+      user_text: userText,
+      history: history.slice(-10)
+    });
+
+    turn += 1;
+    turnText.textContent = String(turn);
+    if (data.relevant === true) relevantCount += 1;
+    renderFeedback(data);
+
+    lastAssistantText = clean(data.assistant_text);
+    if (lastAssistantText) assistantText.textContent = lastAssistantText;
+
+    const shouldEnd = data.should_end === true || turn >= MAX_TURNS;
+
+    if (lastAssistantText) await speakAI(lastAssistantText);
+
+    if (shouldEnd) {
+      await finishConversation(data);
+    } else {
+      busy = false;
+      beginAutoListening();
+    }
+  } catch (error) {
+    console.error(error);
+    busy = false;
+    speechStatus.textContent = "AI belum merespons. Saya akan mendengarkan lagi...";
+    setTimeout(beginAutoListening, 1000);
+  }
+}
+
+function renderFeedback(data) {
+  const feedback = clean(data.feedback);
+  const correction = clean(data.correction);
+  if (!feedback && !correction) {
+    feedbackBox.classList.add("hidden");
+    return;
+  }
+
+  const parts = [];
+  if (feedback) parts.push(`<strong>Feedback:</strong> ${escapeHtml(feedback)}`);
+  if (correction) parts.push(`<strong>Better sentence:</strong> ${escapeHtml(correction)}`);
+  feedbackBox.innerHTML = parts.join("<br>");
+  feedbackBox.classList.remove("hidden");
+}
+
+async function callConversationAI(payload) {
+  const { data, error } = await window.db.functions.invoke("english-conversation", {
+    body: { ...payload, student_token: sessionToken }
+  });
+  if (error) throw error;
+  if (!data || data.ok !== true) throw new Error(data?.error || "AI error");
+  return data;
+}
+
+async function speakAI(text) {
+  setState("speaking", "Speaking");
+  speechStatus.textContent = "Speaking...";
+
+  try {
+    const { data, error } = await window.db.functions.invoke("english-conversation", {
+      body: {
+        action: "tts",
+        student_token: sessionToken,
+        text
+      }
+    });
+
+    if (error || !data?.ok || !data?.audio_base64) throw error || new Error("tts");
+
+    const bytes = Uint8Array.from(atob(data.audio_base64), c => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: data.mime_type || "audio/mpeg" });
+    const url = URL.createObjectURL(blob);
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+
+    await new Promise((resolve, reject) => {
+      const audio = new Audio(url);
+      currentAudio = audio;
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        currentAudio = null;
+        resolve();
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        currentAudio = null;
+        reject(new Error("audio"));
+      };
+      audio.play().catch(reject);
+    });
+  } catch (error) {
+    console.warn("AI TTS fallback:", error);
+    await speakBrowser(text);
+  }
+}
+
+function speakBrowser(text) {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window) || !text) return resolve();
+
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    u.pitch = 1.08;
+    u.onend = resolve;
+    u.onerror = resolve;
+    speechSynthesis.speak(u);
+  });
+}
+
+function setState(name, label) {
+  avatar.classList.remove("waiting","listening","thinking","speaking");
+  avatar.classList.add(name);
+  const state = document.querySelector(".ec-state");
+  state.classList.remove("waiting","listening","thinking","speaking");
+  state.classList.add(name);
+  $("stateText").textContent = label;
+}
+
+async function finishConversation(lastData) {
+  busy = true;
+  setState("waiting", "Finished");
+  speechStatus.textContent = "Conversation completed.";
+
+  const score = Math.round((relevantCount / MAX_TURNS) * 100);
+  let saved = null;
+
+  try {
+    const { data, error } = await window.db.rpc("submit_english_conversation_session", {
+      p_token: sessionToken,
+      p_level_id: levelId,
+      p_turn_count: turn,
+      p_relevant_count: relevantCount,
+      p_score: score,
+      p_duration_seconds: Math.max(1, Math.round((Date.now()-startedAt)/1000))
+    });
+    if (error) throw error;
+    saved = Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error("Save:", error);
+  }
+
+  stopMedia();
+  setTimeout(() => showResult(score, saved, lastData), 500);
+}
+
+function showResult(score, saved, lastData) {
+  conversationScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+
+  const passed = saved?.passed === true || score >= 70;
+  $("resultScore").textContent = `${score}%`;
+  $("resultRelevant").textContent = `${relevantCount}/${MAX_TURNS}`;
+  $("resultTurns").textContent = String(turn);
+  $("resultMessage").textContent = passed
+    ? "Percakapan selesai dengan baik."
+    : "Ulangi sekali lagi dan jawab lebih sesuai dengan pertanyaan.";
+  $("resultFeedback").textContent =
+    clean(lastData?.session_feedback) ||
+    "Gunakan jawaban pendek, jelas, dan sederhana.";
+}
+
+function stopMedia() {
+  clearInterval(detectTimer);
+  detectTimer = null;
+  if (recognitionActive) {
+    try { recognition.stop(); } catch {}
+  }
+  if (currentAudio) currentAudio.pause();
+  if (stream) stream.getTracks().forEach(track => track.stop());
+}
+
+function clean(value) {
+  return String(value ?? "").replace(/\s+/g," ").trim().slice(0,240);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function goBack() {
+  stopMedia();
+  location.href =
+    `./levels.html?subject=${encodeURIComponent(subjectCode)}` +
+    `&topic=${encodeURIComponent(topicCode)}` +
+    `&stage=${encodeURIComponent(stageNumber)}`;
+}
+
+window.addEventListener("beforeunload", stopMedia);

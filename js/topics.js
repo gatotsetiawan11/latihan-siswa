@@ -404,6 +404,17 @@ function renderTopics(
             }
 
 
+            if (
+                topic.code ===
+                "english_conversation"
+            ) {
+
+                symbol =
+                    "A";
+
+            }
+
+
             // ------------------------------
             // ICON ELEMENT
             // ------------------------------
