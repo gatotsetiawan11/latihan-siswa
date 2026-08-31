@@ -62,6 +62,13 @@ const mathButton =
     );
 
 
+
+const englishButton =
+    document.getElementById(
+        "englishButton"
+    );
+
+
 // ======================================================
 // SESSION
 // ======================================================
@@ -299,6 +306,25 @@ mathButton.addEventListener(
 
     }
 );
+
+
+// ======================================================
+// BAHASA INGGRIS
+// ======================================================
+
+if (englishButton) {
+
+    englishButton.addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "./topics.html?subject=english";
+
+        }
+    );
+
+}
 
 
 // ======================================================
