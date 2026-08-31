@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Pengurangan Bersusun</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/subtraction-practice.css">
+</head>
+<body>
+    <main class="sub-page">
+        <section id="loadingScreen" class="sub-loading">Menyiapkan latihan pengurangan...</section>
+
+        <section id="gameScreen" class="sub-game hidden">
+            <header class="sub-header">
+                <div>
+                    <div id="practiceTopic" class="sub-topic">PENGURANGAN</div>
+                    <div id="practiceLevel" class="sub-level">Tingkat - • Level -</div>
+                    <div class="sub-progress"><span id="questionProgress">1 / 10</span> &nbsp; Benar <strong id="liveCorrect">0</strong></div>
+                </div>
+                <div id="timerText" class="sub-timer">-- dtk</div>
+            </header>
+
+            <div class="sub-progress-line"><span id="progressBar"></span></div>
+
+            <section class="sub-instruction">
+                <strong id="instructionTitle">Mulai dari satuan.</strong>
+                <div id="instructionText">Jika angka atas tidak cukup, klik digit pada bilangan atas yang harus memberi pinjaman.</div>
+            </section>
+
+            <section class="sub-board-card">
+                <div class="sub-board-title">PENGURANGAN BERSUSUN</div>
+                <div id="stepLabel" class="sub-step-label">LANGKAH 1</div>
+
+                <div id="message" class="sub-message"></div>
+
+                <div id="board" class="sub-board" aria-live="polite"></div>
+
+                <div class="sub-help" id="helpText">
+                    Klik angka sumber pinjaman. Nilai lama akan dicoret dan nilai barunya muncul.
+                </div>
+            </section>
+
+            <div id="feedbackText" class="sub-feedback"></div>
+
+            <button id="quitButton" class="sub-quit" type="button">Keluar Latihan</button>
+        </section>
+
+        <section id="resultScreen" class="sub-result hidden">
+            <div id="resultIcon" class="sub-result-icon">✓</div>
+            <h1 id="resultTitle">Level Selesai</h1>
+            <p id="resultMessage"></p>
+
+            <div class="sub-result-grid">
+                <div><span>Akurasi</span><strong id="resultAccuracy">0%</strong></div>
+                <div><span>Benar</span><strong id="resultCorrect">0</strong></div>
+                <div><span>Salah</span><strong id="resultWrong">0</strong></div>
+                <div><span>Timeout</span><strong id="resultTimeout">0</strong></div>
+                <div><span>Rata-rata</span><strong id="resultAverage">-</strong></div>
+            </div>
+
+            <div id="bestScoreBox" class="sub-best hidden"></div>
+
+            <div class="sub-result-actions">
+                <button id="retryButton" type="button">Ulangi Level</button>
+                <button id="continueButton" type="button">Kembali ke Level</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/subtraction-practice.js"></script>
+</body>
+</html>
