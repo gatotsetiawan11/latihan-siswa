@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Preview Penjumlahan Bersusun</title>
+  <link rel="stylesheet" href="css/addition-column.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="practice-card">
+      <header class="practice-head">
+        <div>
+          <div class="eyebrow">PREVIEW LATIHAN</div>
+          <h1>Penjumlahan Bersusun</h1>
+        </div>
+        <label class="stage-picker">Tingkat
+          <select id="stageSelect">
+            <option value="1">1 — 3 digit + 2 digit tanpa carry</option>
+            <option value="2">2 — 3 digit + 3 digit tanpa carry</option>
+            <option value="3">3 — 3 digit + 2 digit dengan carry</option>
+            <option value="4">4 — 3 digit + 3 digit satu carry</option>
+            <option value="5">5 — 3 digit + 3 digit beberapa carry</option>
+            <option value="6" selected>6 — Campuran, hasil bisa 4 digit</option>
+          </select>
+        </label>
+      </header>
+
+      <div class="status-row">
+        <span id="progressText">Soal 1 / 10</span>
+        <span id="message" aria-live="polite"></span>
+      </div>
+
+      <section id="additionBoard" class="addition-board" aria-label="Penjumlahan bersusun"></section>
+
+      <div class="help-text">
+        Ketik dari kolom satuan. Jika benar, posisi aktif bergerak otomatis ke kiri. Carry muncul otomatis di atas kolom berikutnya. Pada kolom terakhir, jika hasilnya dua digit, tulis dua digit lengkap.
+      </div>
+
+      <div class="actions">
+        <button id="newQuestionButton" type="button">Soal Baru</button>
+        <button id="resetButton" type="button" class="secondary">Ulangi Soal</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/addition-column.js"></script>
+</body>
+</html>
