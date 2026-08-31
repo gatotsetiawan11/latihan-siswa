@@ -32,6 +32,10 @@ const levelId = params.get("id");
 
 const loginMode = sessionStorage.getItem("login_mode");
 const sessionToken = sessionStorage.getItem("student_session_token");
+const adminToken = sessionStorage.getItem("admin_session_token");
+
+const isStudentMode = loginMode === "student" && Boolean(sessionToken);
+const isAdminDemoMode = !isStudentMode && Boolean(adminToken);
 
 const MAX_TURNS = 6;
 const PERSON_CONFIDENCE = 0.58;
@@ -57,19 +61,24 @@ let currentAudio = null;
 async function init() {
   if (topicCode !== "english_conversation" || !levelId) return goBack();
 
-  if (loginMode !== "student" || !sessionToken) {
+  if (!isStudentMode && !isAdminDemoMode) {
     loadingScreen.textContent =
-      "Conversation AI tersedia untuk siswa yang login.";
+      "Conversation AI tersedia untuk siswa login atau admin dalam Demo Mode.";
     return;
   }
 
   if (!(await checkSession())) return;
-  if (!(await checkAccess())) {
+
+  if (isStudentMode && !(await checkAccess())) {
     loadingScreen.textContent = "Level masih terkunci.";
     return;
   }
 
   levelText.textContent = `Tingkat ${stageNumber} • Level ${levelNumber}`;
+
+  if (isAdminDemoMode) {
+    $("demoBadge").classList.remove("hidden");
+  }
   setupRecognition();
 
   startButton.addEventListener("click", startClassroomMode);
@@ -87,12 +96,41 @@ async function init() {
 
 async function checkSession() {
   try {
-    const { data, error } = await window.db.rpc("get_student_session", {
-      p_token: sessionToken
-    });
-    if (error || !data || data.length === 0) throw error || new Error("session");
-    return true;
-  } catch {
+    if (isStudentMode) {
+      const { data, error } = await window.db.rpc("get_student_session", {
+        p_token: sessionToken
+      });
+
+      if (error || !data || data.length === 0) {
+        throw error || new Error("student session");
+      }
+
+      return true;
+    }
+
+    if (isAdminDemoMode) {
+      const { data, error } = await window.db.rpc(
+        "validate_english_admin_session",
+        { p_token: adminToken }
+      );
+
+      if (error || data !== true) {
+        throw error || new Error("admin session");
+      }
+
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Conversation session:", error);
+
+    if (isAdminDemoMode) {
+      loadingScreen.textContent =
+        "Sesi admin tidak valid. Login ulang sebagai admin.";
+      return false;
+    }
+
     sessionStorage.clear();
     location.href = "./index.html";
     return false;
@@ -398,11 +436,17 @@ function renderFeedback(data) {
 }
 
 async function callConversationAI(payload) {
+  const authPayload = isAdminDemoMode
+    ? { admin_token: adminToken, access_mode: "admin_demo" }
+    : { student_token: sessionToken, access_mode: "student" };
+
   const { data, error } = await window.db.functions.invoke("english-conversation", {
-    body: { ...payload, student_token: sessionToken }
+    body: { ...payload, ...authPayload }
   });
+
   if (error) throw error;
   if (!data || data.ok !== true) throw new Error(data?.error || "AI error");
+
   return data;
 }
 
@@ -411,11 +455,15 @@ async function speakAI(text) {
   speechStatus.textContent = "Speaking...";
 
   try {
+    const authPayload = isAdminDemoMode
+      ? { admin_token: adminToken, access_mode: "admin_demo" }
+      : { student_token: sessionToken, access_mode: "student" };
+
     const { data, error } = await window.db.functions.invoke("english-conversation", {
       body: {
         action: "tts",
-        student_token: sessionToken,
-        text
+        text,
+        ...authPayload
       }
     });
 
@@ -483,19 +531,27 @@ async function finishConversation(lastData) {
   const score = Math.round((relevantCount / MAX_TURNS) * 100);
   let saved = null;
 
-  try {
-    const { data, error } = await window.db.rpc("submit_english_conversation_session", {
-      p_token: sessionToken,
-      p_level_id: levelId,
-      p_turn_count: turn,
-      p_relevant_count: relevantCount,
-      p_score: score,
-      p_duration_seconds: Math.max(1, Math.round((Date.now()-startedAt)/1000))
-    });
-    if (error) throw error;
-    saved = Array.isArray(data) ? data[0] : data;
-  } catch (error) {
-    console.error("Save:", error);
+  if (isStudentMode) {
+    try {
+      const { data, error } = await window.db.rpc("submit_english_conversation_session", {
+        p_token: sessionToken,
+        p_level_id: levelId,
+        p_turn_count: turn,
+        p_relevant_count: relevantCount,
+        p_score: score,
+        p_duration_seconds: Math.max(1, Math.round((Date.now()-startedAt)/1000))
+      });
+
+      if (error) throw error;
+      saved = Array.isArray(data) ? data[0] : data;
+    } catch (error) {
+      console.error("Save:", error);
+    }
+  } else {
+    saved = {
+      passed: score >= 70,
+      demo_mode: true
+    };
   }
 
   stopMedia();
@@ -510,9 +566,11 @@ function showResult(score, saved, lastData) {
   $("resultScore").textContent = `${score}%`;
   $("resultRelevant").textContent = `${relevantCount}/${MAX_TURNS}`;
   $("resultTurns").textContent = String(turn);
-  $("resultMessage").textContent = passed
-    ? "Percakapan selesai dengan baik."
-    : "Ulangi sekali lagi dan jawab lebih sesuai dengan pertanyaan.";
+  $("resultMessage").textContent = isAdminDemoMode
+    ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
+    : passed
+      ? "Percakapan selesai dengan baik."
+      : "Ulangi sekali lagi dan jawab lebih sesuai dengan pertanyaan.";
   $("resultFeedback").textContent =
     clean(lastData?.session_feedback) ||
     "Gunakan jawaban pendek, jelas, dan sederhana.";
