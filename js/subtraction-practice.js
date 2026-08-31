@@ -368,21 +368,26 @@ function renderBorrowMarks() {
   if (!overlay) return;
   overlay.innerHTML = "";
 
+  board.querySelectorAll(".sub-top").forEach((cell, index) => {
+    cell.classList.toggle(
+      "borrowed-original",
+      Boolean(state.borrowMarks[index])
+    );
+  });
+
   for (let i=0;i<4;i++) {
     const mark = document.createElement("div");
     mark.className = "sub-borrow-mark";
-    const info = state.borrowMarks[i];
-    if (info) {
-      const old = document.createElement("span");
-      old.className = "sub-old";
-      old.textContent = String(info.old);
-      mark.appendChild(old);
 
+    const info = state.borrowMarks[i];
+
+    if (info) {
       const nw = document.createElement("span");
       nw.className = "sub-new";
       nw.textContent = String(info.new);
       mark.appendChild(nw);
     }
+
     overlay.appendChild(mark);
   }
 }
