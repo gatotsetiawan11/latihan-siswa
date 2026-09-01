@@ -1,334 +1,116 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Dashboard - Latihan Siswa</title>
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Latihan Siswa</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
-
 
 <body>
 
+<header class="topbar">
+    <div class="topbar-brand">
+        <small>LATIHAN SISWA</small>
+        <strong id="headerName">Memuat...</strong>
+    </div>
+    <button id="logoutButton" class="logout-button" type="button">Keluar</button>
+</header>
 
-    <!-- ================================================= -->
-    <!-- TOPBAR                                            -->
-    <!-- ================================================= -->
+<main class="dashboard">
 
-    <header class="topbar">
+<section id="studentWelcome" class="welcome-card">
+    <p>Selamat datang</p>
+    <h1 id="studentName">Memuat...</h1>
+</section>
 
-        <div class="topbar-brand">
+<section id="guestNotice" class="guest-notice hidden">
+    <strong>Mode Guest</strong>
+    <p>Anda dapat mencoba latihan, tetapi perkembangan tidak akan disimpan.</p>
+</section>
 
-            <small>
-                LATIHAN SISWA
-            </small>
-
-            <strong id="headerName">
-                Memuat...
-            </strong>
-
-        </div>
-
-
-        <button
-            id="logoutButton"
-            class="logout-button"
-            type="button"
-        >
-            Keluar
+<section id="studentReportSection" class="hidden" style="margin-bottom:34px;">
+    <div class="section-title">
+        <p>PERKEMBANGAN</p>
+        <h2>Laporan Belajar</h2>
+    </div>
+    <div class="subject-grid">
+        <button id="reportButton" class="subject-card" type="button">
+            <div class="subject-icon">✓</div>
+            <div>
+                <h3>Lihat Perkembangan</h3>
+                <p>Lihat perkembangan belajar siswa.</p>
+            </div>
         </button>
-
-    </header>
-
-
-    <!-- ================================================= -->
-    <!-- DASHBOARD                                         -->
-    <!-- ================================================= -->
-
-    <main class="dashboard">
-
-
-        <!-- ============================================= -->
-        <!-- WELCOME SISWA                                 -->
-        <!-- ============================================= -->
-
-        <section
-            id="studentWelcome"
-            class="welcome-card"
-        >
-
-            <p>
-                Selamat datang
-            </p>
-
-            <h1 id="studentName">
-                Memuat...
-            </h1>
-
-        </section>
-
-
-        <!-- ============================================= -->
-        <!-- GUEST                                         -->
-        <!-- ============================================= -->
-
-        <section
-            id="guestNotice"
-            class="guest-notice hidden"
-        >
-
-            <strong>
-                Mode Guest
-            </strong>
-
-            <p>
-                Anda dapat mencoba latihan,
-                tetapi perkembangan tidak akan disimpan.
-            </p>
-
-        </section>
-
-
-        <!-- ============================================= -->
-        <!-- LAPORAN SISWA                                 -->
-        <!-- ============================================= -->
-
-        <section
-            id="studentReportSection"
-            class="hidden"
-            style="margin-bottom: 34px;"
-        >
-
-            <div class="section-title">
-
-                <p>
-                    PERKEMBANGAN
-                </p>
-
-                <h2>
-                    Laporan Belajar
-                </h2>
-
-            </div>
-
-
-            <div class="subject-grid">
-
-                <button
-                    id="reportButton"
-                    class="subject-card"
-                    type="button"
-                >
-
-                    <div class="subject-icon">
-                        ✓
-                    </div>
-
-
-                    <div>
-
-                        <h3>
-                            Lihat Perkembangan
-                        </h3>
-
-                        <p>
-                            Lihat Level yang sudah dikuasai,
-                            akurasi, kecepatan menjawab,
-                            serta bagian yang perlu dilatih.
-                        </p>
-
-                    </div>
-
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- ============================================= -->
-        <!-- MATA PELAJARAN                                -->
-        <!-- ============================================= -->
-
-        <section>
-
-            <div class="section-title">
-
-                <p>
-                    PEMBELAJARAN
-                </p>
-
-                <h2>
-                    Pilih Mata Pelajaran
-                </h2>
-
-            </div>
-
-
-            <div class="subject-grid">
-
-
-                <!-- ===================================== -->
-                <!-- MATEMATIKA                            -->
-                <!-- ===================================== -->
-
-                <button
-                    id="mathButton"
-                    class="subject-card"
-                    type="button"
-                >
-
-                    <div class="subject-icon">
-                        ×
-                    </div>
-
-
-                    <div>
-
-                        <h3>
-                            Matematika
-                        </h3>
-
-                        <p>
-                            Latihan kemampuan matematika
-                            secara bertahap.
-                        </p>
-
-                    </div>
-
-                </button>
-
-
-                <!-- ===================================== -->
-                <!-- BAHASA INDONESIA                      -->
-                <!-- ===================================== -->
-
-                <div
-                    class="
-                        subject-card
-                        subject-disabled
-                    "
-                >
-
-                    <div class="subject-icon">
-                        A
-                    </div>
-
-
-                    <div>
-
-                        <h3>
-                            Bahasa Indonesia
-                        </h3>
-
-                        <p>
-                            Segera hadir
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ===================================== -->
-                <!-- BAHASA INGGRIS                        -->
-                <!-- ===================================== -->
-
-                <button
-                    id="englishButton"
-                    class="subject-card"
-                    type="button"
-                >
-
-                    <div class="subject-icon">
-                        EN
-                    </div>
-
-
-                    <div>
-
-                        <h3>
-                            Bahasa Inggris
-                        </h3>
-
-                        <p>
-                            Conversation interaktif dengan AI
-                        </p>
-
-                    </div>
-
-                </button>
-
-
-                <!-- ===================================== -->
-                <!-- IPAS                                  -->
-                <!-- ===================================== -->
-
-                <div
-                    class="
-                        subject-card
-                        subject-disabled
-                    "
-                >
-
-                    <div class="subject-icon">
-                        IP
-                    </div>
-
-
-                    <div>
-
-                        <h3>
-                            IPAS
-                        </h3>
-
-                        <p>
-                            Segera hadir
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- ================================================= -->
-    <!-- SUPABASE                                          -->
-    <!-- ================================================= -->
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
-
-
-    <!-- ================================================= -->
-    <!-- CONFIG                                            -->
-    <!-- ================================================= -->
-
-    <script src="js/config.js"></script>
-
-
-    <!-- ================================================= -->
-    <!-- DASHBOARD                                         -->
-    <!-- ================================================= -->
-
-    <script src="js/dashboard.js?v=english-v2-1"></script>
+    </div>
+</section>
+
+<section>
+<div class="section-title">
+    <p>PEMBELAJARAN</p>
+    <h2>Pilih Mata Pelajaran</h2>
+</div>
+
+<div class="subject-grid">
+
+<button id="mathButton" class="subject-card" type="button">
+    <div class="subject-icon">×</div>
+    <div>
+        <h3>Matematika</h3>
+        <p>Latihan kemampuan matematika secara bertahap.</p>
+    </div>
+</button>
+
+<button id="englishButton" class="subject-card" type="button">
+    <div class="subject-icon">EN</div>
+    <div>
+        <h3>Bahasa Inggris</h3>
+        <p>Conversation interaktif dengan AI.</p>
+    </div>
+</button>
+
+<div class="subject-card">
+    <div class="subject-icon">2</div>
+    <div>
+        <h3>Kelas 2</h3>
+        <p>Pilih latihan sesuai kelas.</p>
+    </div>
+</div>
+
+<button id="ipasButton" class="subject-card" type="button">
+    <div class="subject-icon">IP</div>
+    <div>
+        <h3>IPAS</h3>
+        <p>Ilmu Pengetahuan Alam dan Sosial.</p>
+    </div>
+</button>
+
+<button id="indonesiaButton" class="subject-card" type="button">
+    <div class="subject-icon">A</div>
+    <div>
+        <h3>Bahasa Indonesia</h3>
+        <p>Latihan Bahasa Indonesia Kelas 2.</p>
+    </div>
+</button>
+
+</div>
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/dashboard.js?v=ipas-v1"></script>
+
+<script>
+document.getElementById("ipasButton").onclick = function(){
+    window.location.href="./topics.html?subject=ipas";
+};
+
+document.getElementById("indonesiaButton").onclick = function(){
+    window.location.href="./topics.html?subject=indonesia";
+};
+</script>
 
 </body>
-
 </html>
