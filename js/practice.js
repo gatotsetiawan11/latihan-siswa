@@ -1573,59 +1573,51 @@ function generateIPASQuestions(level) {
     const bank = [
         {
             question_text: "Organ yang berfungsi memompa darah adalah?",
-            options:{a:"Jantung",b:"Paru-paru",c:"Mata",d:"Telinga"},
-            answer:"a"
+            options: {
+                a: "Jantung",
+                b: "Paru-paru",
+                c: "Mata",
+                d: "Telinga"
+            },
+            answer: "a"
         },
         {
             question_text: "Manusia bernapas menggunakan?",
-            options:{a:"Tangan",b:"Paru-paru",c:"Kaki",d:"Rambut"},
-            answer:"b"
+            options: {
+                a: "Tangan",
+                b: "Paru-paru",
+                c: "Kaki",
+                d: "Kulit"
+            },
+            answer: "b"
         },
         {
-            question_text: "Bagian tumbuhan yang menyerap air adalah?",
-            options:{a:"Bunga",b:"Daun",c:"Akar",d:"Buah"},
-            answer:"c"
+            question_text: "Hewan yang mengalami metamorfosis adalah?",
+            options: {
+                a: "Kupu-kupu",
+                b: "Kucing",
+                c: "Sapi",
+                d: "Ayam"
+            },
+            answer: "a"
         },
         {
-            question_text: "Air yang membeku berubah menjadi?",
-            options:{a:"Es",b:"Uap",c:"Asap",d:"Angin"},
-            answer:"a"
-        },
-        {
-            question_text: "Hewan yang mengalami metamorfosis sempurna adalah?",
-            options:{a:"Kupu-kupu",b:"Kucing",c:"Sapi",d:"Ikan"},
-            answer:"a"
-        },
-        {
-            question_text: "Mata digunakan untuk?",
-            options:{a:"Mendengar",b:"Melihat",c:"Berjalan",d:"Bernapas"},
-            answer:"b"
-        },
-        {
-            question_text: "Sumber energi utama bagi bumi adalah?",
-            options:{a:"Bulan",b:"Bintang",c:"Matahari",d:"Batu"},
-            answer:"c"
-        },
-        {
-            question_text: "Benda yang bentuknya tetap disebut benda?",
-            options:{a:"Gas",b:"Cair",c:"Padat",d:"Uap"},
-            answer:"c"
-        },
-        {
-            question_text: "Contoh makhluk hidup adalah?",
-            options:{a:"Batu",b:"Air",c:"Kucing",d:"Meja"},
-            answer:"c"
-        },
-        {
-            question_text: "Telinga berfungsi untuk?",
-            options:{a:"Melihat",b:"Mendengar",c:"Mencium",d:"Merasa"},
-            answer:"b"
+            question_text: "Air dalam bentuk padat disebut?",
+            options: {
+                a: "Uap",
+                b: "Es",
+                c: "Embun",
+                d: "Air"
+            },
+            answer: "b"
         }
     ];
 
-    shuffleArray(bank);
+    const result = [...bank];
 
-    return bank.slice(
+    shuffleArray(result);
+
+    return result.slice(
         0,
         Number(level.question_count)
     );
