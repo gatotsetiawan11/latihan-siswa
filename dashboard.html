@@ -39,7 +39,7 @@
             <div class="subject-icon">✓</div>
             <div>
                 <h3>Lihat Perkembangan</h3>
-                <p>Lihat perkembangan belajar siswa.</p>
+                <p>Laporan level dan hasil latihan.</p>
             </div>
         </button>
     </div>
@@ -69,40 +69,57 @@
     </div>
 </button>
 
-<div class="subject-card">
+<button id="class2Button" class="subject-card" type="button">
     <div class="subject-icon">2</div>
     <div>
-        <h3>Kelas 2</h3><div class="class-subjects"><button id="ipasButton" class="subject-card" type="button">IPAS</button><button id="indonesiaButton" class="subject-card" type="button">Bahasa Indonesia</button></div>
-        <p>Pilih latihan sesuai kelas.</p>
-    </div>
-</div>
-
-<button id="ipasButton" class="subject-card" type="button">
-    <div class="subject-icon">IP</div>
-    <div>
-        <h3>IPAS</h3>
-        <p>Ilmu Pengetahuan Alam dan Sosial.</p>
-    </div>
-</button>
-
-<button id="indonesiaButton" class="subject-card" type="button">
-    <div class="subject-icon">A</div>
-    <div>
-        <h3>Bahasa Indonesia</h3>
-        <p>Latihan Bahasa Indonesia Kelas 2.</p>
+        <h3>Kelas 2</h3>
+        <p>Klik untuk melihat mata pelajaran.</p>
     </div>
 </button>
 
 </div>
+
+<div id="class2Content" style="display:none; margin-top:20px;">
+    <div class="section-title">
+        <p>KELAS</p>
+        <h2>Kelas 2</h2>
+    </div>
+
+    <div class="subject-grid">
+
+        <button id="ipasButton" class="subject-card" type="button">
+            <div class="subject-icon">IP</div>
+            <div>
+                <h3>IPAS</h3>
+                <p>Ilmu Pengetahuan Alam dan Sosial.</p>
+            </div>
+        </button>
+
+        <button id="indonesiaButton" class="subject-card" type="button">
+            <div class="subject-icon">A</div>
+            <div>
+                <h3>Bahasa Indonesia</h3>
+                <p>Latihan Bahasa Indonesia Kelas 2.</p>
+            </div>
+        </button>
+
+    </div>
+</div>
+
 </section>
 
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
-<script src="js/dashboard.js?v=ipas-v1"></script>
+<script src="js/dashboard.js?v=kelas2-accordion-v1"></script>
 
 <script>
+document.getElementById("class2Button").onclick = function(){
+    const box = document.getElementById("class2Content");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+};
+
 document.getElementById("ipasButton").onclick = function(){
     window.location.href="./topics.html?subject=ipas";
 };
