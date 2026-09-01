@@ -16,11 +16,10 @@
   <section id="startScreen" class="ec-card ec-start hidden">
     <div class="ec-start-copy">
       <div class="ec-kicker">ENGLISH CONVERSATION</div>
-      <h1>Introduction</h1>
-      <p>
-        Mode hands-free untuk layar kelas. Kamera hanya digunakan untuk
-        mendeteksi keberadaan seseorang di depan layar dan tidak digunakan
-        untuk mengenali identitas.
+      <h1 id="startLessonTitle">English Conversation</h1>
+      <p id="lessonDescription">
+        Jawab pertanyaan dalam Bahasa Inggris. Sistem akan memberi feedback
+        dan koreksi sederhana.
       </p>
     </div>
     <button id="startButton" class="ec-primary ec-start-button" type="button">
@@ -36,11 +35,11 @@
     <header class="ec-header">
       <div>
         <div class="ec-kicker">BAHASA INGGRIS • CONVERSATION</div>
-        <h1>Introduction</h1>
+        <h1 id="lessonTitle">English Conversation</h1>
         <p id="levelText">Tingkat 1 • Level 1</p>
         <div id="demoBadge" class="ec-demo-badge hidden">ADMIN DEMO • progres tidak disimpan</div>
       </div>
-      <div class="ec-turn"><span id="turnText">0</span>/6</div>
+      <div class="ec-turn"><span id="turnText">0</span>/<span id="turnLimitText">6</span></div>
     </header>
 
     <section class="ec-stage">
@@ -55,7 +54,7 @@
             <rect x="78" y="193" width="104" height="105" rx="38" class="av-shirt"/>
             <path d="M90 217 Q130 244 170 217" class="av-collar"/>
           </svg>
-          <div class="ec-avatar-name">Alex</div>
+          <div id="assistantNameText" class="ec-avatar-name">Alex</div>
         </div>
 
         <div class="ec-state">
@@ -80,7 +79,7 @@
 
     <section class="ec-dialogue">
       <div id="assistantBubble" class="ec-main-bubble">
-        <span class="ec-label">ALEX</span>
+        <span id="assistantLabel" class="ec-label">ALEX</span>
         <div id="assistantText">Stand in front of the camera.</div>
       </div>
 
@@ -114,7 +113,7 @@
     <p id="resultMessage"></p>
     <div class="ec-score-grid">
       <div><span>Skor</span><strong id="resultScore">0%</strong></div>
-      <div><span>Respons sesuai</span><strong id="resultRelevant">0/6</strong></div>
+      <div><span>Respons sesuai</span><strong id="resultRelevant">0/<span id="resultTurnLimit">6</span></strong></div>
       <div><span>Giliran</span><strong id="resultTurns">0</strong></div>
     </div>
     <div id="resultFeedback" class="ec-result-feedback"></div>
