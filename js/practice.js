@@ -696,7 +696,8 @@ async function loadLevel() {
         const supportedTypes = [
             "multiplication",
             "place_value_multiplication",
-            "multi_digit_multiplication"
+            "multi_digit_multiplication",
+            "ipas"
         ];
 
 
@@ -957,6 +958,11 @@ async function prepareQuestions() {
         return generateMultiDigitQuestions(
             levelData
         );
+    }
+
+
+    if (type === "ipas") {
+        return generateIPASQuestions(levelData);
     }
 
 
@@ -1557,6 +1563,66 @@ function generateMultiDigitQuestions(
 }
 
 
+
+// ======================================================
+// IPAS GENERATOR
+// ======================================================
+
+function generateIPASQuestions(level) {
+
+    const bank = [
+        {
+            question_text: "Organ yang berfungsi memompa darah adalah?",
+            options: {
+                a: "Jantung",
+                b: "Paru-paru",
+                c: "Mata",
+                d: "Telinga"
+            },
+            answer: "a"
+        },
+        {
+            question_text: "Manusia bernapas menggunakan?",
+            options: {
+                a: "Tangan",
+                b: "Paru-paru",
+                c: "Kaki",
+                d: "Kulit"
+            },
+            answer: "b"
+        },
+        {
+            question_text: "Hewan yang mengalami metamorfosis adalah?",
+            options: {
+                a: "Kupu-kupu",
+                b: "Kucing",
+                c: "Sapi",
+                d: "Ayam"
+            },
+            answer: "a"
+        },
+        {
+            question_text: "Air dalam bentuk padat disebut?",
+            options: {
+                a: "Uap",
+                b: "Es",
+                c: "Embun",
+                d: "Air"
+            },
+            answer: "b"
+        }
+    ];
+
+    const result = [...bank];
+
+    shuffleArray(result);
+
+    return result.slice(
+        0,
+        Number(level.question_count)
+    );
+}
+
 // ======================================================
 // RANDOM INTEGER
 // ======================================================
@@ -2120,6 +2186,22 @@ function renderDirectQuestion(
     columnQuestionArea
         .classList
         .add("hidden");
+
+
+    if (question.question_text) {
+
+        questionText.innerHTML = `
+            <div>${question.question_text}</div>
+            <div style="margin-top:15px;text-align:left">
+                A. ${question.options.a}<br>
+                B. ${question.options.b}<br>
+                C. ${question.options.c}<br>
+                D. ${question.options.d}
+            </div>
+        `;
+
+        return;
+    }
 
 
     questionText.textContent =
