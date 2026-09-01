@@ -417,7 +417,7 @@ async function beginGreeting() {
 
     lastAssistantText = clean(data.assistant_text);
     assistantText.textContent = lastAssistantText;
-    await speakAI(lastAssistantText);
+    await speakAI(lastAssistantText, "greeting");
   } catch (error) {
     console.error(error);
     assistantText.textContent =
@@ -554,7 +554,7 @@ async function submitUserAnswer(rawText) {
 
     const shouldEnd = data.should_end === true || turn >= maxTurns;
 
-    if (lastAssistantText) await speakAI(lastAssistantText);
+    if (lastAssistantText) await speakAI(lastAssistantText, data.relevant === false ? "correct" : "excellent");
 
     if (shouldEnd) {
       await finishConversation(data);
@@ -600,7 +600,7 @@ async function callConversationAI(payload) {
   return data;
 }
 
-async function speakAI(text) {
+async function speakAI(text, emotion = "happy") {
   setState("speaking", "Speaking");
   speechStatus.textContent = "Speaking...";
 
@@ -613,6 +613,7 @@ async function speakAI(text) {
       body: {
         action: "tts",
         text,
+        emotion,
         ...authPayload
       }
     });
