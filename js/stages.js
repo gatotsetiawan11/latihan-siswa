@@ -37,12 +37,10 @@ const params =
         window.location.search
     );
 
-
 const subjectCode =
     params.get(
         "subject"
     );
-
 
 const topicCode =
     params.get(
@@ -58,7 +56,6 @@ const loginMode =
     sessionStorage.getItem(
         "login_mode"
     );
-
 
 const sessionToken =
     sessionStorage.getItem(
@@ -82,43 +79,31 @@ async function initialize() {
     const validSession =
         await checkSession();
 
-
     if (!validSession) {
-
         return;
-
     }
-
 
     if (
         !subjectCode ||
         !topicCode
     ) {
-
         window.location.href =
             "./dashboard.html";
-
         return;
-
     }
-
 
     backButton.addEventListener(
         "click",
         () => {
-
             window.location.href =
                 "./topics.html?subject=" +
                 encodeURIComponent(
                     subjectCode
                 );
-
         }
     );
 
-
     await loadStages();
-
 }
 
 
@@ -131,33 +116,21 @@ async function checkSession() {
     if (
         loginMode === "guest"
     ) {
-
         return true;
-
     }
-
 
     if (
         loginMode !== "student"
     ) {
-
         goLogin();
-
         return false;
-
     }
-
 
     if (!sessionToken) {
-
         sessionStorage.clear();
-
         goLogin();
-
         return false;
-
     }
-
 
     try {
 
@@ -173,26 +146,18 @@ async function checkSession() {
                 }
             );
 
-
         if (
             error ||
             !data ||
             data.length === 0
         ) {
-
             sessionStorage.clear();
-
             goLogin();
-
             return false;
-
         }
 
-
         return true;
-
     }
-
     catch (error) {
 
         console.error(
@@ -200,15 +165,10 @@ async function checkSession() {
             error
         );
 
-
         sessionStorage.clear();
-
         goLogin();
-
         return false;
-
     }
-
 }
 
 
@@ -245,13 +205,9 @@ async function loadStages() {
                 )
                 .single();
 
-
         if (subjectError) {
-
             throw subjectError;
-
         }
-
 
         // ==================================================
         // TOPIC
@@ -282,13 +238,9 @@ async function loadStages() {
                 )
                 .single();
 
-
         if (topicError) {
-
             throw topicError;
-
         }
-
 
         // ==================================================
         // HEADER
@@ -297,54 +249,20 @@ async function loadStages() {
         subjectName.textContent =
             subject.name.toUpperCase();
 
-
         topicName.textContent =
             topic.name;
 
-
         headingTitle.textContent =
             topic.name;
-
 
         // ==================================================
         // STAGES
         // ==================================================
 
-        const {
-            data: stages,
-            error: stageError
-        } =
-            await window.db
-                .from("stages")
-                .select(`
-                    id,
-                    stage_number,
-                    name,
-                    description,
-                    sort_order
-                `)
-                .eq(
-                    "topic_id",
-                    topic.id
-                )
-                .eq(
-                    "is_active",
-                    true
-                )
-                .order(
-                    "sort_order",
-                    {
-                        ascending: true
-                    }
-                );
-
-
-        if (stageError) {
-
-            throw stageError;
-
-        }
-
+        const stages =
+            await loadStageRows(
+                topic.id
+            );
 
         // ==================================================
         // STUDENT PROGRESS
@@ -353,59 +271,20 @@ async function loadStages() {
         let progress =
             [];
 
-
         if (
             loginMode === "student"
         ) {
-
-            const progressRpc =
-                topicCode === "addition"
-                    ? "get_student_addition_topic_progress"
-                    : topicCode === "subtraction"
-                        ? "get_student_subtraction_topic_progress"
-                        : topicCode === "english_conversation"
-                            ? "get_student_english_conversation_topic_progress"
-                            : "get_student_topic_progress";
-
-
-            const {
-                data,
-                error
-            } =
-                await window.db.rpc(
-                    progressRpc,
-                    {
-
-                        p_token:
-                            sessionToken,
-
-                        p_topic_id:
-                            topic.id
-
-                    }
-                );
-
-
-            if (error) {
-
-                throw error;
-
-            }
-
-
             progress =
-                data || [];
-
+                await loadStudentProgress(
+                    topic.id
+                );
         }
-
 
         renderStages(
             stages,
             progress
         );
-
     }
-
     catch (error) {
 
         console.error(
@@ -413,15 +292,173 @@ async function loadStages() {
             error
         );
 
-
         stageList.innerHTML = `
             <div class="error-card">
                 Tidak dapat memuat tingkat.
             </div>
         `;
+    }
+}
 
+
+// ======================================================
+// LOAD STAGE ROWS
+// ======================================================
+
+async function loadStageRows(
+    topicId
+) {
+
+    // Query utama memakai schema yang sekarang dipakai proyek.
+    const primary =
+        await window.db
+            .from("stages")
+            .select(`
+                id,
+                stage_number,
+                name,
+                description,
+                sort_order
+            `)
+            .eq(
+                "topic_id",
+                topicId
+            )
+            .eq(
+                "is_active",
+                true
+            )
+            .order(
+                "sort_order",
+                {
+                    ascending: true
+                }
+            );
+
+    if (!primary.error) {
+        return primary.data || [];
     }
 
+    console.warn(
+        "Primary stages query failed. Retrying with compatibility query:",
+        primary.error
+    );
+
+    // Fallback untuk deployment/database lama yang belum memiliki
+    // description atau sort_order. Dengan ini halaman Tingkat tidak
+    // langsung rusak hanya karena schema berbeda sedikit.
+    const fallback =
+        await window.db
+            .from("stages")
+            .select(`
+                id,
+                stage_number,
+                name
+            `)
+            .eq(
+                "topic_id",
+                topicId
+            )
+            .eq(
+                "is_active",
+                true
+            )
+            .order(
+                "stage_number",
+                {
+                    ascending: true
+                }
+            );
+
+    if (fallback.error) {
+        throw fallback.error;
+    }
+
+    return (fallback.data || []).map(
+        stage => ({
+            ...stage,
+            description: "",
+            sort_order:
+                Number(stage.stage_number) || 0
+        })
+    );
+}
+
+
+// ======================================================
+// LOAD STUDENT PROGRESS
+// ======================================================
+
+async function loadStudentProgress(
+    topicId
+) {
+
+    const preferredRpc =
+        topicCode === "addition"
+            ? "get_student_addition_topic_progress"
+            : topicCode === "subtraction"
+                ? "get_student_subtraction_topic_progress"
+                : topicCode === "english_conversation"
+                    ? "get_student_english_conversation_topic_progress"
+                    : "get_student_topic_progress";
+
+    const rpcCandidates =
+        preferredRpc === "get_student_topic_progress"
+            ? [
+                "get_student_topic_progress"
+            ]
+            : [
+                preferredRpc,
+                "get_student_topic_progress"
+            ];
+
+    for (
+        const rpcName
+        of rpcCandidates
+    ) {
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.db.rpc(
+                    rpcName,
+                    {
+                        p_token:
+                            sessionToken,
+                        p_topic_id:
+                            topicId
+                    }
+                );
+
+            if (!error) {
+                return data || [];
+            }
+
+            console.warn(
+                `Progress RPC ${rpcName} failed:`,
+                error
+            );
+        }
+        catch (error) {
+            console.warn(
+                `Progress RPC ${rpcName} threw an exception:`,
+                error
+            );
+        }
+    }
+
+    // Progress bukan syarat untuk menampilkan daftar tingkat.
+    // Jika semua RPC progress gagal, halaman tetap ditampilkan.
+    // Tingkat pertama tetap terbuka dan tingkat berikutnya mengikuti
+    // aturan normal sampai RPC/database diperbaiki.
+    console.warn(
+        "Progress unavailable. Rendering stages without saved progress."
+    );
+
+    return [];
 }
 
 
@@ -437,22 +474,17 @@ function renderStages(
     stageList.innerHTML =
         "";
 
-
     if (
         !stages ||
         stages.length === 0
     ) {
-
         stageList.innerHTML = `
             <div class="empty-card">
                 Belum ada tingkat tersedia.
             </div>
         `;
-
         return;
-
     }
-
 
     // ==================================================
     // PROGRESS MAP
@@ -461,18 +493,14 @@ function renderStages(
     const progressMap =
         new Map();
 
-
     progress.forEach(
         item => {
-
             progressMap.set(
                 item.stage_id,
                 item
             );
-
         }
     );
-
 
     // ==================================================
     // STAGE LOOP
@@ -489,16 +517,13 @@ function renderStages(
                     stage.id
                 );
 
-
             const completed =
                 currentProgress
                     ?.is_completed
                 === true;
 
-
             let unlocked =
                 false;
-
 
             // ==========================================
             // GUEST
@@ -507,12 +532,9 @@ function renderStages(
             if (
                 loginMode === "guest"
             ) {
-
                 unlocked =
                     true;
-
             }
-
 
             // ==========================================
             // TINGKAT PERTAMA
@@ -521,12 +543,9 @@ function renderStages(
             else if (
                 index === 0
             ) {
-
                 unlocked =
                     true;
-
             }
-
 
             // ==========================================
             // TINGKAT BERIKUTNYA
@@ -539,30 +558,23 @@ function renderStages(
                         index - 1
                     ];
 
-
                 const previousProgress =
                     progressMap.get(
                         previousStage.id
                     );
 
-
                 unlocked =
                     previousProgress
                         ?.is_completed
                     === true;
-
             }
-
 
             // Tingkat yang sudah selesai
             // tetap dapat dibuka.
             if (completed) {
-
                 unlocked =
                     true;
-
             }
-
 
             createStageCard(
                 stage,
@@ -570,10 +582,8 @@ function renderStages(
                 unlocked,
                 completed
             );
-
         }
     );
-
 }
 
 
@@ -593,23 +603,17 @@ function createStageCard(
             "button"
         );
 
-
     button.type =
         "button";
-
 
     button.className =
         "learning-card stage-card";
 
-
     if (completed) {
-
         button.classList.add(
             "stage-completed"
         );
-
     }
-
 
     if (!unlocked) {
 
@@ -617,12 +621,9 @@ function createStageCard(
             "stage-locked"
         );
 
-
         button.disabled =
             true;
-
     }
-
 
     // ==================================================
     // NUMBER
@@ -633,14 +634,11 @@ function createStageCard(
             "div"
         );
 
-
     number.className =
         "stage-number";
 
-
     number.textContent =
         stage.stage_number;
-
 
     // ==================================================
     // CONTENT
@@ -651,37 +649,30 @@ function createStageCard(
             "div"
         );
 
-
     const title =
         document.createElement(
             "h3"
         );
 
-
     title.textContent =
         stage.name;
-
 
     const description =
         document.createElement(
             "p"
         );
 
-
     description.textContent =
         stage.description ||
         "Mulai tingkat ini.";
-
 
     const progressText =
         document.createElement(
             "div"
         );
 
-
     progressText.className =
         "stage-progress";
-
 
     // ==================================================
     // PROGRESS TEXT
@@ -690,64 +681,46 @@ function createStageCard(
     if (
         loginMode === "guest"
     ) {
-
         progressText.textContent =
             "Mode Guest • semua level terbuka";
-
     }
-
     else if (completed) {
-
         progressText.textContent =
             "✓ Semua level telah lulus";
-
     }
-
     else if (!unlocked) {
-
         progressText.textContent =
             "🔒 Selesaikan tingkat sebelumnya";
-
     }
-
     else if (
         progress &&
         Number(
             progress.total_levels
         ) > 0
     ) {
-
         progressText.textContent =
             `${
                 progress.completed_levels
             } dari ${
                 progress.total_levels
             } level selesai`;
-
     }
-
     else {
-
         progressText.textContent =
             "Belum dimulai";
-
     }
-
 
     content.appendChild(
         title
     );
 
-
     content.appendChild(
         description
     );
 
-
     content.appendChild(
         progressText
     );
-
 
     // ==================================================
     // ARROW
@@ -758,16 +731,13 @@ function createStageCard(
             "div"
         );
 
-
     arrow.className =
         "card-arrow";
-
 
     arrow.textContent =
         unlocked
             ? "›"
             : "🔒";
-
 
     // ==================================================
     // APPEND
@@ -777,16 +747,13 @@ function createStageCard(
         number
     );
 
-
     button.appendChild(
         content
     );
 
-
     button.appendChild(
         arrow
     );
-
 
     // ==================================================
     // CLICK
@@ -800,36 +767,28 @@ function createStageCard(
 
                 const url =
                     "./levels.html" +
-
                     "?subject=" +
                     encodeURIComponent(
                         subjectCode
                     ) +
-
                     "&topic=" +
                     encodeURIComponent(
                         topicCode
                     ) +
-
                     "&stage=" +
                     encodeURIComponent(
                         stage.stage_number
                     );
 
-
                 window.location.href =
                     url;
-
             }
         );
-
     }
-
 
     stageList.appendChild(
         button
     );
-
 }
 
 
@@ -838,8 +797,6 @@ function createStageCard(
 // ======================================================
 
 function goLogin() {
-
     window.location.href =
         "./index.html";
-
 }
