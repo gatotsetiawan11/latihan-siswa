@@ -787,7 +787,9 @@ function createLevelCard(
 
 
     time.textContent =
-        `${level.time_limit_seconds} detik`;
+        topicCode === "english_conversation"
+            ? `${getConversationTurnCount(level)} giliran`
+            : `${level.time_limit_seconds} detik`;
 
 
     header.appendChild(
@@ -831,7 +833,9 @@ function createLevelCard(
 
 
     questions.textContent =
-        `${level.question_count} soal`;
+        topicCode === "english_conversation"
+            ? "Percakapan AI"
+            : `${level.question_count} soal`;
 
 
     const passing =
@@ -871,7 +875,9 @@ function createLevelCard(
     ) {
 
         progressInfo.textContent =
-            "Mode Guest";
+            topicCode === "english_conversation"
+                ? "Login siswa diperlukan untuk Conversation AI"
+                : "Mode Guest";
 
     }
 
@@ -942,7 +948,9 @@ function createLevelCard(
     else {
 
         start.textContent =
-            "Mulai →";
+            loginMode === "guest" && topicCode === "english_conversation"
+                ? "Login untuk mulai →"
+                : "Mulai →";
 
     }
 
@@ -981,6 +989,11 @@ function createLevelCard(
         card.addEventListener(
             "click",
             () => {
+
+                if (loginMode === "guest" && topicCode === "english_conversation") {
+                    goLogin();
+                    return;
+                }
 
                 const practicePage =
                     topicCode === "addition"
@@ -1036,6 +1049,29 @@ function createLevelCard(
 
 }
 
+
+
+function getConversationTurnCount(level) {
+
+    const config =
+        level?.config && typeof level.config === "object"
+            ? level.config
+            : {};
+
+    const value =
+        Number(
+            config.max_turns ??
+            config.turn_count ??
+            level?.question_count
+        );
+
+    if (!Number.isFinite(value) || value <= 0) {
+        return 6;
+    }
+
+    return Math.min(20, Math.max(1, Math.round(value)));
+
+}
 
 // ======================================================
 // NAVIGATION

@@ -17,6 +17,12 @@ const feedbackBox = $("feedbackBox");
 const speechStatus = $("speechStatus");
 const turnText = $("turnText");
 const levelText = $("levelText");
+const lessonTitle = $("lessonTitle");
+const startLessonTitle = $("startLessonTitle");
+const lessonDescription = $("lessonDescription");
+const assistantNameText = $("assistantNameText");
+const assistantLabel = $("assistantLabel");
+const turnLimitText = $("turnLimitText");
 const answerInput = $("answerInput");
 const sendButton = $("sendButton");
 const exitButton = $("exitButton");
@@ -27,7 +33,7 @@ const params = new URLSearchParams(location.search);
 const subjectCode = params.get("subject") || "english";
 const topicCode = params.get("topic") || "english_conversation";
 const stageNumber = Number(params.get("stage") || 1);
-const levelNumber = Number(params.get("level") || 1);
+let levelNumber = Number(params.get("level") || 1);
 let levelId = params.get("id");
 
 const loginMode = sessionStorage.getItem("login_mode");
@@ -37,7 +43,8 @@ const adminToken = sessionStorage.getItem("admin_session_token");
 const isStudentMode = loginMode === "student" && Boolean(sessionToken);
 const isAdminDemoMode = !isStudentMode && Boolean(adminToken);
 
-const MAX_TURNS = 6;
+const DEFAULT_MAX_TURNS = 6;
+const DEFAULT_PASSING_SCORE = 70;
 const PERSON_CONFIDENCE = 0.58;
 const PERSON_STABLE_MS = 1400;
 const PERSON_LOST_RESET_MS = 7000;
@@ -57,6 +64,14 @@ let lastAssistantText = "";
 let history = [];
 let startedAt = 0;
 let currentAudio = null;
+let levelData = null;
+let conversationConfig = {};
+let maxTurns = DEFAULT_MAX_TURNS;
+let passingScore = DEFAULT_PASSING_SCORE;
+let assistantName = "Alex";
+let speechLanguage = "en-US";
+let speechRate = 0.9;
+let speechPitch = 1.08;
 
 async function init() {
   if (topicCode !== "english_conversation") return goBack();
@@ -74,7 +89,7 @@ async function init() {
 
     if (!levelId) {
       loadingScreen.textContent =
-        "Level Conversation Introduction belum ditemukan.";
+        "Level English Conversation belum ditemukan.";
       return;
     }
   }
@@ -89,7 +104,8 @@ async function init() {
     return;
   }
 
-  levelText.textContent = `Tingkat ${stageNumber} • Level ${levelNumber}`;
+  if (!(await loadLevelConfiguration())) return;
+  applyLevelConfiguration();
 
   if (isAdminDemoMode) {
     $("demoBadge").classList.remove("hidden");
@@ -196,6 +212,78 @@ async function resolveAdminDemoLevelId() {
   }
 }
 
+
+async function loadLevelConfiguration() {
+  try {
+    const { data, error } = await window.db
+      .from("levels")
+      .select("id,level_number,name,time_limit_seconds,question_count,passing_score,config")
+      .eq("id", levelId)
+      .eq("is_active", true)
+      .single();
+
+    if (error || !data) throw error || new Error("level");
+
+    levelData = data;
+    levelNumber = Number(data.level_number) || levelNumber;
+    conversationConfig =
+      data.config && typeof data.config === "object" ? data.config : {};
+
+    maxTurns = clampInteger(
+      conversationConfig.max_turns ??
+        conversationConfig.turn_count ??
+        data.question_count,
+      DEFAULT_MAX_TURNS,
+      1,
+      20
+    );
+
+    passingScore = clampInteger(
+      data.passing_score,
+      DEFAULT_PASSING_SCORE,
+      0,
+      100
+    );
+
+    assistantName = cleanShort(
+      conversationConfig.assistant_name || "Alex",
+      40
+    ) || "Alex";
+    speechLanguage = cleanShort(
+      conversationConfig.speech_language || "en-US",
+      20
+    ) || "en-US";
+    speechRate = clampNumber(conversationConfig.speech_rate, 0.9, 0.6, 1.3);
+    speechPitch = clampNumber(conversationConfig.speech_pitch, 1.08, 0.7, 1.4);
+
+    return true;
+  } catch (error) {
+    console.error("Load conversation level:", error);
+    loadingScreen.textContent = "Konfigurasi level Bahasa Inggris tidak dapat dimuat.";
+    return false;
+  }
+}
+
+function applyLevelConfiguration() {
+  const title = cleanShort(levelData?.name || "English Conversation", 80);
+  const description = cleanShort(
+    conversationConfig.description ||
+      conversationConfig.instructions ||
+      "Jawab pertanyaan dalam Bahasa Inggris. Sistem akan memberi feedback dan koreksi sederhana.",
+    280
+  );
+
+  levelText.textContent = `Tingkat ${stageNumber} • Level ${levelNumber}`;
+  lessonTitle.textContent = title;
+  startLessonTitle.textContent = title;
+  lessonDescription.textContent = description;
+  assistantNameText.textContent = assistantName;
+  assistantLabel.textContent = assistantName.toUpperCase();
+  turnLimitText.textContent = String(maxTurns);
+  $("resultTurnLimit").textContent = String(maxTurns);
+
+  document.title = `${title} • English Conversation AI`;
+}
 
 async function checkAccess() {
   try {
@@ -315,7 +403,7 @@ async function beginGreeting() {
   if (busy) return;
   busy = true;
   setState("thinking", "Thinking");
-  speechStatus.textContent = "Alex noticed someone...";
+  speechStatus.textContent = `${assistantName} noticed someone...`;
 
   try {
     const data = await callConversationAI({
@@ -330,16 +418,18 @@ async function beginGreeting() {
     lastAssistantText = clean(data.assistant_text);
     assistantText.textContent = lastAssistantText;
     await speakAI(lastAssistantText);
-    beginAutoListening();
   } catch (error) {
     console.error(error);
-    assistantText.textContent = "Hello! Good morning. What is your name?";
+    assistantText.textContent =
+      cleanShort(conversationConfig.fallback_greeting, 240) ||
+      "Hello! Good morning. What is your name?";
     lastAssistantText = assistantText.textContent;
     await speakBrowser(lastAssistantText);
-    beginAutoListening();
   } finally {
     busy = false;
   }
+
+  beginAutoListening();
 }
 
 function setupRecognition() {
@@ -350,7 +440,7 @@ function setupRecognition() {
   }
 
   recognition = new Recognition();
-  recognition.lang = "en-US";
+  recognition.lang = speechLanguage;
   recognition.interimResults = true;
   recognition.continuous = false;
   recognition.maxAlternatives = 1;
@@ -401,14 +491,14 @@ function setupRecognition() {
 
     if (text && !busy) {
       submitUserAnswer(text);
-    } else if (!busy && greetingStarted && turn < MAX_TURNS) {
+    } else if (!busy && greetingStarted && turn < maxTurns) {
       setTimeout(beginAutoListening, 650);
     }
   };
 }
 
 function beginAutoListening() {
-  if (busy || turn >= MAX_TURNS) return;
+  if (busy || turn >= maxTurns) return;
 
   if (!recognition) {
     setState("waiting", "Type fallback");
@@ -427,7 +517,7 @@ function beginAutoListening() {
 
 async function submitUserAnswer(rawText) {
   const userText = clean(rawText);
-  if (!userText || busy || turn >= MAX_TURNS) return;
+  if (!userText || busy || turn >= maxTurns) return;
 
   busy = true;
   answerInput.value = "";
@@ -462,7 +552,7 @@ async function submitUserAnswer(rawText) {
     lastAssistantText = clean(data.assistant_text);
     if (lastAssistantText) assistantText.textContent = lastAssistantText;
 
-    const shouldEnd = data.should_end === true || turn >= MAX_TURNS;
+    const shouldEnd = data.should_end === true || turn >= maxTurns;
 
     if (lastAssistantText) await speakAI(lastAssistantText);
 
@@ -565,9 +655,9 @@ function speakBrowser(text) {
 
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    u.pitch = 1.08;
+    u.lang = speechLanguage;
+    u.rate = speechRate;
+    u.pitch = speechPitch;
     u.onend = resolve;
     u.onerror = resolve;
     speechSynthesis.speak(u);
@@ -588,7 +678,7 @@ async function finishConversation(lastData) {
   setState("waiting", "Finished");
   speechStatus.textContent = "Conversation completed.";
 
-  const score = Math.round((relevantCount / MAX_TURNS) * 100);
+  const score = Math.round((relevantCount / Math.max(1, maxTurns)) * 100);
   let saved = null;
 
   if (isStudentMode) {
@@ -609,7 +699,7 @@ async function finishConversation(lastData) {
     }
   } else {
     saved = {
-      passed: score >= 70,
+      passed: score >= passingScore,
       demo_mode: true
     };
   }
@@ -622,15 +712,17 @@ function showResult(score, saved, lastData) {
   conversationScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
 
-  const passed = saved?.passed === true || score >= 70;
+  const passed = typeof saved?.passed === "boolean"
+    ? saved.passed
+    : score >= passingScore;
   $("resultScore").textContent = `${score}%`;
-  $("resultRelevant").textContent = `${relevantCount}/${MAX_TURNS}`;
+  $("resultRelevant").textContent = `${relevantCount}/${maxTurns}`;
   $("resultTurns").textContent = String(turn);
   $("resultMessage").textContent = isAdminDemoMode
     ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
     : passed
       ? "Percakapan selesai dengan baik."
-      : "Ulangi sekali lagi dan jawab lebih sesuai dengan pertanyaan.";
+      : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
   $("resultFeedback").textContent =
     clean(lastData?.session_feedback) ||
     "Gunakan jawaban pendek, jelas, dan sederhana.";
@@ -644,6 +736,22 @@ function stopMedia() {
   }
   if (currentAudio) currentAudio.pause();
   if (stream) stream.getTracks().forEach(track => track.stop());
+}
+
+function clampInteger(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
+}
+
+function clampNumber(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, number));
+}
+
+function cleanShort(value, maxLength = 120) {
+  return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
 function clean(value) {
