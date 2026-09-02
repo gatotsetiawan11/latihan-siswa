@@ -762,6 +762,39 @@ async function loadLevel() {
             `Tingkat ${stageNumber} • ${levelData.name}`;
 
 
+        const practiceHelpMain =
+            document.getElementById(
+                "practiceHelpMain"
+            );
+
+        const practiceHelpNote =
+            document.getElementById(
+                "practiceHelpNote"
+            );
+
+
+        if (
+            subjectCode === "ipas"
+        ) {
+
+            if (practiceHelpMain) {
+
+                practiceHelpMain.textContent =
+                    "Pilih jawaban yang benar.";
+
+            }
+
+
+            if (practiceHelpNote) {
+
+                practiceHelpNote.textContent =
+                    "Klik salah satu pilihan jawaban.";
+
+            }
+
+        }
+
+
         // ==================================================
         // RESTORE
         // ==================================================
