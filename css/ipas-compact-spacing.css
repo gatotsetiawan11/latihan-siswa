@@ -1,0 +1,44 @@
+
+/* ==========================================
+   IPAS COMPACT SPACING V2
+   Only adjust layout spacing
+========================================== */
+
+/* Kurangi ruang sebelum area soal */
+.practice-stage {
+    padding-top: 10px !important;
+}
+
+/* Area soal IPAS lebih rapat */
+.direct-question-area {
+    padding-top: 10px !important;
+    padding-bottom: 20px !important;
+}
+
+/* Kartu soal */
+.practice-stage .big-question {
+    margin-bottom: 18px !important;
+}
+
+/* Pertanyaan IPAS */
+.ipas-question-text,
+#questionText.big-question {
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
+}
+
+/* Kurangi jarak antara help dan soal */
+.practice-help {
+    margin-bottom: 10px !important;
+}
+
+/* Tombol jawaban tetap nyaman diklik */
+.ipas-options {
+    gap: 10px !important;
+}
+
+/* Desktop */
+.ipas-option {
+    min-height: 46px !important;
+    padding: 10px 16px !important;
+}
