@@ -2199,14 +2199,65 @@ function renderDirectQuestion(
     if (question.question_text) {
 
         questionText.innerHTML = `
-            <div>${question.question_text}</div>
-            <div style="margin-top:15px;text-align:left">
-                A. ${question.options.a}<br>
-                B. ${question.options.b}<br>
-                C. ${question.options.c}<br>
-                D. ${question.options.d}
+            <div class="ipas-question-text">
+                ${question.question_text}
+            </div>
+
+            <div class="ipas-options">
+                <button type="button" class="ipas-option" data-answer="a">
+                    A. ${question.options.a}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="b">
+                    B. ${question.options.b}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="c">
+                    C. ${question.options.c}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="d">
+                    D. ${question.options.d}
+                </button>
             </div>
         `;
+
+        answerInput.value = "";
+
+        const buttons =
+            questionText.querySelectorAll(".ipas-option");
+
+        buttons.forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    if (answerLocked) {
+                        return;
+                    }
+
+                    buttons.forEach(item => {
+                        item.classList.remove("active");
+                    });
+
+                    button.classList.add("active");
+
+                    answerInput.value =
+                        button.dataset.answer;
+
+                    savePracticeState();
+
+                    setTimeout(
+                        submitDirectAnswer,
+                        150
+                    );
+                }
+            );
+
+        });
+
+        answerInput.classList.add("hidden");
 
         return;
     }
