@@ -3025,10 +3025,30 @@ const responseTime =
     getResponseTime();
 
 
-const correct =
-    Number(userValue)
-    ===
-    question.answer;
+let correct;
+
+
+if (
+    subjectCode === "ipas"
+) {
+
+    correct =
+        String(userValue)
+            .toLowerCase()
+            .trim()
+        ===
+        String(question.answer)
+            .toLowerCase()
+            .trim();
+
+} else {
+
+    correct =
+        Number(userValue)
+        ===
+        question.answer;
+
+}
 
 
 let status;
@@ -3054,10 +3074,24 @@ if (correct) {
     wrongCount++;
 
 
-    answerFeedback.textContent =
-        `✕ Jawaban yang benar ${formatNumber(
-            question.answer
-        )}`;
+    if (
+        subjectCode === "ipas"
+    ) {
+
+        answerFeedback.textContent =
+            `✕ Jawaban yang benar ${
+                String(question.answer)
+                    .toUpperCase()
+            }`;
+
+    } else {
+
+        answerFeedback.textContent =
+            `✕ Jawaban yang benar ${formatNumber(
+                question.answer
+            )}`;
+
+    }
 
     answerFeedback.className =
         "answer-feedback feedback-wrong";
