@@ -745,8 +745,17 @@ async function loadLevel() {
         }
 
 
-        practiceTopic.textContent =
-            "PERKALIAN";
+        if (subjectCode === "ipas") {
+
+            practiceTopic.textContent =
+                "IPAS";
+
+        } else {
+
+            practiceTopic.textContent =
+                "PERKALIAN";
+
+        }
 
 
         practiceLevel.textContent =
