@@ -3001,9 +3001,17 @@ function submitDirectAnswer() {
 
 
     const correct =
-        Number(userValue)
-        ===
-        question.answer;
+        subjectCode === "ipas"
+            ? String(userValue)
+                .toLowerCase()
+                .trim()
+                ===
+              String(question.answer)
+                .toLowerCase()
+                .trim()
+            : Number(userValue)
+                ===
+              question.answer;
 
 
     let status;
@@ -3029,10 +3037,22 @@ function submitDirectAnswer() {
         wrongCount++;
 
 
-        answerFeedback.textContent =
-            `✕ Jawaban yang benar ${formatNumber(
-                question.answer
-            )}`;
+        if (subjectCode === "ipas") {
+
+            answerFeedback.textContent =
+                `✕ Jawaban yang benar ${
+                    String(question.answer)
+                        .toUpperCase()
+                }`;
+
+        } else {
+
+            answerFeedback.textContent =
+                `✕ Jawaban yang benar ${formatNumber(
+                    question.answer
+                )}`;
+
+        }
 
         answerFeedback.className =
             "answer-feedback feedback-wrong";
