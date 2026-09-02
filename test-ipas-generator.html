@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Test IPAS Generator</title>
+</head>
+
+<body>
+
+<h1>Test IPAS Generator V2</h1>
+
+<pre id="result"></pre>
+
+
+<script src="data/ipas/kelas-3/bab-1/concepts.js"></script>
+<script src="data/ipas/kelas-3/bab-1/level.js"></script>
+<script src="data/ipas/kelas-3/bab-1/templates.js"></script>
+<script src="data/ipas/kelas-3/bab-1/generator.js"></script>
+
+
+<script>
+
+function runTest(stage, level){
+
+    const soal =
+        generateIPASBab1Questions({
+            stage,
+            level,
+            total:5
+        });
+
+
+    return {
+        stage,
+        level,
+        soal
+    };
+
+}
+
+
+const hasil = [
+
+    runTest("stage1",1),
+
+    runTest("stage1",5),
+
+    runTest("stage1",10),
+
+    runTest("stage3",10)
+
+];
+
+
+document
+.getElementById("result")
+.textContent =
+JSON.stringify(
+    hasil,
+    null,
+    2
+);
+
+
+console.log(hasil);
+
+</script>
+
+</body>
+</html>
