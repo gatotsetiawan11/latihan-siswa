@@ -218,6 +218,47 @@ let answerLocked = false;
 initialize();
 
 
+
+// ======================================================
+// PRACTICE HELP (IPAS / MATEMATIKA)
+// ======================================================
+
+function updatePracticeHelp() {
+
+    const main =
+        document.getElementById("practiceHelpMain");
+
+    const note =
+        document.getElementById("practiceHelpNote");
+
+    if (!main || !note) {
+        return;
+    }
+
+    if (subjectCode === "ipas") {
+
+        main.textContent =
+            "Pilih jawaban yang benar.";
+
+        note.textContent =
+            "Klik salah satu pilihan A, B, C, atau D.";
+
+    } else {
+
+        main.innerHTML =
+            `
+            Tekan
+            <strong class="enter-key">
+                Enter / Selesai
+            </strong>
+            untuk mengirim jawaban.
+            `;
+
+        note.textContent =
+            "Jika belum benar, jawaban masih dapat diperbaiki sampai waktu habis.";
+    }
+}
+
 // ======================================================
 // INITIALIZE
 // ======================================================
@@ -749,6 +790,8 @@ async function loadLevel() {
 
             practiceTopic.textContent =
                 "IPAS";
+
+            updatePracticeHelp();
 
         } else {
 
