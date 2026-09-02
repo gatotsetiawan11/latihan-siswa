@@ -1,735 +1,743 @@
 <!DOCTYPE html>
+
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>Latihan - Latihan Siswa</title>
+<title>Latihan - Latihan Siswa</title>
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/style.css"
+>
 
-    <link
-        rel="stylesheet"
-        href="css/column-practice.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/column-practice.css"
+>
 
-    <link
-        rel="stylesheet"
-        href="css/practice-ui.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/practice-ui.css"
+>
 
-    <link
-        rel="stylesheet"
-        href="css/practice-color-cue.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/practice-color-cue.css"
+>
 
-    <link
-        rel="stylesheet"
-        href="css/practice-mobile-help.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/practice-mobile-help.css"
+>
 
-    <link
-        rel="stylesheet"
-        href="css/practice-mobile-position.css"
-    >
+<link
+    rel="stylesheet"
+    href="css/practice-mobile-position.css"
+>
+
+<link
+   rel="stylesheet"
+   href="css/practice-addition-sign.css"
+>
+
+<link
+    rel="stylesheet"
+    href="css/practice-column-mobile-compact.css"
+>
+
+<link
+    rel="stylesheet"
+    href="css/ipas-compact-spacing.css"
+>
     
-    <link
-       rel="stylesheet"
-       href="css/practice-addition-sign.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="css/practice-column-mobile-compact.css"
-    >
-
+<link
+    rel="stylesheet"
+    href="css/ipas-compact.css"
+>
+    
 </head>
-
 
 <body class="practice-page">
 
+<!-- ================================================= -->
+<!-- LOADING                                           -->
+<!-- ================================================= -->
 
-    <!-- ================================================= -->
-    <!-- LOADING                                           -->
-    <!-- ================================================= -->
+<section
+    id="practiceLoading"
+    class="practice-loading"
+>
 
-    <section
-        id="practiceLoading"
-        class="practice-loading"
-    >
+    <div class="practice-loading-spinner">
+    </div>
 
-        <div class="practice-loading-spinner">
-        </div>
+    <p>
+        Menyiapkan latihan...
+    </p>
 
-        <p>
-            Menyiapkan latihan...
-        </p>
-
-    </section>
-
-
-    <!-- ================================================= -->
-    <!-- GAME                                              -->
-    <!-- ================================================= -->
-
-    <main
-        id="practiceGame"
-        class="practice-shell hidden"
-    >
+</section>
 
 
-        <!-- ============================================= -->
-        <!-- HEADER                                        -->
-        <!-- ============================================= -->
+<!-- ================================================= -->
+<!-- GAME                                              -->
+<!-- ================================================= -->
 
-        <header class="practice-topbar">
-
-            <div class="practice-topbar-left">
-
-                <div class="practice-meta">
-
-                    <span
-                        id="practiceTopic"
-                        class="practice-topic"
-                    >
-                        PERKALIAN
-                    </span>
-
-                    <span
-                        id="practiceLevel"
-                        class="practice-level"
-                    >
-                        Tingkat
-                    </span>
-
-                </div>
+<main
+    id="practiceGame"
+    class="practice-shell hidden"
+>
 
 
-                <div class="practice-progress-info">
+    <!-- ============================================= -->
+    <!-- HEADER                                        -->
+    <!-- ============================================= -->
 
-                    <strong
-                        id="questionProgress"
-                        class="question-progress-text"
-                    >
-                        Soal 1 / 10
-                    </strong>
+    <header class="practice-topbar">
 
+        <div class="practice-topbar-left">
 
-                    <span class="correct-counter">
-
-                        Benar
-
-                        <strong id="liveCorrect">
-                            0
-                        </strong>
-
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- TIMER -->
-
-            <div
-                id="timerCircle"
-                class="practice-timer"
-            >
+            <div class="practice-meta">
 
                 <span
-                    id="timerValue"
-                    class="practice-timer-value"
+                    id="practiceTopic"
+                    class="practice-topic"
                 >
-                    -
+                    PERKALIAN
                 </span>
 
-                <span class="practice-timer-unit">
-                    detik
+                <span
+                    id="practiceLevel"
+                    class="practice-level"
+                >
+                    Tingkat
                 </span>
 
             </div>
 
-        </header>
 
+            <div class="practice-progress-info">
 
-        <!-- ============================================= -->
-        <!-- PROGRESS                                      -->
-        <!-- ============================================= -->
-
-        <div class="practice-progress-track">
-
-            <div
-                id="questionProgressBar"
-                class="practice-progress-bar"
-            >
-            </div>
-
-        </div>
-
-
-        <!-- ============================================= -->
-        <!-- PETUNJUK PENGGUNAAN                           -->
-        <!-- SEKARANG BERADA DI ATAS SOAL                  -->
-        <!-- ============================================= -->
-
-        <div class="practice-help">
-
-            <div id="practiceHelpMain" class="practice-help-main">
-
-                Tekan
-
-                <strong class="enter-key">
-                    Enter / Selesai
+                <strong
+                    id="questionProgress"
+                    class="question-progress-text"
+                >
+                    Soal 1 / 10
                 </strong>
 
-                untuk mengirim jawaban.
 
-            </div>
+                <span class="correct-counter">
 
+                    Benar
 
-            <div class="practice-help-note">
+                    <strong id="liveCorrect">
+                        0
+                    </strong>
 
-                Jika belum benar, jawaban masih dapat
-                diperbaiki sampai waktu habis.
+                </span>
 
             </div>
 
         </div>
 
 
-        <!-- ============================================= -->
-        <!-- QUESTION                                      -->
-        <!-- ============================================= -->
+        <!-- TIMER -->
 
-        <section class="practice-stage">
+        <div
+            id="timerCircle"
+            class="practice-timer"
+        >
+
+            <span
+                id="timerValue"
+                class="practice-timer-value"
+            >
+                -
+            </span>
+
+            <span class="practice-timer-unit">
+                detik
+            </span>
+
+        </div>
+
+    </header>
 
 
-            <!-- ========================================= -->
-            <!-- DIRECT QUESTION                           -->
-            <!-- ========================================= -->
+    <!-- ============================================= -->
+    <!-- PROGRESS                                      -->
+    <!-- ============================================= -->
+
+    <div class="practice-progress-track">
+
+        <div
+            id="questionProgressBar"
+            class="practice-progress-bar"
+        >
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- PETUNJUK PENGGUNAAN                           -->
+    <!-- SEKARANG BERADA DI ATAS SOAL                  -->
+    <!-- ============================================= -->
+
+    <div class="practice-help">
+
+        <div class="practice-help-main">
+
+            Tekan
+
+            <strong class="enter-key">
+                Enter / Selesai
+            </strong>
+
+            untuk mengirim jawaban.
+
+        </div>
+
+
+        <div class="practice-help-note">
+
+            Jika belum benar, jawaban masih dapat
+            diperbaiki sampai waktu habis.
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- QUESTION                                      -->
+    <!-- ============================================= -->
+
+    <section class="practice-stage">
+
+
+        <!-- ========================================= -->
+        <!-- DIRECT QUESTION                           -->
+        <!-- ========================================= -->
+
+        <div
+            id="directQuestionArea"
+            class="direct-question-area"
+        >
 
             <div
-                id="directQuestionArea"
-                class="direct-question-area"
+                id="questionText"
+                class="big-question"
             >
-
-                <div
-                    id="questionText"
-                    class="big-question"
-                >
-                    2 × 8
-                </div>
-
-
-                <div class="answer-wrap">
-
-                    <input
-                        id="answerInput"
-                        class="big-answer-input"
-                        type="text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        autocomplete="off"
-                        placeholder="?"
-                        aria-label="Jawaban"
-                    >
-
-                </div>
-
+                2 × 8
             </div>
 
 
-            <!-- ========================================= -->
-            <!-- COLUMN QUESTION                           -->
-            <!-- 2 DIGIT x 1 DIGIT                        -->
-            <!-- ========================================= -->
+            <div class="answer-wrap">
 
-            <div
-                id="columnQuestionArea"
-                class="column-question-area hidden"
-            >
+                <input
+                    id="answerInput"
+                    class="big-answer-input"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="off"
+                    placeholder="?"
+                    aria-label="Jawaban"
+                >
 
-                <div class="column-practice column-practice-2x1">
+            </div>
 
-                    <div class="column-heading">
+        </div>
 
-                        <span class="column-heading-label">
-                            PERKALIAN BERSUSUN
+
+        <!-- ========================================= -->
+        <!-- COLUMN QUESTION                           -->
+        <!-- 2 DIGIT x 1 DIGIT                        -->
+        <!-- ========================================= -->
+
+        <div
+            id="columnQuestionArea"
+            class="column-question-area hidden"
+        >
+
+            <div class="column-practice column-practice-2x1">
+
+                <div class="column-heading">
+
+                    <span class="column-heading-label">
+                        PERKALIAN BERSUSUN
+                    </span>
+
+                    <p id="columnMethodText">
+                        Mulai dari angka paling belakang.
+                    </p>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- ENGINE COMPATIBILITY              -->
+                <!-- Tetap ada agar practice.js lama   -->
+                <!-- tidak kehilangan ID yang dipakai. -->
+                <!-- ================================= -->
+
+                <div
+                    class="column-engine-compat"
+                    aria-hidden="true"
+                >
+
+                    <span id="columnTopNumber">
+                        17
+                    </span>
+
+                    <span id="columnBottomNumber">
+                        3
+                    </span>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- VISUAL BOARD                      -->
+                <!-- ================================= -->
+
+                <div class="column-board-2x1">
+
+                    <!-- PANAH BANTU -->
+
+                    <svg
+                        id="columnGuideArrow"
+                        class="column-guide-arrow arrow-to-ones"
+                        viewBox="0 0 260 170"
+                        aria-hidden="true"
+                    >
+
+                        <defs>
+
+                            <marker
+                                id="columnArrowHead"
+                                markerWidth="10"
+                                markerHeight="10"
+                                refX="7"
+                                refY="3"
+                                orient="auto"
+                                markerUnits="strokeWidth"
+                            >
+
+                                <path
+                                    d="M0,0 L0,6 L8,3 z"
+                                    class="column-arrow-head"
+                                >
+                                </path>
+
+                            </marker>
+
+                        </defs>
+
+
+                        <path
+                            id="columnGuideArrowPath"
+                            class="column-arrow-path"
+                            d="M 178 132 C 205 112, 210 80, 188 45"
+                            marker-end="url(#columnArrowHead)"
+                        >
+                        </path>
+
+                    </svg>
+
+
+                    <!-- SIMPANAN / CARRY -->
+
+                    <div
+                        id="columnCarryBadge"
+                        class="column-carry-badge hidden"
+                        aria-live="polite"
+                    >
+
+                        <span class="column-carry-caption">
+                            simpan
                         </span>
 
-                        <p id="columnMethodText">
-                            Mulai dari angka paling belakang.
-                        </p>
+                        <strong id="columnCarryValue">
+                        </strong>
 
                     </div>
 
 
-                    <!-- ================================= -->
-                    <!-- ENGINE COMPATIBILITY              -->
-                    <!-- Tetap ada agar practice.js lama   -->
-                    <!-- tidak kehilangan ID yang dipakai. -->
-                    <!-- ================================= -->
+                    <!-- TOP NUMBER -->
 
-                    <div
-                        class="column-engine-compat"
-                        aria-hidden="true"
-                    >
+                    <div class="column-number-grid column-top-grid">
 
-                        <span id="columnTopNumber">
-                            17
+                        <span class="column-grid-spacer">
                         </span>
 
-                        <span id="columnBottomNumber">
+                        <span
+                            id="columnTopTensDigit"
+                            class="column-board-digit"
+                        >
+                            1
+                        </span>
+
+                        <span
+                            id="columnTopOnesDigit"
+                            class="column-board-digit column-active-digit"
+                        >
+                            7
+                        </span>
+
+                    </div>
+
+
+                    <!-- BOTTOM NUMBER -->
+
+                    <div class="column-number-grid column-bottom-grid">
+
+                        <span class="column-board-sign">
+                            ×
+                        </span>
+
+                        <span class="column-grid-spacer">
+                        </span>
+
+                        <span
+                            id="columnBottomSingleDigit"
+                            class="column-board-digit column-multiplier-digit"
+                        >
                             3
                         </span>
 
                     </div>
 
 
-                    <!-- ================================= -->
-                    <!-- VISUAL BOARD                      -->
-                    <!-- ================================= -->
-
-                    <div class="column-board-2x1">
-
-                        <!-- PANAH BANTU -->
-
-                        <svg
-                            id="columnGuideArrow"
-                            class="column-guide-arrow arrow-to-ones"
-                            viewBox="0 0 260 170"
-                            aria-hidden="true"
-                        >
-
-                            <defs>
-
-                                <marker
-                                    id="columnArrowHead"
-                                    markerWidth="10"
-                                    markerHeight="10"
-                                    refX="7"
-                                    refY="3"
-                                    orient="auto"
-                                    markerUnits="strokeWidth"
-                                >
-
-                                    <path
-                                        d="M0,0 L0,6 L8,3 z"
-                                        class="column-arrow-head"
-                                    >
-                                    </path>
-
-                                </marker>
-
-                            </defs>
+                    <div class="column-board-rule">
+                    </div>
 
 
-                            <path
-                                id="columnGuideArrowPath"
-                                class="column-arrow-path"
-                                d="M 178 132 C 205 112, 210 80, 188 45"
-                                marker-end="url(#columnArrowHead)"
-                            >
-                            </path>
+                    <!-- RESULT INPUTS -->
 
-                        </svg>
-
-
-                        <!-- SIMPANAN / CARRY -->
+                    <div class="column-result-grid">
 
                         <div
-                            id="columnCarryBadge"
-                            class="column-carry-badge hidden"
-                            aria-live="polite"
-                        >
-
-                            <span class="column-carry-caption">
-                                simpan
-                            </span>
-
-                            <strong id="columnCarryValue">
-                            </strong>
-
-                        </div>
-
-
-                        <!-- TOP NUMBER -->
-
-                        <div class="column-number-grid column-top-grid">
-
-                            <span class="column-grid-spacer">
-                            </span>
-
-                            <span
-                                id="columnTopTensDigit"
-                                class="column-board-digit"
-                            >
-                                1
-                            </span>
-
-                            <span
-                                id="columnTopOnesDigit"
-                                class="column-board-digit column-active-digit"
-                            >
-                                7
-                            </span>
-
-                        </div>
-
-
-                        <!-- BOTTOM NUMBER -->
-
-                        <div class="column-number-grid column-bottom-grid">
-
-                            <span class="column-board-sign">
-                                ×
-                            </span>
-
-                            <span class="column-grid-spacer">
-                            </span>
-
-                            <span
-                                id="columnBottomSingleDigit"
-                                class="column-board-digit column-multiplier-digit"
-                            >
-                                3
-                            </span>
-
-                        </div>
-
-
-                        <div class="column-board-rule">
-                        </div>
-
-
-                        <!-- RESULT INPUTS -->
-
-                        <div class="column-result-grid">
-
-                            <div
-                                id="columnStep2Wrap"
-                                class="column-result-front column-step-locked"
-                                aria-hidden="true"
-                            >
-
-                                <label
-                                    id="columnStep2Label"
-                                    for="columnStep2Input"
-                                    class="column-result-label"
-                                >
-                                    Langkah 2
-                                </label>
-
-                                <input
-                                    id="columnStep2Input"
-                                    class="column-step-input column-front-input"
-                                    type="text"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
-                                    autocomplete="off"
-                                    enterkeyhint="done"
-                                    maxlength="2"
-                                    placeholder=""
-                                    disabled
-                                    aria-label="Hasil bagian depan"
-                                >
-
-                            </div>
-
-
-                            <div class="column-result-ones">
-
-                                <label
-                                    id="columnStep1Label"
-                                    for="columnStep1Input"
-                                    class="column-result-label"
-                                >
-                                    Langkah 1
-                                </label>
-
-                                <input
-                                    id="columnStep1Input"
-                                    class="column-step-input column-ones-input"
-                                    type="text"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
-                                    autocomplete="off"
-                                    enterkeyhint="next"
-                                    maxlength="1"
-                                    placeholder="?"
-                                    aria-label="Angka hasil paling belakang"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- HIDDEN FINAL FOR ENGINE -->
-
-                        <input
-                            id="columnFinalInput"
-                            class="column-final-input column-final-engine-input"
-                            type="text"
-                            inputmode="numeric"
-                            autocomplete="off"
-                            tabindex="-1"
+                            id="columnStep2Wrap"
+                            class="column-result-front column-step-locked"
                             aria-hidden="true"
                         >
 
+                            <label
+                                id="columnStep2Label"
+                                for="columnStep2Input"
+                                class="column-result-label"
+                            >
+                                Langkah 2
+                            </label>
+
+                            <input
+                                id="columnStep2Input"
+                                class="column-step-input column-front-input"
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                autocomplete="off"
+                                enterkeyhint="done"
+                                maxlength="2"
+                                placeholder=""
+                                disabled
+                                aria-label="Hasil bagian depan"
+                            >
+
+                        </div>
+
+
+                        <div class="column-result-ones">
+
+                            <label
+                                id="columnStep1Label"
+                                for="columnStep1Input"
+                                class="column-result-label"
+                            >
+                                Langkah 1
+                            </label>
+
+                            <input
+                                id="columnStep1Input"
+                                class="column-step-input column-ones-input"
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                autocomplete="off"
+                                enterkeyhint="next"
+                                maxlength="1"
+                                placeholder="?"
+                                aria-label="Angka hasil paling belakang"
+                            >
+
+                        </div>
+
                     </div>
 
 
-                    <div class="column-learning-note">
+                    <!-- HIDDEN FINAL FOR ENGINE -->
 
-                        <span class="column-learning-dot">
-                        </span>
-
-                        <span id="columnCarryNote">
-                            Kerjakan digit paling kanan terlebih dahulu.
-                        </span>
-
-                    </div>
+                    <input
+                        id="columnFinalInput"
+                        class="column-final-input column-final-engine-input"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
 
                 </div>
 
-            </div>
 
+                <div class="column-learning-note">
 
-            <!-- ========================================= -->
-            <!-- FEEDBACK                                  -->
-            <!-- ========================================= -->
-
-            <div
-                id="answerFeedback"
-                class="answer-feedback"
-                aria-live="polite"
-            >
-            </div>
-
-        </section>
-
-
-        <!-- ============================================= -->
-        <!-- FOOTER                                        -->
-        <!-- ============================================= -->
-
-        <footer class="practice-footer">
-
-            <button
-                id="quitButton"
-                class="practice-quit-button"
-                type="button"
-            >
-                Keluar dari Latihan
-            </button>
-
-        </footer>
-
-    </main>
-
-
-    <!-- ================================================= -->
-    <!-- RESULT                                            -->
-    <!-- ================================================= -->
-
-    <section
-        id="resultScreen"
-        class="practice-result-screen hidden"
-    >
-
-        <div class="result-card">
-
-            <div
-                id="resultIcon"
-                class="result-icon"
-            >
-                ✓
-            </div>
-
-
-            <h1
-                id="resultTitle"
-                class="result-title"
-            >
-                Latihan Selesai
-            </h1>
-
-
-            <p
-                id="resultMessage"
-                class="result-message"
-            >
-                Hasil latihanmu sudah dihitung.
-            </p>
-
-
-            <div class="result-score">
-
-                <span>
-                    Akurasi
-                </span>
-
-                <strong id="resultAccuracy">
-                    0%
-                </strong>
-
-            </div>
-
-
-            <div class="result-grid">
-
-
-                <div class="result-stat">
-
-                    <span>
-                        Benar
+                    <span class="column-learning-dot">
                     </span>
 
-                    <strong id="resultCorrect">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="result-stat">
-
-                    <span>
-                        Salah
+                    <span id="columnCarryNote">
+                        Kerjakan digit paling kanan terlebih dahulu.
                     </span>
 
-                    <strong id="resultWrong">
-                        0
-                    </strong>
-
                 </div>
-
-
-                <div class="result-stat">
-
-                    <span>
-                        Waktu Habis
-                    </span>
-
-                    <strong id="resultTimeout">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="result-stat">
-
-                    <span>
-                        Rata-rata
-                    </span>
-
-                    <strong id="resultAverage">
-                        -
-                    </strong>
-
-                </div>
-
-
-            </div>
-
-
-            <div
-                id="bestScoreBox"
-                class="best-score-box hidden"
-            >
-            </div>
-
-
-            <!-- ========================================= -->
-            <!-- ANALYSIS                                  -->
-            <!-- ========================================= -->
-
-            <div
-                style="
-                    margin-top: 25px;
-                "
-            >
-
-                <button
-                    id="analysisButton"
-                    class="result-primary-button"
-                    type="button"
-                    hidden
-                    style="
-                        width: 100%;
-                    "
-                >
-                    Lihat Analisis Belajar
-                </button>
-
-            </div>
-
-
-            <!-- ========================================= -->
-            <!-- RESULT ACTIONS                            -->
-            <!-- ========================================= -->
-
-            <div class="result-actions">
-
-                <button
-                    id="retryButton"
-                    class="result-secondary-button"
-                    type="button"
-                >
-                    Ulangi Latihan
-                </button>
-
-
-                <button
-                    id="continueButton"
-                    class="result-primary-button"
-                    type="button"
-                >
-                    Lanjut
-                </button>
 
             </div>
 
         </div>
 
+
+        <!-- ========================================= -->
+        <!-- FEEDBACK                                  -->
+        <!-- ========================================= -->
+
+        <div
+            id="answerFeedback"
+            class="answer-feedback"
+            aria-live="polite"
+        >
+        </div>
+
     </section>
 
 
-    <!-- ================================================= -->
-    <!-- SCRIPTS                                           -->
-    <!-- ================================================= -->
+    <!-- ============================================= -->
+    <!-- FOOTER                                        -->
+    <!-- ============================================= -->
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
+    <footer class="practice-footer">
+
+        <button
+            id="quitButton"
+            class="practice-quit-button"
+            type="button"
+        >
+            Keluar dari Latihan
+        </button>
+
+    </footer>
+
+</main>
 
 
-    <script src="js/config.js"></script>
+<!-- ================================================= -->
+<!-- RESULT                                            -->
+<!-- ================================================= -->
 
-    <script src="js/practice.js"></script>
+<section
+    id="resultScreen"
+    class="practice-result-screen hidden"
+>
 
-    <script src="js/practice-column-2x1.js"></script>
+    <div class="result-card">
 
-    <script src="js/practice-column-2x2.js"></script>
+        <div
+            id="resultIcon"
+            class="result-icon"
+        >
+            ✓
+        </div>
 
-    <script src="js/practice-navigation-fix.js"></script>
 
-    <script src="js/practice-color-cue.js"></script>
+        <h1
+            id="resultTitle"
+            class="result-title"
+        >
+            Latihan Selesai
+        </h1>
 
-    <script src="js/practice-report-link.js"></script>
-    <script src="js/practice-mobile-keyboard.js"></script>
 
+        <p
+            id="resultMessage"
+            class="result-message"
+        >
+            Hasil latihanmu sudah dihitung.
+        </p>
+
+
+        <div class="result-score">
+
+            <span>
+                Akurasi
+            </span>
+
+            <strong id="resultAccuracy">
+                0%
+            </strong>
+
+        </div>
+
+
+        <div class="result-grid">
+
+
+            <div class="result-stat">
+
+                <span>
+                    Benar
+                </span>
+
+                <strong id="resultCorrect">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="result-stat">
+
+                <span>
+                    Salah
+                </span>
+
+                <strong id="resultWrong">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="result-stat">
+
+                <span>
+                    Waktu Habis
+                </span>
+
+                <strong id="resultTimeout">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="result-stat">
+
+                <span>
+                    Rata-rata
+                </span>
+
+                <strong id="resultAverage">
+                    -
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            id="bestScoreBox"
+            class="best-score-box hidden"
+        >
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- ANALYSIS                                  -->
+        <!-- ========================================= -->
+
+        <div
+            style="
+                margin-top: 25px;
+            "
+        >
+
+            <button
+                id="analysisButton"
+                class="result-primary-button"
+                type="button"
+                hidden
+                style="
+                    width: 100%;
+                "
+            >
+                Lihat Analisis Belajar
+            </button>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- RESULT ACTIONS                            -->
+        <!-- ========================================= -->
+
+        <div class="result-actions">
+
+            <button
+                id="retryButton"
+                class="result-secondary-button"
+                type="button"
+            >
+                Ulangi Latihan
+            </button>
+
+
+            <button
+                id="continueButton"
+                class="result-primary-button"
+                type="button"
+            >
+                Lanjut
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================================================= -->
+<!-- SCRIPTS                                           -->
+<!-- ================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+
+<script src="js/config.js"></script>
+
+<script src="js/practice.js"></script>
+
+<script src="js/practice-column-2x1.js"></script>
+
+<script src="js/practice-column-2x2.js"></script>
+
+<script src="js/practice-navigation-fix.js"></script>
+
+<script src="js/practice-color-cue.js"></script>
+
+<script src="js/practice-report-link.js"></script>
+<script src="js/practice-mobile-keyboard.js"></script>
 
 </body>
 
