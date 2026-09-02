@@ -222,6 +222,50 @@ initialize();
 // INITIALIZE
 // ======================================================
 
+
+// ======================================================
+// UPDATE PRACTICE HELP
+// IPAS uses button answers, Math uses keyboard input
+// ======================================================
+function updatePracticeHelp() {
+
+    const main =
+        document.getElementById("practiceHelpMain");
+
+    const note =
+        document.getElementById("practiceHelpNote");
+
+
+    if (!main || !note) {
+        return;
+    }
+
+
+    if (subjectCode === "ipas") {
+
+        main.textContent =
+            "Pilih jawaban yang benar.";
+
+        note.textContent =
+            "Klik salah satu pilihan A, B, C, atau D.";
+
+    } else {
+
+        main.innerHTML =
+            `
+            Tekan
+            <strong class="enter-key">
+                Enter / Selesai
+            </strong>
+            untuk mengirim jawaban.
+            `;
+
+        note.textContent =
+            "Jika belum benar, jawaban masih dapat diperbaiki sampai waktu habis.";
+    }
+}
+
+
 async function initialize() {
 
     const validSession =
@@ -273,6 +317,7 @@ async function initialize() {
     setupEvents();
 
     await loadLevel();
+    updatePracticeHelp();
 }
 
 
@@ -745,53 +790,12 @@ async function loadLevel() {
         }
 
 
-        if (subjectCode === "ipas") {
-
-            practiceTopic.textContent =
-                "IPAS";
-
-        } else {
-
-            practiceTopic.textContent =
-                "PERKALIAN";
-
-        }
+        practiceTopic.textContent =
+            "PERKALIAN";
 
 
         practiceLevel.textContent =
             `Tingkat ${stageNumber} • ${levelData.name}`;
-
-        const helpMain =
-            document.querySelector(
-                ".practice-help-main"
-            );
-
-        const helpNote =
-            document.querySelector(
-                ".practice-help-note"
-            );
-
-
-        if (
-            subjectCode === "ipas"
-        ) {
-
-            if (helpMain) {
-
-                helpMain.innerHTML =
-                    "Pilih jawaban yang benar.";
-
-            }
-
-
-            if (helpNote) {
-
-                helpNote.textContent =
-                    "Klik salah satu pilihan jawaban.";
-
-            }
-
-        }
 
 
         // ==================================================
@@ -1614,59 +1618,51 @@ function generateIPASQuestions(level) {
     const bank = [
         {
             question_text: "Organ yang berfungsi memompa darah adalah?",
-            options:{a:"Jantung",b:"Paru-paru",c:"Mata",d:"Telinga"},
-            answer:"a"
+            options: {
+                a: "Jantung",
+                b: "Paru-paru",
+                c: "Mata",
+                d: "Telinga"
+            },
+            answer: "a"
         },
         {
             question_text: "Manusia bernapas menggunakan?",
-            options:{a:"Tangan",b:"Paru-paru",c:"Kaki",d:"Rambut"},
-            answer:"b"
+            options: {
+                a: "Tangan",
+                b: "Paru-paru",
+                c: "Kaki",
+                d: "Kulit"
+            },
+            answer: "b"
         },
         {
-            question_text: "Bagian tumbuhan yang menyerap air adalah?",
-            options:{a:"Bunga",b:"Daun",c:"Akar",d:"Buah"},
-            answer:"c"
+            question_text: "Hewan yang mengalami metamorfosis adalah?",
+            options: {
+                a: "Kupu-kupu",
+                b: "Kucing",
+                c: "Sapi",
+                d: "Ayam"
+            },
+            answer: "a"
         },
         {
-            question_text: "Air yang membeku berubah menjadi?",
-            options:{a:"Es",b:"Uap",c:"Asap",d:"Angin"},
-            answer:"a"
-        },
-        {
-            question_text: "Hewan yang mengalami metamorfosis sempurna adalah?",
-            options:{a:"Kupu-kupu",b:"Kucing",c:"Sapi",d:"Ikan"},
-            answer:"a"
-        },
-        {
-            question_text: "Mata digunakan untuk?",
-            options:{a:"Mendengar",b:"Melihat",c:"Berjalan",d:"Bernapas"},
-            answer:"b"
-        },
-        {
-            question_text: "Sumber energi utama bagi bumi adalah?",
-            options:{a:"Bulan",b:"Bintang",c:"Matahari",d:"Batu"},
-            answer:"c"
-        },
-        {
-            question_text: "Benda yang bentuknya tetap disebut benda?",
-            options:{a:"Gas",b:"Cair",c:"Padat",d:"Uap"},
-            answer:"c"
-        },
-        {
-            question_text: "Contoh makhluk hidup adalah?",
-            options:{a:"Batu",b:"Air",c:"Kucing",d:"Meja"},
-            answer:"c"
-        },
-        {
-            question_text: "Telinga berfungsi untuk?",
-            options:{a:"Melihat",b:"Mendengar",c:"Mencium",d:"Merasa"},
-            answer:"b"
+            question_text: "Air dalam bentuk padat disebut?",
+            options: {
+                a: "Uap",
+                b: "Es",
+                c: "Embun",
+                d: "Air"
+            },
+            answer: "b"
         }
     ];
 
-    shuffleArray(bank);
+    const result = [...bank];
 
-    return bank.slice(
+    shuffleArray(result);
+
+    return result.slice(
         0,
         Number(level.question_count)
     );
@@ -2240,65 +2236,14 @@ function renderDirectQuestion(
     if (question.question_text) {
 
         questionText.innerHTML = `
-            <div class="ipas-question-text" style="font-size:28px;line-height:1.4;font-weight:700;margin-bottom:24px;">
-                ${question.question_text}
-            </div>
-
-            <div class="ipas-options" style="display:flex;flex-direction:column;gap:12px;text-align:left;">
-                <button type="button" class="ipas-option" data-answer="a" style="font-size:22px;padding:16px 20px;text-align:left;">
-                    A. ${question.options.a}
-                </button>
-
-                <button type="button" class="ipas-option" data-answer="b" style="font-size:22px;padding:16px 20px;text-align:left;">
-                    B. ${question.options.b}
-                </button>
-
-                <button type="button" class="ipas-option" data-answer="c" style="font-size:22px;padding:16px 20px;text-align:left;">
-                    C. ${question.options.c}
-                </button>
-
-                <button type="button" class="ipas-option" data-answer="d" style="font-size:22px;padding:16px 20px;text-align:left;">
-                    D. ${question.options.d}
-                </button>
+            <div>${question.question_text}</div>
+            <div style="margin-top:15px;text-align:left">
+                A. ${question.options.a}<br>
+                B. ${question.options.b}<br>
+                C. ${question.options.c}<br>
+                D. ${question.options.d}
             </div>
         `;
-
-        answerInput.value = "";
-
-        const buttons =
-            questionText.querySelectorAll(".ipas-option");
-
-        buttons.forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (answerLocked) {
-                        return;
-                    }
-
-                    buttons.forEach(item => {
-                        item.classList.remove("active");
-                    });
-
-                    button.classList.add("active");
-
-                    answerInput.value =
-                        button.dataset.answer;
-
-                    savePracticeState();
-
-                    setTimeout(
-                        submitDirectAnswer,
-                        150
-                    );
-                }
-            );
-
-        });
-
-        answerInput.classList.add("hidden");
 
         return;
     }
