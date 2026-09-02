@@ -2199,14 +2199,65 @@ function renderDirectQuestion(
     if (question.question_text) {
 
         questionText.innerHTML = `
-            <div>${question.question_text}</div>
-            <div style="margin-top:15px;text-align:left">
-                A. ${question.options.a}<br>
-                B. ${question.options.b}<br>
-                C. ${question.options.c}<br>
-                D. ${question.options.d}
+            <div class="ipas-question-text" style="font-size:28px;line-height:1.4;font-weight:700;margin-bottom:24px;">
+                ${question.question_text}
+            </div>
+
+            <div class="ipas-options" style="display:flex;flex-direction:column;gap:12px;text-align:left;">
+                <button type="button" class="ipas-option" data-answer="a" style="font-size:22px;padding:16px 20px;text-align:left;">
+                    A. ${question.options.a}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="b" style="font-size:22px;padding:16px 20px;text-align:left;">
+                    B. ${question.options.b}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="c" style="font-size:22px;padding:16px 20px;text-align:left;">
+                    C. ${question.options.c}
+                </button>
+
+                <button type="button" class="ipas-option" data-answer="d" style="font-size:22px;padding:16px 20px;text-align:left;">
+                    D. ${question.options.d}
+                </button>
             </div>
         `;
+
+        answerInput.value = "";
+
+        const buttons =
+            questionText.querySelectorAll(".ipas-option");
+
+        buttons.forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    if (answerLocked) {
+                        return;
+                    }
+
+                    buttons.forEach(item => {
+                        item.classList.remove("active");
+                    });
+
+                    button.classList.add("active");
+
+                    answerInput.value =
+                        button.dataset.answer;
+
+                    savePracticeState();
+
+                    setTimeout(
+                        submitDirectAnswer,
+                        150
+                    );
+                }
+            );
+
+        });
+
+        answerInput.classList.add("hidden");
 
         return;
     }
@@ -4470,47 +4521,3 @@ window.addEventListener(
         savePracticeState();
     }
 );
-
-// ======================================================
-// DYNAMIC PRACTICE HELP
-// IPAS menggunakan klik tombol jawaban
-// Matematika tetap menggunakan Enter
-// ======================================================
-
-function updatePracticeHelpDynamic() {
-
-    const help =
-        document.getElementById(
-            "practiceHelpMain"
-        );
-
-    if (!help) return;
-
-
-    const type =
-        window.currentExerciseType ||
-        window.exerciseType ||
-        "";
-
-
-    if (
-        type === "ipas"
-    ) {
-
-        help.innerHTML =
-            "Pilih jawaban yang benar.";
-
-    } else {
-
-        help.innerHTML =
-            `
-            Tekan
-            <strong class="enter-key">
-                Enter / Selesai
-            </strong>
-            untuk mengirim jawaban.
-            `;
-
-    }
-
-}
