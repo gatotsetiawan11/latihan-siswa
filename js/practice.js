@@ -2199,14 +2199,58 @@ function renderDirectQuestion(
     if (question.question_text) {
 
         questionText.innerHTML = `
-            <div>${question.question_text}</div>
-            <div style="margin-top:15px;text-align:left">
-                A. ${question.options.a}<br>
-                B. ${question.options.b}<br>
-                C. ${question.options.c}<br>
-                D. ${question.options.d}
+            <div class="ipas-question-text">
+                ${question.question_text}
+            </div>
+
+            <div class="ipas-choice-list">
+
+                <button class="ipas-choice" data-answer="a">
+                    A. ${question.options.a}
+                </button>
+
+                <button class="ipas-choice" data-answer="b">
+                    B. ${question.options.b}
+                </button>
+
+                <button class="ipas-choice" data-answer="c">
+                    C. ${question.options.c}
+                </button>
+
+                <button class="ipas-choice" data-answer="d">
+                    D. ${question.options.d}
+                </button>
+
             </div>
         `;
+
+        answerInput.value = "";
+
+        document
+        .querySelectorAll(".ipas-choice")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    document
+                    .querySelectorAll(".ipas-choice")
+                    .forEach(item => {
+                        item.classList.remove("selected");
+                    });
+
+                    button.classList.add("selected");
+
+                    answerInput.value =
+                        button.dataset.answer;
+
+                    savePracticeState();
+
+                }
+            );
+
+        });
 
         return;
     }
@@ -2447,12 +2491,33 @@ function handleDirectInput() {
     }
 
 
-    answerInput.value =
-        answerInput.value
-            .replace(
-                /\D/g,
-                ""
-            );
+    const question =
+        questions[
+            currentQuestionIndex
+        ];
+
+    if (
+        question &&
+        question.question_text
+    ) {
+
+        answerInput.value =
+            answerInput.value
+                .toLowerCase()
+                .replace(
+                    /[^abcd]/g,
+                    ""
+                );
+
+    } else {
+
+        answerInput.value =
+            answerInput.value
+                .replace(
+                    /\D/g,
+                    ""
+                );
+    }
 
 
     savePracticeState();
