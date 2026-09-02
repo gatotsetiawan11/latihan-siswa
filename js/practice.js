@@ -2199,24 +2199,24 @@ function renderDirectQuestion(
     if (question.question_text) {
 
         questionText.innerHTML = `
-            <div class="ipas-question-text">
+            <div class="ipas-question-text" style="font-size:28px;line-height:1.4;font-weight:700;margin-bottom:24px;">
                 ${question.question_text}
             </div>
 
-            <div class="ipas-options">
-                <button type="button" class="ipas-option" data-answer="a">
+            <div class="ipas-options" style="display:flex;flex-direction:column;gap:12px;text-align:left;">
+                <button type="button" class="ipas-option" data-answer="a" style="font-size:22px;padding:16px 20px;text-align:left;">
                     A. ${question.options.a}
                 </button>
 
-                <button type="button" class="ipas-option" data-answer="b">
+                <button type="button" class="ipas-option" data-answer="b" style="font-size:22px;padding:16px 20px;text-align:left;">
                     B. ${question.options.b}
                 </button>
 
-                <button type="button" class="ipas-option" data-answer="c">
+                <button type="button" class="ipas-option" data-answer="c" style="font-size:22px;padding:16px 20px;text-align:left;">
                     C. ${question.options.c}
                 </button>
 
-                <button type="button" class="ipas-option" data-answer="d">
+                <button type="button" class="ipas-option" data-answer="d" style="font-size:22px;padding:16px 20px;text-align:left;">
                     D. ${question.options.d}
                 </button>
             </div>
