@@ -314,6 +314,7 @@ async function initialize() {
     setupEvents();
 
     await loadLevel();
+    updatePracticeHelp();
 }
 
 
