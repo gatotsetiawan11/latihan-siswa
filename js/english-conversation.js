@@ -76,6 +76,7 @@ let speechPitch = 1.08;
 let listeningRetryTimer = null;
 let listenArmTimer = null;
 let lastFinalTranscript = "";
+let submitInFlight = false;
 
 function clearListeningTimers() {
   clearTimeout(listeningRetryTimer);
@@ -84,6 +85,63 @@ function clearListeningTimers() {
   listenArmTimer = null;
 }
 
+/* ====== DIREKTORI SUARA ANAK-ANAK ======
+ * Kami memilih voice yang COCOK UNTUK ANAK SEKOLAH dasar
+ * berdasarkan jenis kelamin / nuansa suara pada daftar browser.
+ */
+const CHILD_FAVORITE_VOICE_KEYS = [
+  // Voice perempuan muda (paling sering cocok untuk anak)
+  "female", "girl", "child", "kid", "junior", "young", "samantha", "aisha",
+  "allison", "ava", "susan", "victoria", "karen", "moira", "tessa", "fiona",
+  "serena", "zira", "alice"
+];
+
+let chosenVoice = null;
+
+async function pickChildFriendlyVoice() {
+  await ensureVoicesLoaded();
+  const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  if (!voices.length) return null;
+
+  // 1) Prioritas utama: voice yang mengandung kata kunci anak/perempuan muda
+  const byKeyword = voices.filter(v =>
+    CHILD_FAVORITE_VOICE_KEYS.some(k => v.name.toLowerCase().includes(k))
+  );
+  if (byKeyword.length) {
+    return sortByLanguage(byKeyword, speechLanguage)[0];
+  }
+
+  // 2) Prioritas kedua: voice dengan bahasa yang tepat & pitch secara alami lebih muda
+  const sameLangDefault = sortByLanguage(voices, speechLanguage)[0];
+  return sameLangDefault || voices[0];
+}
+
+function sortByLanguage(list, langCode) {
+  const exact = list.filter(v => v.lang.toLowerCase() === langCode.toLowerCase());
+  if (exact.length) return exact;
+  const prefix = list.filter(v =>
+    v.lang.toLowerCase().startsWith(langCode.split("-")[0].toLowerCase() + "-")
+  );
+  return prefix.length ? prefix : list;
+}
+
+function ensureVoicesLoaded() {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window)) return resolve();
+    if (speechSynthesis.getVoices().length) return resolve();
+    let settled = false;
+    const handler = () => {
+      if (settled) return;
+      settled = true;
+      speechSynthesis.removeEventListener("voiceschanged", handler);
+      resolve();
+    };
+    speechSynthesis.addEventListener("voiceschanged", handler);
+    setTimeout(handler, 1800);
+  });
+}
+
+/* ====== SALAM ADAPTIF WAKTU ====== */
 function getTimeGreeting(date = new Date()) {
   const h = date.getHours();
   if (h >= 4 && h < 11) return "Good morning";
@@ -96,24 +154,24 @@ function getOpeningGreeting() {
   const greeting = getTimeGreeting();
   const variants = {
     "Good morning": [
-      "Good morning!",
-      "Good morning, class!",
-      "Good morning. Let's start learning!",
+      "Good morning! How are you today?",
+      "Good morning! Are you ready to practice English?",
+      "Good morning, friend! What is your name?",
     ],
     "Good afternoon": [
-      "Good afternoon!",
-      "Good afternoon, class!",
-      "Good afternoon. Let's begin!",
+      "Good afternoon! How is your day going?",
+      "Good afternoon! Let's have a nice English chat.",
+      "Good afternoon! What would you like to talk about?",
     ],
     "Good evening": [
-      "Good evening!",
-      "Good evening, class!",
-      "Good evening. Ready to study?",
+      "Good evening! How was your day?",
+      "Good evening! Shall we practice some English?",
+      "Good evening! Nice to see you. What is your name?",
     ],
     "Hello": [
-      "Hello!",
-      "Hello there!",
-      "Hello, let's get started!",
+      "Hello there! How are you?",
+      "Hi! Welcome. Are you ready to speak English?",
+      "Hello, friend! Let's start a conversation.",
     ],
   };
   const list = variants[greeting] || variants.Hello;
@@ -133,10 +191,8 @@ async function init() {
 
   if (!levelId && isAdminDemoMode) {
     levelId = await resolveAdminDemoLevelId();
-
     if (!levelId) {
-      loadingScreen.textContent =
-        "Level English Conversation belum ditemukan.";
+      loadingScreen.textContent = "Level English Conversation belum ditemukan.";
       return;
     }
   }
@@ -153,10 +209,13 @@ async function init() {
 
   if (!(await loadLevelConfiguration())) return;
   applyLevelConfiguration();
+  chosenVoice = await pickChildFriendlyVoice();
 
   if (isAdminDemoMode) {
-    $("demoBadge").classList.remove("hidden");
+    const demoBadge = $("demoBadge");
+    if (demoBadge) demoBadge.classList.remove("hidden");
   }
+
   setupRecognition();
 
   startButton.addEventListener("click", startClassroomMode);
@@ -164,9 +223,14 @@ async function init() {
   answerInput.addEventListener("keydown", e => {
     if (e.key === "Enter") submitUserAnswer(answerInput.value);
   });
-  exitButton.addEventListener("click", goBack);
-  backButton.addEventListener("click", goBack);
-  retryButton.addEventListener("click", () => location.reload());
+  const exit = $("exitButton");
+  const back = $("backButton");
+  const retry = $("retryButton");
+  if (exit) exit.addEventListener("click", goBack);
+  if (back) back.addEventListener("click", goBack);
+  if (retry) retry.addEventListener("click", () => location.reload());
+  const goButtons = document.querySelectorAll("[data-go-back]");
+  goButtons.forEach(btn => btn.addEventListener("click", goBack));
 
   loadingScreen.classList.add("hidden");
   startScreen.classList.remove("hidden");
@@ -178,37 +242,27 @@ async function checkSession() {
       const { data, error } = await window.db.rpc("get_student_session", {
         p_token: sessionToken
       });
-
       if (error || !data || data.length === 0) {
         throw error || new Error("student session");
       }
-
       return true;
     }
-
     if (isAdminDemoMode) {
       const { data, error } = await window.db.rpc(
-        "validate_english_admin_session",
-        { p_token: adminToken }
+        "validate_english_admin_session", { p_token: adminToken }
       );
-
       if (error || data !== true) {
         throw error || new Error("admin session");
       }
-
       return true;
     }
-
     return false;
   } catch (error) {
     console.error("Conversation session:", error);
-
     if (isAdminDemoMode) {
-      loadingScreen.textContent =
-        "Sesi admin tidak valid. Login ulang sebagai admin.";
+      loadingScreen.textContent = "Sesi admin tidak valid. Login ulang sebagai admin.";
       return false;
     }
-
     sessionStorage.clear();
     location.href = "./index.html";
     return false;
@@ -223,10 +277,7 @@ async function resolveAdminDemoLevelId() {
       .eq("code", "english_conversation")
       .eq("is_active", true)
       .limit(1);
-
-    if (topicError || !topics || topics.length === 0) {
-      throw topicError || new Error("topic");
-    }
+    if (topicError || !topics || topics.length === 0) throw topicError || new Error("topic");
 
     const { data: stages, error: stageError } = await window.db
       .from("stages")
@@ -235,10 +286,7 @@ async function resolveAdminDemoLevelId() {
       .eq("stage_number", stageNumber)
       .eq("is_active", true)
       .limit(1);
-
-    if (stageError || !stages || stages.length === 0) {
-      throw stageError || new Error("stage");
-    }
+    if (stageError || !stages || stages.length === 0) throw stageError || new Error("stage");
 
     const { data: levels, error: levelError } = await window.db
       .from("levels")
@@ -247,10 +295,7 @@ async function resolveAdminDemoLevelId() {
       .eq("level_number", levelNumber)
       .eq("is_active", true)
       .limit(1);
-
-    if (levelError || !levels || levels.length === 0) {
-      throw levelError || new Error("level");
-    }
+    if (levelError || !levels || levels.length === 0) throw levelError || new Error("level");
 
     return levels[0].id;
   } catch (error) {
@@ -258,7 +303,6 @@ async function resolveAdminDemoLevelId() {
     return null;
   }
 }
-
 
 async function loadLevelConfiguration() {
   try {
@@ -268,41 +312,22 @@ async function loadLevelConfiguration() {
       .eq("id", levelId)
       .eq("is_active", true)
       .single();
-
     if (error || !data) throw error || new Error("level");
 
     levelData = data;
     levelNumber = Number(data.level_number) || levelNumber;
-    conversationConfig =
-      data.config && typeof data.config === "object" ? data.config : {};
+    conversationConfig = data.config && typeof data.config === "object" ? data.config : {};
 
     maxTurns = clampInteger(
-      conversationConfig.max_turns ??
-        conversationConfig.turn_count ??
-        data.question_count,
-      DEFAULT_MAX_TURNS,
-      1,
-      20
+      conversationConfig.max_turns ?? conversationConfig.turn_count ?? data.question_count,
+      DEFAULT_MAX_TURNS, 1, 20
     );
+    passingScore = clampInteger(data.passing_score, DEFAULT_PASSING_SCORE, 0, 100);
 
-    passingScore = clampInteger(
-      data.passing_score,
-      DEFAULT_PASSING_SCORE,
-      0,
-      100
-    );
-
-    assistantName = cleanShort(
-      conversationConfig.assistant_name || "Alex",
-      40
-    ) || "Alex";
-    speechLanguage = cleanShort(
-      conversationConfig.speech_language || "en-US",
-      20
-    ) || "en-US";
+    assistantName = cleanShort(conversationConfig.assistant_name || "Alex", 40) || "Alex";
+    speechLanguage = cleanShort(conversationConfig.speech_language || "en-US", 20) || "en-US";
     speechRate = clampNumber(conversationConfig.speech_rate, 0.9, 0.6, 1.3);
     speechPitch = clampNumber(conversationConfig.speech_pitch, 1.08, 0.7, 1.4);
-
     return true;
   } catch (error) {
     console.error("Load conversation level:", error);
@@ -314,9 +339,8 @@ async function loadLevelConfiguration() {
 function applyLevelConfiguration() {
   const title = cleanShort(levelData?.name || "English Conversation", 80);
   const description = cleanShort(
-    conversationConfig.description ||
-      conversationConfig.instructions ||
-      "Jawab pertanyaan dalam Bahasa Inggris. Sistem akan memberi feedback dan koreksi sederhana.",
+    conversationConfig.description || conversationConfig.instructions ||
+    "Jawab pertanyaan dalam Bahasa Inggris. Sistem akan memberi feedback dan koreksi sederhana.",
     280
   );
 
@@ -327,7 +351,8 @@ function applyLevelConfiguration() {
   assistantNameText.textContent = assistantName;
   assistantLabel.textContent = assistantName.toUpperCase();
   turnLimitText.textContent = String(maxTurns);
-  $("resultTurnLimit").textContent = String(maxTurns);
+  const rtl = $("resultTurnLimit");
+  if (rtl) rtl.textContent = String(maxTurns);
 
   document.title = `${title} • English Conversation AI`;
 }
@@ -346,13 +371,17 @@ async function checkAccess() {
   }
 }
 
-async async function startClassroomMode() {
+async function startClassroomMode() {
   startButton.disabled = true;
   startButton.textContent = "Menyiapkan kamera...";
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } },
+      video: {
+        facingMode: "user",
+        width: { ideal: 640 },
+        height: { ideal: 360 }
+      },
       audio: true
     });
 
@@ -366,7 +395,8 @@ async async function startClassroomMode() {
     setState("waiting", "Waiting");
     assistantText.textContent = "Stand in front of the camera.";
     speechStatus.textContent = "Waiting for someone...";
-    cameraOverlay.querySelector("span").textContent = "Waiting for someone...";
+    const span = cameraOverlay.querySelector("span");
+    if (span) span.textContent = "Waiting for someone...";
 
     await loadPersonDetector();
     beginPresenceLoop();
@@ -377,7 +407,6 @@ async async function startClassroomMode() {
     alert("Kamera atau mikrofon belum dapat digunakan. Periksa izin browser TV.");
   }
 }
-
 
 async function loadPersonDetector() {
   if (!window.cocoSsd) throw new Error("Person detector gagal dimuat.");
@@ -391,22 +420,24 @@ function beginPresenceLoop() {
 
 async function runPresenceDetection() {
   if (!detector || cameraVideo.readyState < 2) return;
-
   try {
     const predictions = await detector.detect(cameraVideo, 6, 0.45);
     const person = predictions
       .filter(p => p.class === "person" && p.score >= PERSON_CONFIDENCE)
-      .sort((a,b) => b.score - a.score)[0];
+      .sort((a, b) => b.score - a.score)[0];
 
     drawPersonBox(person);
 
     const now = Date.now();
+    const overlaySpan = cameraOverlay.querySelector("span");
+
     if (person) {
       lastPersonSeen = now;
       if (!personFirstSeen) personFirstSeen = now;
 
-      cameraOverlay.querySelector("span").textContent =
-        greetingStarted ? "Person detected" : "Hello!";
+      if (overlaySpan) {
+        overlaySpan.textContent = greetingStarted ? "Person detected" : "Hello!";
+      }
 
       if (!greetingStarted && now - personFirstSeen >= PERSON_STABLE_MS) {
         greetingStarted = true;
@@ -414,12 +445,12 @@ async function runPresenceDetection() {
       }
     } else {
       personFirstSeen = 0;
-      cameraOverlay.querySelector("span").textContent =
-        greetingStarted ? "Conversation active" : "Waiting for someone...";
-
+      if (overlaySpan) {
+        overlaySpan.textContent =
+          greetingStarted ? "Conversation active" : "Waiting for someone...";
+      }
       if (greetingStarted && lastPersonSeen && now - lastPersonSeen > PERSON_LOST_RESET_MS) {
-        // Do not restart the same session; just show the camera state.
-        cameraOverlay.querySelector("span").textContent = "Come back into the frame";
+        if (overlaySpan) overlaySpan.textContent = "Come back into the frame";
       }
     }
   } catch (error) {
@@ -431,33 +462,33 @@ function drawPersonBox(person) {
   const ctx = detectCanvas.getContext("2d");
   const w = detectCanvas.width;
   const h = detectCanvas.height;
-  ctx.clearRect(0,0,w,h);
+  ctx.clearRect(0, 0, w, h);
   if (!person || !cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
 
   const sx = w / cameraVideo.videoWidth;
   const sy = h / cameraVideo.videoHeight;
-  const [x,y,bw,bh] = person.bbox;
+  const [x, y, bw, bh] = person.bbox;
 
-  // mirrored to match the mirrored video
   const mx = w - (x + bw) * sx;
   ctx.strokeStyle = "rgba(255,255,255,.92)";
   ctx.lineWidth = 3;
-  ctx.setLineDash([8,5]);
-  ctx.strokeRect(mx, y*sy, bw*sx, bh*sy);
+  ctx.setLineDash([8, 5]);
+  ctx.strokeRect(mx, y * sy, bw * sx, bh * sy);
   ctx.setLineDash([]);
 }
 
 async function beginGreeting() {
   greetingStarted = true;
+  busy = true;
   setState("speaking", "Speaking");
   speechStatus.textContent = "Greeting...";
   const intro = getOpeningGreeting();
   assistantText.textContent = intro;
+  history.push({ role: "assistant", text: intro });
   await speakAI(intro, "excellent");
   busy = false;
   beginAutoListening();
 }
-
 
 function setupRecognition() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -476,13 +507,11 @@ function setupRecognition() {
     recognitionActive = true;
     setState("listening", "Listening");
     speechStatus.textContent = "Listening... Please answer in English.";
-    heardBox.classList.add("hidden");
   };
 
   recognition.onresult = event => {
     let transcript = "";
     let finalTranscript = "";
-
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const text = event.results[i][0].transcript;
       transcript += text;
@@ -507,14 +536,13 @@ function setupRecognition() {
   recognition.onerror = event => {
     console.warn("Speech recognition:", event.error);
     recognitionActive = false;
-    setState("waiting", "Try again");
 
     if (event.error === "not-allowed") {
+      setState("waiting", "Try again");
       speechStatus.textContent =
         "Izin Speech Recognition ditolak. Gunakan fallback ketik.";
-    } else {
-      speechStatus.textContent =
-        "Suara belum terbaca. Saya akan mendengarkan lagi...";
+    } else if (!busy && greetingStarted && turn < maxTurns) {
+      speechStatus.textContent = "Saya tidak menangkap suara. Coba lagi...";
       clearListeningTimers();
       listeningRetryTimer = setTimeout(beginAutoListening, 1100);
     }
@@ -524,7 +552,8 @@ function setupRecognition() {
     recognitionActive = false;
     const text = clean(answerInput.value || lastFinalTranscript);
 
-    if (text && !busy) {
+    // Hanya kirim jawaban jika tidak sedang sibuk & bukan hasil greeting kosong
+    if (text && !busy && !submitInFlight) {
       submitUserAnswer(text);
     } else if (!busy && greetingStarted && turn < maxTurns) {
       clearListeningTimers();
@@ -533,50 +562,50 @@ function setupRecognition() {
   };
 }
 
-
 function beginAutoListening() {
-  if (busy || turn >= maxTurns) return;
+  if (busy || submitInFlight || turn >= maxTurns || !greetingStarted) return;
 
   clearListeningTimers();
   if (!recognition) {
     setState("waiting", "Type fallback");
     speechStatus.textContent =
-      "Speech Recognition tidak tersedia di browser ini. Gunakan fallback ketik.";
+      "Speech Recognition tidak tersedia. Gunakan fallback ketik.";
     return;
   }
 
-  try {
-    answerInput.value = "";
+  // Jangan sembunyikan teks yang sedang ditampilkan bila ada jawaban yang harus dilihat anak
+  if (!heardText.textContent.trim()) {
     heardText.textContent = "";
     heardBox.classList.add("hidden");
-    setState("listening", "Listening");
-    speechStatus.textContent = "Listening... Please answer in English.";
-    listenArmTimer = setTimeout(() => {
-      try {
-        recognition.start();
-      } catch {
-        clearListeningTimers();
-        listeningRetryTimer = setTimeout(beginAutoListening, 700);
-      }
-    }, 80);
-  } catch {
-    clearListeningTimers();
-    listeningRetryTimer = setTimeout(beginAutoListening, 700);
   }
+
+  setState("listening", "Listening");
+  speechStatus.textContent = "Listening... Please answer in English.";
+
+  listenArmTimer = setTimeout(() => {
+    try {
+      recognition.start();
+    } catch {
+      clearListeningTimers();
+      listeningRetryTimer = setTimeout(beginAutoListening, 700);
+    }
+  }, 80);
 }
 
-
-async async function submitUserAnswer(rawText) {
+async function submitUserAnswer(rawText) {
   const userText = clean(rawText);
-  if (!userText || busy || turn >= maxTurns) return;
+  if (!userText || busy || submitInFlight || turn >= maxTurns) return;
 
+  submitInFlight = true;
   busy = true;
   clearListeningTimers();
   answerInput.value = "";
+
   if (recognitionActive) {
     try { recognition.stop(); } catch {}
   }
 
+  // Tampilkan jawaban anak dan PERTAHANKAN sampai AI merespons
   heardText.textContent = userText;
   heardBox.classList.remove("hidden");
   setState("thinking", "Thinking");
@@ -610,20 +639,29 @@ async async function submitUserAnswer(rawText) {
       await speakAI(lastAssistantText, data.relevant === false ? "correct" : "excellent");
     }
 
+    history.push({ role: "assistant", text: lastAssistantText });
+
     if (shouldEnd) {
+      submitInFlight = false;
       await finishConversation(data);
     } else {
+      submitInFlight = false;
       busy = false;
+      // sembunyikan jawaban anak HANYA setelah AI selesai bicara
+      heardText.textContent = "";
+      heardBox.classList.add("hidden");
       setTimeout(beginAutoListening, 450);
     }
   } catch (error) {
     console.error(error);
+    submitInFlight = false;
     busy = false;
+    heardText.textContent = userText;
+    heardBox.classList.remove("hidden");
     speechStatus.textContent = "AI belum merespons. Saya akan mendengarkan lagi...";
     setTimeout(beginAutoListening, 1000);
   }
 }
-
 
 function renderFeedback(data) {
   const feedback = clean(data.feedback);
@@ -632,7 +670,6 @@ function renderFeedback(data) {
     feedbackBox.classList.add("hidden");
     return;
   }
-
   const parts = [];
   if (feedback) parts.push(`<strong>Feedback:</strong> ${escapeHtml(feedback)}`);
   if (correction) parts.push(`<strong>Better sentence:</strong> ${escapeHtml(correction)}`);
@@ -644,76 +681,76 @@ async function callConversationAI(payload) {
   const authPayload = isAdminDemoMode
     ? { admin_token: adminToken, access_mode: "admin_demo" }
     : { student_token: sessionToken, access_mode: "student" };
-
   const { data, error } = await window.db.functions.invoke("english-conversation", {
     body: { ...payload, ...authPayload }
   });
-
   if (error) throw error;
   if (!data || data.ok !== true) throw new Error(data?.error || "AI error");
-
   return data;
 }
 
 async function speakAI(text, mood = "neutral") {
   if (!text) return;
-  clearListeningTimers();
 
   setState("speaking", "Speaking");
   speechStatus.textContent = "Speaking...";
+
   if (currentAudio) {
     try { currentAudio.pause(); } catch {}
     currentAudio = null;
   }
 
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = speechLanguage;
-  utter.rate = speechRate;
-  utter.pitch = mood === "excellent" ? Math.min(1.35, speechPitch + 0.04) : speechPitch;
-  utter.volume = 1;
+  // Batal apa pun yang sedang berbicara agar tidak tumpang-tindih
+  if ("speechSynthesis" in window) {
+    try { speechSynthesis.cancel(); } catch {}
+  }
 
   await new Promise((resolve) => {
-    utter.onend = resolve;
-    utter.onerror = resolve;
+    if (!("speechSynthesis" in window)) return resolve();
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = speechLanguage;
+    utter.rate = speechRate;
+    utter.pitch =
+      mood === "excellent"
+        ? Math.min(1.4, speechPitch + 0.06)
+        : Math.max(0.85, speechPitch);
+    utter.volume = 1;
+
+    // Pakai voice yang terpilih (ramah anak) bila tersedia
+    if (chosenVoice) utter.voice = chosenVoice;
+
+    let finished = false;
+    const onDone = () => {
+      if (finished) return;
+      finished = true;
+      utter.onend = null;
+      utter.onerror = null;
+      resolve();
+    };
+    utter.onend = onDone;
+    utter.onerror = onDone;
     speechSynthesis.speak(utter);
     currentAudio = utter;
+
+    // Jaring pengaman
+    setTimeout(onDone, 25000);
   });
 
   currentAudio = null;
-  if (!busy && greetingStarted && turn < maxTurns) {
-    setState("listening", "Listening");
-    speechStatus.textContent = "Listening... Please answer in English.";
-  }
-}
-
-
-function speakBrowser(text) {
-  return new Promise(resolve => {
-    if (!("speechSynthesis" in window) || !text) return resolve();
-
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = speechLanguage;
-    u.rate = speechRate;
-    u.pitch = speechPitch;
-    u.onend = resolve;
-    u.onerror = resolve;
-    speechSynthesis.speak(u);
-  });
 }
 
 function setState(name, label) {
-  avatar.classList.remove("waiting","listening","thinking","speaking");
+  avatar.classList.remove("waiting", "listening", "thinking", "speaking");
   avatar.classList.add(name);
   const state = document.querySelector(".ec-state");
   if (state) {
-    state.classList.remove("waiting","listening","thinking","speaking");
+    state.classList.remove("waiting", "listening", "thinking", "speaking");
     state.classList.add(name);
   }
   const stateText = $("stateText");
   if (stateText) stateText.textContent = label;
 }
-
 
 async function finishConversation(lastData) {
   busy = true;
@@ -725,25 +762,23 @@ async function finishConversation(lastData) {
 
   if (isStudentMode) {
     try {
-      const { data, error } = await window.db.rpc("submit_english_conversation_session", {
-        p_token: sessionToken,
-        p_level_id: levelId,
-        p_turn_count: turn,
-        p_relevant_count: relevantCount,
-        p_score: score,
-        p_duration_seconds: Math.max(1, Math.round((Date.now()-startedAt)/1000))
-      });
-
+      const { data, error } = await window.db.rpc(
+        "submit_english_conversation_session", {
+          p_token: sessionToken,
+          p_level_id: levelId,
+          p_turn_count: turn,
+          p_relevant_count: relevantCount,
+          p_score: score,
+          p_duration_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000))
+        }
+      );
       if (error) throw error;
       saved = Array.isArray(data) ? data[0] : data;
     } catch (error) {
       console.error("Save:", error);
     }
   } else {
-    saved = {
-      passed: score >= passingScore,
-      demo_mode: true
-    };
+    saved = { passed: score >= passingScore, demo_mode: true };
   }
 
   stopMedia();
@@ -757,26 +792,40 @@ function showResult(score, saved, lastData) {
   const passed = typeof saved?.passed === "boolean"
     ? saved.passed
     : score >= passingScore;
-  $("resultScore").textContent = `${score}%`;
-  $("resultRelevant").textContent = `${relevantCount}/${maxTurns}`;
-  $("resultTurns").textContent = String(turn);
-  $("resultMessage").textContent = isAdminDemoMode
-    ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
-    : passed
-      ? "Percakapan selesai dengan baik."
-      : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
-  $("resultFeedback").textContent =
-    clean(lastData?.session_feedback) ||
-    "Gunakan jawaban pendek, jelas, dan sederhana.";
+  const rs = $("resultScore");
+  const rr = $("resultRelevant");
+  const rt = $("resultTurns");
+  const rm = $("resultMessage");
+  const rf = $("resultFeedback");
+
+  if (rs) rs.textContent = `${score}%`;
+  if (rr) rr.textContent = `${relevantCount}/${maxTurns}`;
+  if (rt) rt.textContent = String(turn);
+  if (rm) {
+    rm.textContent = isAdminDemoMode
+      ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
+      : passed
+        ? "Percakapan selesai dengan baik."
+        : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
+  }
+  if (rf) {
+    rf.textContent =
+      clean(lastData?.session_feedback) ||
+      "Gunakan jawaban pendek, jelas, dan sederhana.";
+  }
 }
 
 function stopMedia() {
   clearInterval(detectTimer);
   detectTimer = null;
+  clearListeningTimers();
   if (recognitionActive) {
     try { recognition.stop(); } catch {}
   }
-  if (currentAudio) currentAudio.pause();
+  if (currentAudio) { try { currentAudio.pause(); } catch {} }
+  if ("speechSynthesis" in window) {
+    try { speechSynthesis.cancel(); } catch {}
+  }
   if (stream) stream.getTracks().forEach(track => track.stop());
 }
 
@@ -797,16 +846,16 @@ function cleanShort(value, maxLength = 120) {
 }
 
 function clean(value) {
-  return String(value ?? "").replace(/\s+/g," ").trim().slice(0,240);
+  return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, 240);
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function goBack() {
