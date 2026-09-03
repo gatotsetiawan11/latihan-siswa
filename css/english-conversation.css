@@ -48,3 +48,11 @@ body{margin:0;background:#f4f7fb;color:#172033;font-family:Arial,sans-serif}
 @media(max-width:780px){.ec-page{padding:10px}.ec-card{padding:16px;border-radius:18px}.ec-stage{grid-template-columns:1fr}.ec-avatar-column{display:grid;grid-template-columns:180px 1fr;align-items:center}.ec-avatar-name{font-size:18px}.ec-main-bubble,.ec-heard{font-size:20px}.ec-score-grid{grid-template-columns:1fr}.ec-input-row{flex-direction:column}}
 
 .ec-demo-badge{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:#fff4d6;border:1px solid #ecd58d;color:#7a5a00;font-size:12px;font-weight:900;letter-spacing:.05em}
+
+.ec-avatar.speaking,.ec-avatar.listening,.ec-avatar.thinking{filter:drop-shadow(0 10px 18px rgba(49,95,199,.16))}
+.ec-state.speaking{color:#315fc7;font-weight:900}
+.ec-state.listening{color:#1f9b57;font-weight:900}
+.ec-state.thinking{color:#d58b15;font-weight:900}
+.ec-state.waiting{color:#64748b;font-weight:900}
+.ec-state-dot{box-shadow:0 0 0 4px rgba(255,255,255,.75)}
+.ec-heard{min-height:78px}
