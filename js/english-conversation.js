@@ -73,6 +73,53 @@ let speechLanguage = "en-US";
 let speechRate = 0.9;
 let speechPitch = 1.08;
 
+let listeningRetryTimer = null;
+let listenArmTimer = null;
+let lastFinalTranscript = "";
+
+function clearListeningTimers() {
+  clearTimeout(listeningRetryTimer);
+  clearTimeout(listenArmTimer);
+  listeningRetryTimer = null;
+  listenArmTimer = null;
+}
+
+function getTimeGreeting(date = new Date()) {
+  const h = date.getHours();
+  if (h >= 4 && h < 11) return "Good morning";
+  if (h >= 11 && h < 15) return "Good afternoon";
+  if (h >= 15 && h < 18) return "Good evening";
+  return "Hello";
+}
+
+function getOpeningGreeting() {
+  const greeting = getTimeGreeting();
+  const variants = {
+    "Good morning": [
+      "Good morning!",
+      "Good morning, class!",
+      "Good morning. Let's start learning!",
+    ],
+    "Good afternoon": [
+      "Good afternoon!",
+      "Good afternoon, class!",
+      "Good afternoon. Let's begin!",
+    ],
+    "Good evening": [
+      "Good evening!",
+      "Good evening, class!",
+      "Good evening. Ready to study?",
+    ],
+    "Hello": [
+      "Hello!",
+      "Hello there!",
+      "Hello, let's get started!",
+    ],
+  };
+  const list = variants[greeting] || variants.Hello;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 async function init() {
   if (topicCode !== "english_conversation") return goBack();
 
@@ -299,7 +346,7 @@ async function checkAccess() {
   }
 }
 
-async function startClassroomMode() {
+async async function startClassroomMode() {
   startButton.disabled = true;
   startButton.textContent = "Menyiapkan kamera...";
 
@@ -330,6 +377,7 @@ async function startClassroomMode() {
     alert("Kamera atau mikrofon belum dapat digunakan. Periksa izin browser TV.");
   }
 }
+
 
 async function loadPersonDetector() {
   if (!window.cocoSsd) throw new Error("Person detector gagal dimuat.");
@@ -400,37 +448,16 @@ function drawPersonBox(person) {
 }
 
 async function beginGreeting() {
-  if (busy) return;
-  busy = true;
-  setState("thinking", "Thinking");
-  speechStatus.textContent = `${assistantName} noticed someone...`;
-
-  try {
-    const data = await callConversationAI({
-      action: "start",
-      level_id: levelId,
-      stage_number: stageNumber,
-      level_number: levelNumber,
-      turn: 0,
-      history: []
-    });
-
-    lastAssistantText = clean(data.assistant_text);
-    assistantText.textContent = lastAssistantText;
-    await speakAI(lastAssistantText, "greeting");
-  } catch (error) {
-    console.error(error);
-    assistantText.textContent =
-      cleanShort(conversationConfig.fallback_greeting, 240) ||
-      "Hello! Good morning. What is your name?";
-    lastAssistantText = assistantText.textContent;
-    await speakBrowser(lastAssistantText);
-  } finally {
-    busy = false;
-  }
-
+  greetingStarted = true;
+  setState("speaking", "Speaking");
+  speechStatus.textContent = "Greeting...";
+  const intro = getOpeningGreeting();
+  assistantText.textContent = intro;
+  await speakAI(intro, "excellent");
+  busy = false;
   beginAutoListening();
 }
+
 
 function setupRecognition() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -456,21 +483,23 @@ function setupRecognition() {
     let transcript = "";
     let finalTranscript = "";
 
-    for (let i=event.resultIndex;i<event.results.length;i++) {
+    for (let i = event.resultIndex; i < event.results.length; i++) {
       const text = event.results[i][0].transcript;
       transcript += text;
       if (event.results[i].isFinal) finalTranscript += text;
     }
 
-    const interim = transcript.trim();
-    const finalText = finalTranscript.trim();
+    const liveTranscript = clean(transcript);
+    if (liveTranscript) {
+      heardText.textContent = liveTranscript;
+      heardBox.classList.remove("hidden");
+    }
 
+    const finalText = clean(finalTranscript);
     if (finalText) {
+      lastFinalTranscript = finalText;
       answerInput.value = finalText;
       heardText.textContent = finalText;
-      heardBox.classList.remove("hidden");
-    } else if (interim) {
-      heardText.textContent = interim;
       heardBox.classList.remove("hidden");
     }
   };
@@ -486,27 +515,29 @@ function setupRecognition() {
     } else {
       speechStatus.textContent =
         "Suara belum terbaca. Saya akan mendengarkan lagi...";
-      setTimeout(beginAutoListening, 1100);
+      clearListeningTimers();
+      listeningRetryTimer = setTimeout(beginAutoListening, 1100);
     }
   };
 
   recognition.onend = () => {
     recognitionActive = false;
-    const text = clean(answerInput.value);
+    const text = clean(answerInput.value || lastFinalTranscript);
 
     if (text && !busy) {
       submitUserAnswer(text);
     } else if (!busy && greetingStarted && turn < maxTurns) {
-      setState("listening", "Listening");
-      speechStatus.textContent = "Listening... Please answer in English.";
-      setTimeout(beginAutoListening, 650);
+      clearListeningTimers();
+      listeningRetryTimer = setTimeout(beginAutoListening, 550);
     }
   };
 }
 
+
 function beginAutoListening() {
   if (busy || turn >= maxTurns) return;
 
+  clearListeningTimers();
   if (!recognition) {
     setState("waiting", "Type fallback");
     speechStatus.textContent =
@@ -520,17 +551,27 @@ function beginAutoListening() {
     heardBox.classList.add("hidden");
     setState("listening", "Listening");
     speechStatus.textContent = "Listening... Please answer in English.";
-    recognition.start();
+    listenArmTimer = setTimeout(() => {
+      try {
+        recognition.start();
+      } catch {
+        clearListeningTimers();
+        listeningRetryTimer = setTimeout(beginAutoListening, 700);
+      }
+    }, 80);
   } catch {
-    setTimeout(beginAutoListening, 700);
+    clearListeningTimers();
+    listeningRetryTimer = setTimeout(beginAutoListening, 700);
   }
 }
 
-async function submitUserAnswer(rawText) {
+
+async async function submitUserAnswer(rawText) {
   const userText = clean(rawText);
   if (!userText || busy || turn >= maxTurns) return;
 
   busy = true;
+  clearListeningTimers();
   answerInput.value = "";
   if (recognitionActive) {
     try { recognition.stop(); } catch {}
@@ -565,13 +606,15 @@ async function submitUserAnswer(rawText) {
 
     const shouldEnd = data.should_end === true || turn >= maxTurns;
 
-    if (lastAssistantText) await speakAI(lastAssistantText, data.relevant === false ? "correct" : "excellent");
+    if (lastAssistantText) {
+      await speakAI(lastAssistantText, data.relevant === false ? "correct" : "excellent");
+    }
 
     if (shouldEnd) {
       await finishConversation(data);
     } else {
       busy = false;
-      beginAutoListening();
+      setTimeout(beginAutoListening, 450);
     }
   } catch (error) {
     console.error(error);
@@ -580,6 +623,7 @@ async function submitUserAnswer(rawText) {
     setTimeout(beginAutoListening, 1000);
   }
 }
+
 
 function renderFeedback(data) {
   const feedback = clean(data.feedback);
@@ -611,60 +655,37 @@ async function callConversationAI(payload) {
   return data;
 }
 
-async function speakAI(text, emotion = "happy") {
+async function speakAI(text, mood = "neutral") {
+  if (!text) return;
+  clearListeningTimers();
+
   setState("speaking", "Speaking");
   speechStatus.textContent = "Speaking...";
+  if (currentAudio) {
+    try { currentAudio.pause(); } catch {}
+    currentAudio = null;
+  }
 
-  try {
-    const authPayload = isAdminDemoMode
-      ? { admin_token: adminToken, access_mode: "admin_demo" }
-      : { student_token: sessionToken, access_mode: "student" };
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = speechLanguage;
+  utter.rate = speechRate;
+  utter.pitch = mood === "excellent" ? Math.min(1.35, speechPitch + 0.04) : speechPitch;
+  utter.volume = 1;
 
-    const { data, error } = await window.db.functions.invoke("english-conversation", {
-      body: {
-        action: "tts",
-        text,
-        emotion,
-        ...authPayload
-      }
-    });
+  await new Promise((resolve) => {
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    speechSynthesis.speak(utter);
+    currentAudio = utter;
+  });
 
-    if (error || !data?.ok || !data?.audio_base64) throw error || new Error("tts");
-
-    const bytes = Uint8Array.from(atob(data.audio_base64), c => c.charCodeAt(0));
-    const blob = new Blob([bytes], { type: data.mime_type || "audio/mpeg" });
-    const url = URL.createObjectURL(blob);
-
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
-
-    await new Promise((resolve, reject) => {
-      const audio = new Audio(url);
-      currentAudio = audio;
-      audio.onended = () => {
-        URL.revokeObjectURL(url);
-        currentAudio = null;
-        resolve();
-      };
-      audio.onerror = () => {
-        URL.revokeObjectURL(url);
-        currentAudio = null;
-        reject(new Error("audio"));
-      };
-      audio.play().catch(reject);
-    });
-  } catch (error) {
-    console.warn("AI TTS fallback:", error);
-    await speakBrowser(text);
-  } finally {
-    if (!busy) {
-      setState("listening", "Listening");
-      speechStatus.textContent = "Listening... Please answer in English.";
-    }
+  currentAudio = null;
+  if (!busy && greetingStarted && turn < maxTurns) {
+    setState("listening", "Listening");
+    speechStatus.textContent = "Listening... Please answer in English.";
   }
 }
+
 
 function speakBrowser(text) {
   return new Promise(resolve => {
@@ -682,7 +703,6 @@ function speakBrowser(text) {
 }
 
 function setState(name, label) {
-  if (!avatar) return;
   avatar.classList.remove("waiting","listening","thinking","speaking");
   avatar.classList.add(name);
   const state = document.querySelector(".ec-state");
@@ -693,6 +713,7 @@ function setState(name, label) {
   const stateText = $("stateText");
   if (stateText) stateText.textContent = label;
 }
+
 
 async function finishConversation(lastData) {
   busy = true;
