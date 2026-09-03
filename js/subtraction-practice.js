@@ -55,6 +55,7 @@ let advanceTimer = null;
 let questionLocked = false;
 let state = null;
 let activeInput = null;
+let activeInputSlot = null;
 
 async function initializeSubtractionPractice() {
   if (!subjectCode || topicCode !== "subtraction" || !levelId ||
@@ -511,12 +512,8 @@ function performBorrow(source, target) {
   }
 }
 
-function openDigitInput() {
-  closeDigitInput();
-  if (questionLocked || state.waitingBorrow || state.currentCol < 0) return;
-
-  const slot = board.querySelector(`[data-slot="${state.currentCol}"]`);
-  if (!slot) return;
+function ensureDigitInput() {
+  if (activeInput) return activeInput;
 
   const input = document.createElement("input");
   input.className = "sub-edit";
@@ -524,27 +521,51 @@ function openDigitInput() {
   input.inputMode = "numeric";
   input.autocomplete = "off";
   input.maxLength = 1;
-  input.setAttribute("aria-label","Jawaban digit aktif");
+  input.setAttribute("aria-label", "Jawaban digit aktif");
+  input.addEventListener("input", handleDigitInput);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
+  });
+
+  board.appendChild(input);
+  activeInput = input;
+  return input;
+}
+
+function positionDigitInput() {
+  if (!activeInput || questionLocked || state.waitingBorrow || state.currentCol < 0) return;
+
+  const slot = board.querySelector(`[data-slot="${state.currentCol}"]`);
+  if (!slot) return;
 
   const slotRect = slot.getBoundingClientRect();
   const boardRect = board.getBoundingClientRect();
-  input.style.left = `${slotRect.left - boardRect.left + slotRect.width/2 - 27}px`;
-  input.style.top = `${slotRect.top - boardRect.top + slotRect.height/2 - 29}px`;
+  activeInput.style.left = `${slotRect.left - boardRect.left + slotRect.width / 2 - 27}px`;
+  activeInput.style.top = `${slotRect.top - boardRect.top + slotRect.height / 2 - 29}px`;
+  activeInputSlot = state.currentCol;
+}
 
-  input.addEventListener("input", handleDigitInput);
-  board.appendChild(input);
-  activeInput = input;
-
-  setTimeout(() => {
-    try { input.focus({preventScroll:true}); }
-    catch (_) { input.focus(); }
-  }, 30);
+function openDigitInput() {
+  if (questionLocked || state.waitingBorrow || state.currentCol < 0) return;
+  ensureDigitInput();
+  positionDigitInput();
+  requestAnimationFrame(() => {
+    if (!activeInput || questionLocked || state.waitingBorrow) return;
+    try {
+      activeInput.focus({ preventScroll: true });
+    } catch (_) {
+      activeInput.focus();
+    }
+  });
 }
 
 function closeDigitInput() {
   if (activeInput) {
     activeInput.remove();
     activeInput = null;
+    activeInputSlot = null;
   }
 }
 
@@ -573,13 +594,13 @@ function handleDigitInput() {
   feedbackText.textContent = "";
   feedbackText.className = "sub-feedback";
   state.result[state.currentCol] = Number(raw);
-  closeDigitInput();
   renderResult();
 
   advanceTimer = setTimeout(() => {
     state.currentCol--;
-    advanceColumn();
-  }, 300);
+    openDigitInput();
+    renderResult();
+  }, 120);
 }
 
 function drawBorrowArrow(sourceCol, targetCol) {
