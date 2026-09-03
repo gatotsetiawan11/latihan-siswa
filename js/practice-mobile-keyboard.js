@@ -12,8 +12,6 @@
 // sehingga tidak perlu helper scroll tambahan.
 // ============================================================
 
-let isAdjustingInput =
-    false;
 
 const MOBILE_MAX_WIDTH =
     700;
@@ -199,7 +197,7 @@ function initializeMobileKeyboardHelper() {
     // Jangan dengarkan visualViewport "scroll",
     // karena event tersebut bisa terpicu oleh scroll yang
     // kita lakukan sendiri dan menghasilkan loop gerakan.
-/*
+
 if (
     window.visualViewport
 ) {
@@ -260,8 +258,7 @@ function handleViewportResize() {
     );
 }
 
-*/
-    
+
 // ============================================================
 // SCHEDULE
 // ============================================================
@@ -311,15 +308,22 @@ function ensureInputVisible(
 ) {
 
     if (
-        isAdjustingInput
+        !input
+
+        ||
+
+        columnPracticeMode
+
+        ||
+
+        window.innerWidth >
+        MOBILE_MAX_WIDTH
     ) {
 
         return;
     }
 
 
-    isAdjustingInput = true;
-    
     const rect =
         input.getBoundingClientRect();
 
