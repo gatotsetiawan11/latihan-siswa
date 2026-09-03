@@ -491,7 +491,10 @@ function setupRecognition() {
 
     if (text && !busy) {
       submitUserAnswer(text);
-    } else if (!busy && greetingStarted && turn < maxTurns) {
+      return;
+    }
+
+    if (!busy && greetingStarted && turn < maxTurns) {
       setTimeout(beginAutoListening, 650);
     }
   };
@@ -509,6 +512,10 @@ function beginAutoListening() {
 
   try {
     answerInput.value = "";
+    heardBox.classList.add("hidden");
+    heardText.textContent = "";
+    setState("listening", "Listening");
+    speechStatus.textContent = "Listening... Please answer in English.";
     recognition.start();
   } catch {
     setTimeout(beginAutoListening, 700);
@@ -558,10 +565,11 @@ async function submitUserAnswer(rawText) {
 
     if (shouldEnd) {
       await finishConversation(data);
-    } else {
-      busy = false;
-      beginAutoListening();
+      return;
     }
+
+    busy = false;
+    beginAutoListening();
   } catch (error) {
     console.error(error);
     busy = false;
