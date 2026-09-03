@@ -43,7 +43,7 @@ const adminToken = sessionStorage.getItem("admin_session_token");
 const isStudentMode = loginMode === "student" && Boolean(sessionToken);
 const isAdminDemoMode = !isStudentMode && Boolean(adminToken);
 
-const DEFAULT_MAX_TURNS = 6;
+const DEFAULT_MAX_TURNS = 4; // Mode A: salam -> nama -> umur -> selesai
 const DEFAULT_PASSING_SCORE = 70;
 const PERSON_CONFIDENCE = 0.58;
 const PERSON_STABLE_MS = 1400;
@@ -73,7 +73,7 @@ let assistantName = "Alex";
 let speechLanguage = "en-US";
 let speechRate = 0.9;
 let speechPitch = 1.08;
-let useServerTTS = false; // <-- DIUBAH: langsung pakai suara browser (gratis)
+let useServerTTS = false; // langsung pakai suara browser
 
 let listeningRetryTimer = null;
 let listenArmTimer = null;
@@ -88,39 +88,16 @@ function getTimeGreeting(date = new Date()) {
   return "Hello";
 }
 
-function getOpeningGreeting() {
-  const greeting = getTimeGreeting();
-  const variants = {
-    "Good morning": [
-      "Good morning! How are you today?",
-      "Good morning! Are you ready to practice English?",
-      "Good morning, friend! What is your name?",
-    ],
-    "Good afternoon": [
-      "Good afternoon! How is your day going?",
-      "Good afternoon! Let's have a nice English chat.",
-      "Good afternoon! What would you like to talk about?",
-    ],
-    "Good evening": [
-      "Good evening! How was your day?",
-      "Good evening! Shall we practice some English?",
-      "Good evening! Nice to see you. What is your name?",
-    ],
-    "Hello": [
-      "Hello there! How are you?",
-      "Hi! Welcome. Are you ready to speak English?",
-      "Hello, friend! Let's start a conversation.",
-    ],
-  };
-  const list = variants[greeting] || variants.Hello;
-  return list[Math.floor(Math.random() * list.length)];
-}
-
 function clearListeningTimers() {
   clearTimeout(listeningRetryTimer);
   clearTimeout(listenArmTimer);
   listeningRetryTimer = null;
   listenArmTimer = null;
+}
+
+/* Jeda sederhana */
+function pause(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function init() {
@@ -155,7 +132,7 @@ async function init() {
   if (!(await loadLevelConfiguration())) return;
   applyLevelConfiguration();
 
-  ensureVoicesLoaded(); // <- tambahan: siapkan daftar voice sejak awal
+  ensureVoicesLoaded();
 
   setupRecognition();
 
@@ -251,7 +228,7 @@ async function loadLevelConfiguration() {
     speechLanguage = cleanShort(conversationConfig.speech_language || "en-US", 20) || "en-US";
     speechRate = clampNumber(conversationConfig.speech_rate, 0.9, 0.6, 1.3);
     speechPitch = clampNumber(conversationConfig.speech_pitch, 1.08, 0.7, 1.4);
-    useServerTTS = conversationConfig.use_server_tts !== false && false; // paksa pakai browser
+    useServerTTS = false; // selalu pakai suara browser
     return true;
   } catch (error) {
     console.error("Load conversation level:", error);
@@ -264,7 +241,7 @@ function applyLevelConfiguration() {
   const title = cleanShort(levelData?.name || "English Conversation", 80);
   const description = cleanShort(
     conversationConfig.description || conversationConfig.instructions ||
-    "Jawab pertanyaan dalam Bahasa Inggris. Sistem akan memberi feedback dan koreksi sederhana.",
+    "Sapa dengan ramah, perkenalkan diri, dan sebut umur dalam Bahasa Inggris.",
     280
   );
 
@@ -388,16 +365,32 @@ function drawPersonBox(person) {
   ctx.setLineDash([]);
 }
 
+// Salam berlapis dengan jeda, lalu langsung tanya nama
 async function beginGreeting() {
   greetingStarted = true;
   busy = true;
   setState("speaking", "Speaking");
   speechStatus.textContent = "Greeting...";
-  const intro = getOpeningGreeting();
-  assistantText.textContent = intro;
-  history.push({ role: "assistant", text: intro });
-  await speakAI(intro, "excellent");
+
+  const timeGreeting = getTimeGreeting(); // Good morning / Good afternoon / dll
+
+  // 1) Salam waktu
+  const firstLine = `${timeGreeting}!`;
+  assistantText.textContent = firstLine;
+  history.push({ role: "assistant", text: firstLine });
+  await speakAI(firstLine, "happy");
+
+  // jeda singkat seperti guru menunggu (tanpa menunggu jawaban sungguhan)
+  await pause(1100);
+
+  // 2) Ulang salam hangat + langsung tanya nama
+  const secondLine = `Hello ${timeGreeting.toLowerCase()}! And what is your name?`;
+  assistantText.textContent = secondLine;
+  history.push({ role: "assistant", text: secondLine });
+  await speakAI(secondLine, "happy");
+
   busy = false;
+  lastAssistantText = secondLine;
   beginAutoListening();
 }
 
@@ -503,7 +496,6 @@ async function submitUserAnswer(rawText) {
   setState("thinking", "Thinking");
   speechStatus.textContent = "Thinking...";
 
-  history.push({ role: "assistant", text: lastAssistantText });
   history.push({ role: "user", text: userText });
 
   try {
@@ -520,15 +512,16 @@ async function submitUserAnswer(rawText) {
     turn += 1;
     turnText.textContent = String(turn);
     if (data.relevant === true) relevantCount += 1;
-    showIndonesianSupport(data);
     renderFeedback(data);
 
     lastAssistantText = clean(data.assistant_text);
-    if (lastAssistantText) assistantText.textContent = lastAssistantText;
+    if (lastAssistantText) {
+      assistantText.textContent = lastAssistantText;
+      history.push({ role: "assistant", text: lastAssistantText });
+    }
 
     const shouldEnd = data.should_end === true || turn >= maxTurns;
 
-    // Suara pakai TTS OpenAI server
     if (lastAssistantText) {
       await speakAI(lastAssistantText, data.emotion || "happy");
     }
@@ -554,13 +547,6 @@ async function submitUserAnswer(rawText) {
   }
 }
 
-function showIndonesianSupport(data) {
-  const support = clean(data.indonesian_support);
-  if (!support) return;
-  const fb = feedbackBox;
-  fb.innerHTML += `<div style="margin-top:8px;color:#5d6a7d"><strong>🇮🇩 Bantuan:</strong> ${escapeHtml(support)}</div>`;
-}
-
 function renderFeedback(data) {
   const feedback = clean(data.feedback);
   const correction = clean(data.correction);
@@ -571,6 +557,9 @@ function renderFeedback(data) {
   const parts = [];
   if (feedback) parts.push(`<strong>Feedback:</strong> ${escapeHtml(feedback)}`);
   if (correction) parts.push(`<strong>Better sentence:</strong> ${escapeHtml(correction)}`);
+  if (clean(data.indonesian_support)) {
+    parts.push(`<div style="margin-top:8px;color:#5d6a7d"><strong>🇮🇩 Bantuan:</strong> ${escapeHtml(data.indonesian_support)}</div>`);
+  }
   feedbackBox.innerHTML = parts.join("<br>");
   feedbackBox.classList.remove("hidden");
 }
@@ -587,14 +576,9 @@ async function callConversationAI(payload) {
   return data;
 }
 
-/* =====================================================
-   SUARA: langsung pakai browser speechSynthesis (gratis)
-   - Pilih voice perempuan muda
-   - Rate lebih pelan & natural
-   ===================================================== */
+/* ==================== SUARA BROWSER ==================== */
 async function speakAI(text, emotion = "neutral") {
   if (!text) return;
-
   setState("speaking", "Speaking");
   speechStatus.textContent = "Speaking...";
 
@@ -603,11 +587,9 @@ async function speakAI(text, emotion = "neutral") {
     currentAudio = null;
   }
 
-  // Langsung pakai browser (server TTS nonaktif)
   await speakBrowser(text, emotion);
 }
 
-/* Pilih voice perempuan muda terbaik dari daftar browser */
 function pickFemaleVoice() {
   if (!("speechSynthesis" in window)) return null;
   const voices = window.speechSynthesis.getVoices();
@@ -617,19 +599,16 @@ function pickFemaleVoice() {
   const lang = v => (v.lang || "").toLowerCase();
   const isEn = v => lang(v).startsWith("en") || /english/i.test(name(v));
 
-  // 1) Voice Inggris yang jelas perempuan + muda (prioritas)
   const femaleYoung = voices.find(v =>
     isEn(v) && /junior|joanna|kendra|kimberly|salli|aria|jenny|libby|sonia|google uk english female|zira|ava|emma|olivia|sophia|microsoft aria|microsoft jenny/i.test(name(v))
   );
   if (femaleYoung) return femaleYoung;
 
-  // 2) Voice Inggris bernama perempuan umum
   const femaleEnglish = voices.find(v =>
-    isEn(v) && /female|woman|girl|samantha|victoria|karen|allison|ava|susan|hazel/i.test(name(v))
+    isEn(v) && /female|woman|girl|samantha|victoria|karen|allison|susan|hazel/i.test(name(v))
   );
   if (femaleEnglish) return femaleEnglish;
 
-  // 3) Voice English apa pun (diprioritaskan yang natural di platform umum)
   const enVoices = voices.filter(isEn);
   if (enVoices.length > 0) {
     const preferred = enVoices.find(v =>
@@ -638,40 +617,29 @@ function pickFemaleVoice() {
     return preferred || enVoices[0];
   }
 
-  // 4) Voice pertama apa pun
   return voices[0] || null;
 }
 
-/* Siapkan daftar voice (browser memuat asinkron) */
 function ensureVoicesLoaded() {
   if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.getVoices(); // memicu pemuatan awal
-  if (typeof window.speechSynthesis.onvoiceschanged === "function") {
-    // jangan timpa handler lain bila ada; tambah saja
-  } else {
+  window.speechSynthesis.getVoices();
+  if (typeof window.speechSynthesis.onvoiceschanged !== "function") {
     window.speechSynthesis.onvoiceschanged = () => {
       try { pickFemaleVoice(); } catch {}
     };
   }
 }
 
-/* Bicara lewat browser: perempuan muda, pelan, natural */
 function speakBrowser(text, emotion) {
   return new Promise(resolve => {
     if (!("speechSynthesis" in window) || !text) return resolve();
     try { speechSynthesis.cancel(); } catch {}
 
     const u = new SpeechSynthesisUtterance(text);
-
     const voice = pickFemaleVoice();
-    if (voice) {
-      u.voice = voice;
-      u.lang = voice.lang || speechLanguage;
-    } else {
-      u.lang = speechLanguage;
-    }
+    u.voice = voice || null;
+    u.lang = voice ? voice.lang : speechLanguage;
 
-    // Pelan & sedikit tinggi agar ramah anak
     u.rate = Math.max(0.55, speechRate - 0.12);
     u.pitch = emotion === "celebrating" || emotion === "happy"
       ? Math.min(1.45, (speechPitch || 1.08) + 0.1)
@@ -691,8 +659,6 @@ function speakBrowser(text, emotion) {
     u.onerror = finish;
     speechSynthesis.speak(u);
     currentAudio = u;
-
-    // Pengaman: selesaikan walau event tak muncul
     setTimeout(finish, Math.max(15000, text.length * 140));
   });
 }
@@ -707,9 +673,6 @@ function setState(name, label) {
   }
   const stateText = $("stateText");
   if (stateText) stateText.textContent = label;
-
-  if (name === "speaking") {
-  }
 }
 
 async function finishConversation(lastData) {
@@ -756,7 +719,7 @@ function showResult(score, saved, lastData) {
       ? "Percakapan selesai dengan baik."
       : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
   $("resultFeedback").textContent =
-    clean(lastData?.session_feedback) || "Gunakan jawaban pendek, jelas, dan sederhana.";
+    clean(lastData?.session_feedback) || "Gunakan salam, sebut nama, dan umur dengan benar.";
 }
 
 function stopMedia() {
