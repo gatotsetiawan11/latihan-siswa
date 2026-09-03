@@ -414,22 +414,26 @@ function findBorrowSource(col) {
   return null;
 }
 
+// ======================================================
+//  CORE LOGIC PERPINDAHAN KOLOM  (DIPERBAIKI)
+// ======================================================
+
 function advanceColumn() {
   if (questionLocked || state.done) return;
 
-  while (state.currentCol >= 0 && state.workingTop[state.currentCol] === null) {
-    state.currentCol--;
-  }
+  // Lewati kolom kosong (soal 2 digit: mulai dari puluhan)
+  skipNullColumns();
 
   if (state.currentCol < 0) {
     finishCorrectQuestion();
     return;
   }
 
-  stepLabel.textContent = `LANGKAH ${4 - state.currentCol}`;
+  updateStepLabel();
   const top = state.workingTop[state.currentCol];
   const bottom = state.bottom[state.currentCol] ?? 0;
 
+  // Kasus butuh pinjaman
   if (top < bottom) {
     state.waitingBorrow = true;
     state.sourceCol = findBorrowSource(state.currentCol);
@@ -456,15 +460,37 @@ function advanceColumn() {
     return;
   }
 
+  // Kasus normal: langsung minta input
+  prepareNormalColumn(bottom);
+  openDigitInput();
+}
+
+// Lewati kolom yang memang tidak terisi (mengarahkan ke kolom aktif sebenarnya)
+function skipNullColumns() {
+  while (state.currentCol >= 0 && state.workingTop[state.currentCol] === null) {
+    state.currentCol--;
+  }
+}
+
+function updateStepLabel() {
+  stepLabel.textContent = `LANGKAH ${4 - state.currentCol}`;
+}
+
+// Siapkan pesan normal dan nonaktifkan pinjaman
+function prepareNormalColumn(bottom) {
   state.waitingBorrow = false;
   state.sourceCol = null;
   clearBorrowArrow();
-  board.querySelectorAll(".sub-top").forEach(el => el.classList.remove("clickable"));
+  clearClickableCells();
 
+  const top = state.workingTop[state.currentCol];
   message.textContent = `Hitung ${top} − ${bottom}. Ketik satu digit hasil.`;
   helpText.textContent = "Setelah benar, posisi jawaban bergerak otomatis satu kolom ke kiri.";
   renderResult();
-  openDigitInput();
+}
+
+function clearClickableCells() {
+  board.querySelectorAll(".sub-top").forEach(el => el.classList.remove("clickable"));
 }
 
 function handleBorrowClick(col, element) {
@@ -487,7 +513,7 @@ function handleBorrowClick(col, element) {
   performBorrow(col, state.currentCol);
   state.waitingBorrow = false;
   state.sourceCol = null;
-  board.querySelectorAll(".sub-top").forEach(el => el.classList.remove("clickable"));
+  clearClickableCells();
   clearBorrowArrow();
   renderBorrowMarks();
   renderResult();
@@ -511,6 +537,10 @@ function performBorrow(source, target) {
     state.borrowMarks[i] = { old, new: next };
   }
 }
+
+// ======================================================
+//  INPUT DIGIT (DIPERBAIKI Agar Kursor Pindah Otomatis)
+// ======================================================
 
 function ensureDigitInput() {
   if (activeInput) return activeInput;
@@ -550,6 +580,7 @@ function positionDigitInput() {
 function openDigitInput() {
   if (questionLocked || state.waitingBorrow || state.currentCol < 0) return;
   ensureDigitInput();
+  renderResult();
   positionDigitInput();
   requestAnimationFrame(() => {
     if (!activeInput || questionLocked || state.waitingBorrow) return;
@@ -579,6 +610,7 @@ function handleDigitInput() {
   const bottom = state.bottom[state.currentCol] ?? 0;
   const expected = top - bottom;
 
+  // Jawaban salah
   if (Number(raw) !== expected) {
     const slot = board.querySelector(`[data-slot="${state.currentCol}"]`);
     if (slot) {
@@ -591,16 +623,47 @@ function handleDigitInput() {
     return;
   }
 
+  // Jawaban benar
   feedbackText.textContent = "";
   feedbackText.className = "sub-feedback";
   state.result[state.currentCol] = Number(raw);
   renderResult();
 
+  clearTimeout(advanceTimer);
   advanceTimer = setTimeout(() => {
-    state.currentCol--;
-    openDigitInput();
-    renderResult();
+    advanceColumnAfterAnswer();
   }, 120);
+}
+
+// Pindah ke kolom berikutnya di KIRI setelah jawaban benar.
+// Jika sudah tidak ada kolom tersisa, langsung selesaikan soal.
+function advanceColumnAfterAnswer() {
+  if (questionLocked || state.done) return;
+
+  // Pindah ke kiri (puluhan, lalu ratusan jika ada)
+  state.currentCol--;
+
+  // Lewati kolom kosong
+  skipNullColumns();
+
+  // Jika sudah melewati semua kolom → soal selesai
+  if (state.currentCol < 0) {
+    finishCorrectQuestion();
+    return;
+  }
+
+  const top = state.workingTop[state.currentCol];
+  const bottom = state.bottom[state.currentCol] ?? 0;
+
+  // Kolom berikutnya butuh pinjaman
+  if (top < bottom) {
+    advanceColumn(); // akan menangani kasus pinjaman
+    return;
+  }
+
+  // Kolom normal: siapkan + buka input
+  prepareNormalColumn(bottom);
+  openDigitInput();
 }
 
 function drawBorrowArrow(sourceCol, targetCol) {
