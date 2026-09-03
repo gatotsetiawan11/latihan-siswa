@@ -4008,23 +4008,30 @@ function focusCurrentInput() {
         }
 
         if (document.activeElement !== answerInput) {
+            if (!isMobileDevice()) {
             answerInput.focus({ preventScroll: true });
+            }
         }
 
         return;
     }
 
     if (columnStep1Input.value.trim() === "") {
-        columnStep1Input.focus({ preventScroll: true });
-        return;
+        if (!isMobileDevice()) {
+            columnStep1Input.focus({ preventScroll: true });
+            return;
+        }
     }
 
     if (columnStep2Input.value.trim() === "") {
+        if (!isMobileDevice()) {
         columnStep2Input.focus({ preventScroll: true });
         return;
+        }
     }
-
+    if (!isMobileDevice()) {
     columnFinalInput.focus({ preventScroll: true });
+    }
 }
 
 
