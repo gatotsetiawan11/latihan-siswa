@@ -462,11 +462,16 @@ function setupRecognition() {
       if (event.results[i].isFinal) finalTranscript += text;
     }
 
-    heardText.textContent = transcript.trim();
-    heardBox.classList.remove("hidden");
+    const interim = transcript.trim();
+    const finalText = finalTranscript.trim();
 
-    if (finalTranscript.trim()) {
-      answerInput.value = finalTranscript.trim();
+    if (finalText) {
+      answerInput.value = finalText;
+      heardText.textContent = finalText;
+      heardBox.classList.remove("hidden");
+    } else if (interim) {
+      heardText.textContent = interim;
+      heardBox.classList.remove("hidden");
     }
   };
 
@@ -491,10 +496,9 @@ function setupRecognition() {
 
     if (text && !busy) {
       submitUserAnswer(text);
-      return;
-    }
-
-    if (!busy && greetingStarted && turn < maxTurns) {
+    } else if (!busy && greetingStarted && turn < maxTurns) {
+      setState("listening", "Listening");
+      speechStatus.textContent = "Listening... Please answer in English.";
       setTimeout(beginAutoListening, 650);
     }
   };
@@ -512,8 +516,8 @@ function beginAutoListening() {
 
   try {
     answerInput.value = "";
-    heardBox.classList.add("hidden");
     heardText.textContent = "";
+    heardBox.classList.add("hidden");
     setState("listening", "Listening");
     speechStatus.textContent = "Listening... Please answer in English.";
     recognition.start();
@@ -565,11 +569,10 @@ async function submitUserAnswer(rawText) {
 
     if (shouldEnd) {
       await finishConversation(data);
-      return;
+    } else {
+      busy = false;
+      beginAutoListening();
     }
-
-    busy = false;
-    beginAutoListening();
   } catch (error) {
     console.error(error);
     busy = false;
@@ -655,6 +658,11 @@ async function speakAI(text, emotion = "happy") {
   } catch (error) {
     console.warn("AI TTS fallback:", error);
     await speakBrowser(text);
+  } finally {
+    if (!busy) {
+      setState("listening", "Listening");
+      speechStatus.textContent = "Listening... Please answer in English.";
+    }
   }
 }
 
@@ -674,12 +682,16 @@ function speakBrowser(text) {
 }
 
 function setState(name, label) {
+  if (!avatar) return;
   avatar.classList.remove("waiting","listening","thinking","speaking");
   avatar.classList.add(name);
   const state = document.querySelector(".ec-state");
-  state.classList.remove("waiting","listening","thinking","speaking");
-  state.classList.add(name);
-  $("stateText").textContent = label;
+  if (state) {
+    state.classList.remove("waiting","listening","thinking","speaking");
+    state.classList.add(name);
+  }
+  const stateText = $("stateText");
+  if (stateText) stateText.textContent = label;
 }
 
 async function finishConversation(lastData) {
