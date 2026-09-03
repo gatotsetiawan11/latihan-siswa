@@ -12,7 +12,8 @@
 // sehingga tidak perlu helper scroll tambahan.
 // ============================================================
 
-
+let isAdjustingInput =
+    false;
 const MOBILE_MAX_WIDTH =
     700;
 
