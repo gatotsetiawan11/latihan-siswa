@@ -64,3 +64,33 @@ body{margin:0;background:#f4f7fb;color:#172033;font-family:Arial,sans-serif}
 .ec-heard.hidden{display:none!important}
 .ec-main-bubble{min-height:84px}
 .ec-status{transition:color .2s ease, transform .2s ease}
+/* ===== Penambahan audit: konsistensi state & kolom jawaban ===== */
+
+/* Label teks di dalam pill state ikut berwarna mengikuti kondisi */
+.ec-state.listening #stateText{color:#1f9b57}
+.ec-state.speaking #stateText{color:#315fc7}
+.ec-state.thinking #stateText{color:#c97f0d}
+.ec-state.waiting #stateText{color:#94a3b8}
+#stateText{font-weight:900}
+
+/* Kolom jawaban (fallback ketik) lebih jelas saat fokus */
+.ec-input-row input:focus{
+  outline:none;
+  border-color:#315fc7;
+  box-shadow:0 0 0 4px rgba(49,95,199,.13);
+}
+
+/* Animasi halus pada gelembung teks anak (heard) */
+.ec-heard{
+  box-shadow:0 6px 20px rgba(31,155,87,.08);
+}
+.ec-heard:not(.hidden){
+  animation:heardIn .25s ease;
+}
+@keyframes heardIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Avatar anak sekolah: bibir menutup rapi saat menunggu */
+.ec-avatar.waiting .av-mouth{animation:none;transform:scaleY(1)}
