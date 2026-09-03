@@ -14,6 +14,7 @@
 
 let isAdjustingInput =
     false;
+
 const MOBILE_MAX_WIDTH =
     700;
 
@@ -309,22 +310,15 @@ function ensureInputVisible(
 ) {
 
     if (
-        !input
-
-        ||
-
-        columnPracticeMode
-
-        ||
-
-        window.innerWidth >
-        MOBILE_MAX_WIDTH
+        isAdjustingInput
     ) {
 
         return;
     }
 
 
+    isAdjustingInput = true;
+    
     const rect =
         input.getBoundingClientRect();
 
