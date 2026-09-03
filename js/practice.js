@@ -455,7 +455,7 @@ function setupEvents() {
                 return;
             }
 
-            columnStep2Input.focus();
+            // columnStep2Input.focus();
         }
     );
 
@@ -481,7 +481,7 @@ function setupEvents() {
                 return;
             }
 
-            columnFinalInput.focus();
+        //    columnFinalInput.focus();
         }
     );
 
