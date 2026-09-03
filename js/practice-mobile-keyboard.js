@@ -197,19 +197,18 @@ function initializeMobileKeyboardHelper() {
     // Jangan dengarkan visualViewport "scroll",
     // karena event tersebut bisa terpicu oleh scroll yang
     // kita lakukan sendiri dan menghasilkan loop gerakan.
+/*
+if (
+    window.visualViewport
+) {
 
-    if (
-        window.visualViewport
-    ) {
-
-        window.visualViewport
-            .addEventListener(
-                "resize",
-                handleViewportResize
-            );
-    }
+    window.visualViewport
+        .addEventListener(
+            "resize",
+            handleViewportResize
+        );
 }
-
+*/
 
 // ============================================================
 // FOCUS DIRECT INPUT
