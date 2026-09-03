@@ -2152,10 +2152,12 @@ function startQuestion(
     // FOCUS
     // ==================================================
 
-    setTimeout(
-        focusCurrentInput,
-        40
-    );
+   clearTimeout(window.__practiceFocusTimer);
+
+if (!isMobileDevice()) {
+    window.__practiceFocusTimer = setTimeout(() => {
+        focusCurrentInput();
+    }, 40);
 }
 
 
@@ -3981,52 +3983,42 @@ function showResult(
 // FOCUS
 // ======================================================
 
-function focusCurrentInput() {
+function isMobileDevice() {
+    return window.matchMedia("(pointer: coarse)").matches || window.innerWidth <= 768;
+}
 
+function focusCurrentInput() {
     if (answerLocked) {
         return;
     }
 
+    if (isMobileDevice() && !isColumnMode()) {
+        return;
+    }
 
     if (!isColumnMode()) {
+        if (answerInput.classList.contains("hidden")) {
+            return;
+        }
 
-        answerInput.focus({
-            preventScroll: true
-        });
-
-        return;
-    }
-
-
-    if (
-        columnStep1Input.value
-            .trim() === ""
-    ) {
-
-        columnStep1Input.focus({
-            preventScroll: true
-        });
+        if (document.activeElement !== answerInput) {
+            answerInput.focus({ preventScroll: true });
+        }
 
         return;
     }
 
-
-    if (
-        columnStep2Input.value
-            .trim() === ""
-    ) {
-
-        columnStep2Input.focus({
-            preventScroll: true
-        });
-
+    if (columnStep1Input.value.trim() === "") {
+        columnStep1Input.focus({ preventScroll: true });
         return;
     }
 
+    if (columnStep2Input.value.trim() === "") {
+        columnStep2Input.focus({ preventScroll: true });
+        return;
+    }
 
-    columnFinalInput.focus({
-        preventScroll: true
-    });
+    columnFinalInput.focus({ preventScroll: true });
 }
 
 
