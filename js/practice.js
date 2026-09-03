@@ -2152,7 +2152,7 @@ function startQuestion(
     // FOCUS
     // ==================================================
 
-   clearTimeout(window.__practiceFocusTimer);
+  clearTimeout(window.__practiceFocusTimer);
 
 if (!isMobileDevice()) {
     window.__practiceFocusTimer = setTimeout(() => {
@@ -3987,12 +3987,18 @@ function isMobileDevice() {
     return window.matchMedia("(pointer: coarse)").matches || window.innerWidth <= 768;
 }
 
+function isMobileDevice() {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || window.matchMedia("(pointer: coarse)").matches
+        || navigator.maxTouchPoints > 0;
+}
+    
 function focusCurrentInput() {
-    if (answerLocked) {
+    if (isMobileDevice()) {
         return;
     }
 
-    if (isMobileDevice() && !isColumnMode()) {
+    if (answerLocked) {
         return;
     }
 
