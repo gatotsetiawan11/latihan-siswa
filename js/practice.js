@@ -2152,13 +2152,6 @@ function startQuestion(
     // FOCUS
     // ==================================================
 
-  clearTimeout(window.__practiceFocusTimer);
-
-if (!isMobileDevice()) {
-    window.__practiceFocusTimer = setTimeout(() => {
-        focusCurrentInput();
-    }, 40);
-}
 
 
 // ======================================================
