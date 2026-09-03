@@ -73,7 +73,7 @@ let assistantName = "Alex";
 let speechLanguage = "en-US";
 let speechRate = 0.9;
 let speechPitch = 1.08;
-let useServerTTS = true;
+let useServerTTS = false; // <-- DIUBAH: langsung pakai suara browser (gratis)
 
 let listeningRetryTimer = null;
 let listenArmTimer = null;
@@ -154,6 +154,8 @@ async function init() {
 
   if (!(await loadLevelConfiguration())) return;
   applyLevelConfiguration();
+
+  ensureVoicesLoaded(); // <- tambahan: siapkan daftar voice sejak awal
 
   setupRecognition();
 
@@ -249,7 +251,7 @@ async function loadLevelConfiguration() {
     speechLanguage = cleanShort(conversationConfig.speech_language || "en-US", 20) || "en-US";
     speechRate = clampNumber(conversationConfig.speech_rate, 0.9, 0.6, 1.3);
     speechPitch = clampNumber(conversationConfig.speech_pitch, 1.08, 0.7, 1.4);
-    useServerTTS = conversationConfig.use_server_tts !== false;
+    useServerTTS = conversationConfig.use_server_tts !== false && false; // paksa pakai browser
     return true;
   } catch (error) {
     console.error("Load conversation level:", error);
@@ -555,7 +557,6 @@ async function submitUserAnswer(rawText) {
 function showIndonesianSupport(data) {
   const support = clean(data.indonesian_support);
   if (!support) return;
-  // Bisa ditampilkan ke feedback box sebagai baris terpisah
   const fb = feedbackBox;
   fb.innerHTML += `<div style="margin-top:8px;color:#5d6a7d"><strong>🇮🇩 Bantuan:</strong> ${escapeHtml(support)}</div>`;
 }
@@ -587,7 +588,9 @@ async function callConversationAI(payload) {
 }
 
 /* =====================================================
-   TTS SERVER (OpenAI) + fallback ke browser speechSynthesis
+   SUARA: langsung pakai browser speechSynthesis (gratis)
+   - Pilih voice perempuan muda
+   - Rate lebih pelan & natural
    ===================================================== */
 async function speakAI(text, emotion = "neutral") {
   if (!text) return;
@@ -600,85 +603,97 @@ async function speakAI(text, emotion = "neutral") {
     currentAudio = null;
   }
 
-  // Coba TTS dari server OpenAI dulu
-  if (useServerTTS) {
-    const ok = await trySpeakServer(text, emotion);
-    if (ok) return; // berhasil, selesai
-    console.warn("Server TTS gagal, memakai suara browser.");
-  }
-
-  // Fallback: browser speechSynthesis
+  // Langsung pakai browser (server TTS nonaktif)
   await speakBrowser(text, emotion);
 }
 
-/* Minta audio dari Edge Function (action:"tts") dan mainkan */
-async function trySpeakServer(text, emotion) {
-  if (!text) return false;
-  try {
-    const authPayload = isAdminDemoMode
-      ? { admin_token: adminToken, access_mode: "admin_demo" }
-      : { student_token: sessionToken, access_mode: "student" };
+/* Pilih voice perempuan muda terbaik dari daftar browser */
+function pickFemaleVoice() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
 
-    const { data, error } = await window.db.functions.invoke("english-conversation", {
-      body: {
-        action: "tts",
-        text: text,
-        ...authPayload,
-      },
-    });
-    if (error || !data || data.ok !== true || !data.audio_base64) return false;
+  const name = v => v.name.toLowerCase();
+  const lang = v => (v.lang || "").toLowerCase();
+  const isEn = v => lang(v).startsWith("en") || /english/i.test(name(v));
 
-    // Decode base64 ke Blob dan putar
-    const binary = atob(data.audio_base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob = new Blob([bytes], { type: data.mime_type || "audio/mpeg" });
-    const url = URL.createObjectURL(blob);
+  // 1) Voice Inggris yang jelas perempuan + muda (prioritas)
+  const femaleYoung = voices.find(v =>
+    isEn(v) && /junior|joanna|kendra|kimberly|salli|aria|jenny|libby|sonia|google uk english female|zira|ava|emma|olivia|sophia|microsoft aria|microsoft jenny/i.test(name(v))
+  );
+  if (femaleYoung) return femaleYoung;
 
-    return await new Promise((resolve) => {
-      const audio = new Audio(url);
-      audio.onended = () => { revoke(url); resolve(true); };
-      audio.onerror = () => { revoke(url); resolve(false); };
-      audio.play().catch(() => { revoke(url); resolve(false); });
-      currentAudio = audio;
-    });
-  } catch (error) {
-    console.warn("trySpeakServer:", error);
-    return false;
+  // 2) Voice Inggris bernama perempuan umum
+  const femaleEnglish = voices.find(v =>
+    isEn(v) && /female|woman|girl|samantha|victoria|karen|allison|ava|susan|hazel/i.test(name(v))
+  );
+  if (femaleEnglish) return femaleEnglish;
+
+  // 3) Voice English apa pun (diprioritaskan yang natural di platform umum)
+  const enVoices = voices.filter(isEn);
+  if (enVoices.length > 0) {
+    const preferred = enVoices.find(v =>
+      /google uk english|google us english|natural|online/i.test(name(v))
+    );
+    return preferred || enVoices[0];
   }
 
-  function revoke(u) {
-    try { URL.revokeObjectURL(u); } catch {}
+  // 4) Voice pertama apa pun
+  return voices[0] || null;
+}
+
+/* Siapkan daftar voice (browser memuat asinkron) */
+function ensureVoicesLoaded() {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.getVoices(); // memicu pemuatan awal
+  if (typeof window.speechSynthesis.onvoiceschanged === "function") {
+    // jangan timpa handler lain bila ada; tambah saja
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      try { pickFemaleVoice(); } catch {}
+    };
   }
 }
 
-/* Fallback suara browser */
+/* Bicara lewat browser: perempuan muda, pelan, natural */
 function speakBrowser(text, emotion) {
   return new Promise(resolve => {
     if (!("speechSynthesis" in window) || !text) return resolve();
     try { speechSynthesis.cancel(); } catch {}
 
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = speechLanguage;
-    u.rate = speechRate;
-    // pitch sedikit naik kalau sedang memberi semangat
+
+    const voice = pickFemaleVoice();
+    if (voice) {
+      u.voice = voice;
+      u.lang = voice.lang || speechLanguage;
+    } else {
+      u.lang = speechLanguage;
+    }
+
+    // Pelan & sedikit tinggi agar ramah anak
+    u.rate = Math.max(0.55, speechRate - 0.12);
     u.pitch = emotion === "celebrating" || emotion === "happy"
-      ? Math.min(1.4, speechPitch + 0.06)
-      : speechPitch;
+      ? Math.min(1.45, (speechPitch || 1.08) + 0.1)
+      : (speechPitch || 1.08) + 0.03;
     u.volume = 1;
+
     let done = false;
     const finish = () => {
       if (done) return;
       done = true;
       u.onend = null;
       u.onerror = null;
+      try { speechSynthesis.cancel(); } catch {}
       resolve();
     };
     u.onend = finish;
     u.onerror = finish;
     speechSynthesis.speak(u);
     currentAudio = u;
-    setTimeout(finish, 30000);
+
+    // Pengaman: selesaikan walau event tak muncul
+    setTimeout(finish, Math.max(15000, text.length * 140));
   });
 }
 
@@ -693,9 +708,7 @@ function setState(name, label) {
   const stateText = $("stateText");
   if (stateText) stateText.textContent = label;
 
-  // Ubah ekspresi avatar sesuai emotion saat speaking
   if (name === "speaking") {
-    // avatar mulut menutup-buka (sudah ada animasi CSS .av-mouth)
   }
 }
 
