@@ -58,6 +58,7 @@ let greetingStarted = false;
 let recognition = null;
 let recognitionActive = false;
 let busy = false;
+let submitInFlight = false;
 let turn = 0;
 let relevantCount = 0;
 let lastAssistantText = "";
@@ -72,76 +73,13 @@ let assistantName = "Alex";
 let speechLanguage = "en-US";
 let speechRate = 0.9;
 let speechPitch = 1.08;
+let useServerTTS = true;
 
 let listeningRetryTimer = null;
 let listenArmTimer = null;
 let lastFinalTranscript = "";
-let submitInFlight = false;
 
-function clearListeningTimers() {
-  clearTimeout(listeningRetryTimer);
-  clearTimeout(listenArmTimer);
-  listeningRetryTimer = null;
-  listenArmTimer = null;
-}
-
-/* ====== DIREKTORI SUARA ANAK-ANAK ======
- * Kami memilih voice yang COCOK UNTUK ANAK SEKOLAH dasar
- * berdasarkan jenis kelamin / nuansa suara pada daftar browser.
- */
-const CHILD_FAVORITE_VOICE_KEYS = [
-  // Voice perempuan muda (paling sering cocok untuk anak)
-  "female", "girl", "child", "kid", "junior", "young", "samantha", "aisha",
-  "allison", "ava", "susan", "victoria", "karen", "moira", "tessa", "fiona",
-  "serena", "zira", "alice"
-];
-
-let chosenVoice = null;
-
-async function pickChildFriendlyVoice() {
-  await ensureVoicesLoaded();
-  const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
-  if (!voices.length) return null;
-
-  // 1) Prioritas utama: voice yang mengandung kata kunci anak/perempuan muda
-  const byKeyword = voices.filter(v =>
-    CHILD_FAVORITE_VOICE_KEYS.some(k => v.name.toLowerCase().includes(k))
-  );
-  if (byKeyword.length) {
-    return sortByLanguage(byKeyword, speechLanguage)[0];
-  }
-
-  // 2) Prioritas kedua: voice dengan bahasa yang tepat & pitch secara alami lebih muda
-  const sameLangDefault = sortByLanguage(voices, speechLanguage)[0];
-  return sameLangDefault || voices[0];
-}
-
-function sortByLanguage(list, langCode) {
-  const exact = list.filter(v => v.lang.toLowerCase() === langCode.toLowerCase());
-  if (exact.length) return exact;
-  const prefix = list.filter(v =>
-    v.lang.toLowerCase().startsWith(langCode.split("-")[0].toLowerCase() + "-")
-  );
-  return prefix.length ? prefix : list;
-}
-
-function ensureVoicesLoaded() {
-  return new Promise(resolve => {
-    if (!("speechSynthesis" in window)) return resolve();
-    if (speechSynthesis.getVoices().length) return resolve();
-    let settled = false;
-    const handler = () => {
-      if (settled) return;
-      settled = true;
-      speechSynthesis.removeEventListener("voiceschanged", handler);
-      resolve();
-    };
-    speechSynthesis.addEventListener("voiceschanged", handler);
-    setTimeout(handler, 1800);
-  });
-}
-
-/* ====== SALAM ADAPTIF WAKTU ====== */
+/* ===== SALAM ADAPTIF WAKTU ===== */
 function getTimeGreeting(date = new Date()) {
   const h = date.getHours();
   if (h >= 4 && h < 11) return "Good morning";
@@ -178,6 +116,13 @@ function getOpeningGreeting() {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+function clearListeningTimers() {
+  clearTimeout(listeningRetryTimer);
+  clearTimeout(listenArmTimer);
+  listeningRetryTimer = null;
+  listenArmTimer = null;
+}
+
 async function init() {
   if (topicCode !== "english_conversation") return goBack();
 
@@ -209,12 +154,6 @@ async function init() {
 
   if (!(await loadLevelConfiguration())) return;
   applyLevelConfiguration();
-  chosenVoice = await pickChildFriendlyVoice();
-
-  if (isAdminDemoMode) {
-    const demoBadge = $("demoBadge");
-    if (demoBadge) demoBadge.classList.remove("hidden");
-  }
 
   setupRecognition();
 
@@ -223,14 +162,12 @@ async function init() {
   answerInput.addEventListener("keydown", e => {
     if (e.key === "Enter") submitUserAnswer(answerInput.value);
   });
-  const exit = $("exitButton");
-  const back = $("backButton");
-  const retry = $("retryButton");
-  if (exit) exit.addEventListener("click", goBack);
-  if (back) back.addEventListener("click", goBack);
-  if (retry) retry.addEventListener("click", () => location.reload());
-  const goButtons = document.querySelectorAll("[data-go-back]");
-  goButtons.forEach(btn => btn.addEventListener("click", goBack));
+  exitButton.addEventListener("click", goBack);
+  backButton.addEventListener("click", goBack);
+  retryButton.addEventListener("click", () => location.reload());
+
+  const badge = $("demoBadge");
+  if (isAdminDemoMode && badge) badge.classList.remove("hidden");
 
   loadingScreen.classList.add("hidden");
   startScreen.classList.remove("hidden");
@@ -240,20 +177,16 @@ async function checkSession() {
   try {
     if (isStudentMode) {
       const { data, error } = await window.db.rpc("get_student_session", {
-        p_token: sessionToken
+        p_token: sessionToken,
       });
-      if (error || !data || data.length === 0) {
-        throw error || new Error("student session");
-      }
+      if (error || !data || data.length === 0) throw error || new Error("student session");
       return true;
     }
     if (isAdminDemoMode) {
-      const { data, error } = await window.db.rpc(
-        "validate_english_admin_session", { p_token: adminToken }
-      );
-      if (error || data !== true) {
-        throw error || new Error("admin session");
-      }
+      const { data, error } = await window.db.rpc("validate_english_admin_session", {
+        p_token: adminToken,
+      });
+      if (error || data !== true) throw error || new Error("admin session");
       return true;
     }
     return false;
@@ -271,31 +204,20 @@ async function checkSession() {
 
 async function resolveAdminDemoLevelId() {
   try {
-    const { data: topics, error: topicError } = await window.db
-      .from("topics")
-      .select("id")
-      .eq("code", "english_conversation")
-      .eq("is_active", true)
-      .limit(1);
-    if (topicError || !topics || topics.length === 0) throw topicError || new Error("topic");
+    const { data: topics, error: tErr } = await window.db
+      .from("topics").select("id").eq("code", "english_conversation")
+      .eq("is_active", true).limit(1);
+    if (tErr || !topics || topics.length === 0) throw tErr || new Error("topic");
 
-    const { data: stages, error: stageError } = await window.db
-      .from("stages")
-      .select("id")
-      .eq("topic_id", topics[0].id)
-      .eq("stage_number", stageNumber)
-      .eq("is_active", true)
-      .limit(1);
-    if (stageError || !stages || stages.length === 0) throw stageError || new Error("stage");
+    const { data: stages, error: sErr } = await window.db
+      .from("stages").select("id").eq("topic_id", topics[0].id)
+      .eq("stage_number", stageNumber).eq("is_active", true).limit(1);
+    if (sErr || !stages || stages.length === 0) throw sErr || new Error("stage");
 
-    const { data: levels, error: levelError } = await window.db
-      .from("levels")
-      .select("id")
-      .eq("stage_id", stages[0].id)
-      .eq("level_number", levelNumber)
-      .eq("is_active", true)
-      .limit(1);
-    if (levelError || !levels || levels.length === 0) throw levelError || new Error("level");
+    const { data: levels, error: lErr } = await window.db
+      .from("levels").select("id").eq("stage_id", stages[0].id)
+      .eq("level_number", levelNumber).eq("is_active", true).limit(1);
+    if (lErr || !levels || levels.length === 0) throw lErr || new Error("level");
 
     return levels[0].id;
   } catch (error) {
@@ -323,11 +245,11 @@ async function loadLevelConfiguration() {
       DEFAULT_MAX_TURNS, 1, 20
     );
     passingScore = clampInteger(data.passing_score, DEFAULT_PASSING_SCORE, 0, 100);
-
     assistantName = cleanShort(conversationConfig.assistant_name || "Alex", 40) || "Alex";
     speechLanguage = cleanShort(conversationConfig.speech_language || "en-US", 20) || "en-US";
     speechRate = clampNumber(conversationConfig.speech_rate, 0.9, 0.6, 1.3);
     speechPitch = clampNumber(conversationConfig.speech_pitch, 1.08, 0.7, 1.4);
+    useServerTTS = conversationConfig.use_server_tts !== false;
     return true;
   } catch (error) {
     console.error("Load conversation level:", error);
@@ -348,12 +270,13 @@ function applyLevelConfiguration() {
   lessonTitle.textContent = title;
   startLessonTitle.textContent = title;
   lessonDescription.textContent = description;
+  const demo = $("demoBadge");
+  if (isAdminDemoMode && demo) demo.classList.remove("hidden");
   assistantNameText.textContent = assistantName;
   assistantLabel.textContent = assistantName.toUpperCase();
   turnLimitText.textContent = String(maxTurns);
   const rtl = $("resultTurnLimit");
   if (rtl) rtl.textContent = String(maxTurns);
-
   document.title = `${title} • English Conversation AI`;
 }
 
@@ -377,14 +300,9 @@ async function startClassroomMode() {
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "user",
-        width: { ideal: 640 },
-        height: { ideal: 360 }
-      },
-      audio: true
+      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } },
+      audio: true,
     });
-
     cameraVideo.srcObject = stream;
     await cameraVideo.play();
 
@@ -395,7 +313,7 @@ async function startClassroomMode() {
     setState("waiting", "Waiting");
     assistantText.textContent = "Stand in front of the camera.";
     speechStatus.textContent = "Waiting for someone...";
-    const span = cameraOverlay.querySelector("span");
+    const span = cameraOverlay?.querySelector("span");
     if (span) span.textContent = "Waiting for someone...";
 
     await loadPersonDetector();
@@ -425,32 +343,25 @@ async function runPresenceDetection() {
     const person = predictions
       .filter(p => p.class === "person" && p.score >= PERSON_CONFIDENCE)
       .sort((a, b) => b.score - a.score)[0];
-
     drawPersonBox(person);
 
     const now = Date.now();
-    const overlaySpan = cameraOverlay.querySelector("span");
-
+    const span = cameraOverlay?.querySelector("span");
     if (person) {
       lastPersonSeen = now;
       if (!personFirstSeen) personFirstSeen = now;
-
-      if (overlaySpan) {
-        overlaySpan.textContent = greetingStarted ? "Person detected" : "Hello!";
-      }
-
+      if (span) span.textContent = greetingStarted ? "Person detected" : "Hello!";
       if (!greetingStarted && now - personFirstSeen >= PERSON_STABLE_MS) {
         greetingStarted = true;
         await beginGreeting();
       }
     } else {
       personFirstSeen = 0;
-      if (overlaySpan) {
-        overlaySpan.textContent =
-          greetingStarted ? "Conversation active" : "Waiting for someone...";
-      }
-      if (greetingStarted && lastPersonSeen && now - lastPersonSeen > PERSON_LOST_RESET_MS) {
-        if (overlaySpan) overlaySpan.textContent = "Come back into the frame";
+      if (span) {
+        span.textContent = greetingStarted ? "Conversation active" : "Waiting for someone...";
+        if (greetingStarted && lastPersonSeen && now - lastPersonSeen > PERSON_LOST_RESET_MS) {
+          span.textContent = "Come back into the frame";
+        }
       }
     }
   } catch (error) {
@@ -464,11 +375,9 @@ function drawPersonBox(person) {
   const h = detectCanvas.height;
   ctx.clearRect(0, 0, w, h);
   if (!person || !cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
-
   const sx = w / cameraVideo.videoWidth;
   const sy = h / cameraVideo.videoHeight;
   const [x, y, bw, bh] = person.bbox;
-
   const mx = w - (x + bw) * sx;
   ctx.strokeStyle = "rgba(255,255,255,.92)";
   ctx.lineWidth = 3;
@@ -496,7 +405,6 @@ function setupRecognition() {
     recognition = null;
     return;
   }
-
   recognition = new Recognition();
   recognition.lang = speechLanguage;
   recognition.interimResults = true;
@@ -517,13 +425,11 @@ function setupRecognition() {
       transcript += text;
       if (event.results[i].isFinal) finalTranscript += text;
     }
-
     const liveTranscript = clean(transcript);
     if (liveTranscript) {
       heardText.textContent = liveTranscript;
       heardBox.classList.remove("hidden");
     }
-
     const finalText = clean(finalTranscript);
     if (finalText) {
       lastFinalTranscript = finalText;
@@ -536,11 +442,9 @@ function setupRecognition() {
   recognition.onerror = event => {
     console.warn("Speech recognition:", event.error);
     recognitionActive = false;
-
     if (event.error === "not-allowed") {
       setState("waiting", "Try again");
-      speechStatus.textContent =
-        "Izin Speech Recognition ditolak. Gunakan fallback ketik.";
+      speechStatus.textContent = "Izin Speech Recognition ditolak. Gunakan fallback ketik.";
     } else if (!busy && greetingStarted && turn < maxTurns) {
       speechStatus.textContent = "Saya tidak menangkap suara. Coba lagi...";
       clearListeningTimers();
@@ -551,8 +455,6 @@ function setupRecognition() {
   recognition.onend = () => {
     recognitionActive = false;
     const text = clean(answerInput.value || lastFinalTranscript);
-
-    // Hanya kirim jawaban jika tidak sedang sibuk & bukan hasil greeting kosong
     if (text && !busy && !submitInFlight) {
       submitUserAnswer(text);
     } else if (!busy && greetingStarted && turn < maxTurns) {
@@ -564,24 +466,14 @@ function setupRecognition() {
 
 function beginAutoListening() {
   if (busy || submitInFlight || turn >= maxTurns || !greetingStarted) return;
-
   clearListeningTimers();
   if (!recognition) {
     setState("waiting", "Type fallback");
-    speechStatus.textContent =
-      "Speech Recognition tidak tersedia. Gunakan fallback ketik.";
+    speechStatus.textContent = "Speech Recognition tidak tersedia. Gunakan fallback ketik.";
     return;
   }
-
-  // Jangan sembunyikan teks yang sedang ditampilkan bila ada jawaban yang harus dilihat anak
-  if (!heardText.textContent.trim()) {
-    heardText.textContent = "";
-    heardBox.classList.add("hidden");
-  }
-
   setState("listening", "Listening");
   speechStatus.textContent = "Listening... Please answer in English.";
-
   listenArmTimer = setTimeout(() => {
     try {
       recognition.start();
@@ -600,12 +492,10 @@ async function submitUserAnswer(rawText) {
   busy = true;
   clearListeningTimers();
   answerInput.value = "";
-
   if (recognitionActive) {
     try { recognition.stop(); } catch {}
   }
 
-  // Tampilkan jawaban anak dan PERTAHANKAN sampai AI merespons
   heardText.textContent = userText;
   heardBox.classList.remove("hidden");
   setState("thinking", "Thinking");
@@ -622,12 +512,13 @@ async function submitUserAnswer(rawText) {
       level_number: levelNumber,
       turn: turn + 1,
       user_text: userText,
-      history: history.slice(-10)
+      history: history.slice(-10),
     });
 
     turn += 1;
     turnText.textContent = String(turn);
     if (data.relevant === true) relevantCount += 1;
+    showIndonesianSupport(data);
     renderFeedback(data);
 
     lastAssistantText = clean(data.assistant_text);
@@ -635,11 +526,10 @@ async function submitUserAnswer(rawText) {
 
     const shouldEnd = data.should_end === true || turn >= maxTurns;
 
+    // Suara pakai TTS OpenAI server
     if (lastAssistantText) {
-      await speakAI(lastAssistantText, data.relevant === false ? "correct" : "excellent");
+      await speakAI(lastAssistantText, data.emotion || "happy");
     }
-
-    history.push({ role: "assistant", text: lastAssistantText });
 
     if (shouldEnd) {
       submitInFlight = false;
@@ -647,7 +537,6 @@ async function submitUserAnswer(rawText) {
     } else {
       submitInFlight = false;
       busy = false;
-      // sembunyikan jawaban anak HANYA setelah AI selesai bicara
       heardText.textContent = "";
       heardBox.classList.add("hidden");
       setTimeout(beginAutoListening, 450);
@@ -663,10 +552,18 @@ async function submitUserAnswer(rawText) {
   }
 }
 
+function showIndonesianSupport(data) {
+  const support = clean(data.indonesian_support);
+  if (!support) return;
+  // Bisa ditampilkan ke feedback box sebagai baris terpisah
+  const fb = feedbackBox;
+  fb.innerHTML += `<div style="margin-top:8px;color:#5d6a7d"><strong>🇮🇩 Bantuan:</strong> ${escapeHtml(support)}</div>`;
+}
+
 function renderFeedback(data) {
   const feedback = clean(data.feedback);
   const correction = clean(data.correction);
-  if (!feedback && !correction) {
+  if (!feedback && !correction && !clean(data.indonesian_support)) {
     feedbackBox.classList.add("hidden");
     return;
   }
@@ -682,14 +579,17 @@ async function callConversationAI(payload) {
     ? { admin_token: adminToken, access_mode: "admin_demo" }
     : { student_token: sessionToken, access_mode: "student" };
   const { data, error } = await window.db.functions.invoke("english-conversation", {
-    body: { ...payload, ...authPayload }
+    body: { ...payload, ...authPayload },
   });
   if (error) throw error;
   if (!data || data.ok !== true) throw new Error(data?.error || "AI error");
   return data;
 }
 
-async function speakAI(text, mood = "neutral") {
+/* =====================================================
+   TTS SERVER (OpenAI) + fallback ke browser speechSynthesis
+   ===================================================== */
+async function speakAI(text, emotion = "neutral") {
   if (!text) return;
 
   setState("speaking", "Speaking");
@@ -700,44 +600,86 @@ async function speakAI(text, mood = "neutral") {
     currentAudio = null;
   }
 
-  // Batal apa pun yang sedang berbicara agar tidak tumpang-tindih
-  if ("speechSynthesis" in window) {
-    try { speechSynthesis.cancel(); } catch {}
+  // Coba TTS dari server OpenAI dulu
+  if (useServerTTS) {
+    const ok = await trySpeakServer(text, emotion);
+    if (ok) return; // berhasil, selesai
+    console.warn("Server TTS gagal, memakai suara browser.");
   }
 
-  await new Promise((resolve) => {
-    if (!("speechSynthesis" in window)) return resolve();
+  // Fallback: browser speechSynthesis
+  await speakBrowser(text, emotion);
+}
 
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = speechLanguage;
-    utter.rate = speechRate;
-    utter.pitch =
-      mood === "excellent"
-        ? Math.min(1.4, speechPitch + 0.06)
-        : Math.max(0.85, speechPitch);
-    utter.volume = 1;
+/* Minta audio dari Edge Function (action:"tts") dan mainkan */
+async function trySpeakServer(text, emotion) {
+  if (!text) return false;
+  try {
+    const authPayload = isAdminDemoMode
+      ? { admin_token: adminToken, access_mode: "admin_demo" }
+      : { student_token: sessionToken, access_mode: "student" };
 
-    // Pakai voice yang terpilih (ramah anak) bila tersedia
-    if (chosenVoice) utter.voice = chosenVoice;
+    const { data, error } = await window.db.functions.invoke("english-conversation", {
+      body: {
+        action: "tts",
+        text: text,
+        ...authPayload,
+      },
+    });
+    if (error || !data || data.ok !== true || !data.audio_base64) return false;
 
-    let finished = false;
-    const onDone = () => {
-      if (finished) return;
-      finished = true;
-      utter.onend = null;
-      utter.onerror = null;
+    // Decode base64 ke Blob dan putar
+    const binary = atob(data.audio_base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: data.mime_type || "audio/mpeg" });
+    const url = URL.createObjectURL(blob);
+
+    return await new Promise((resolve) => {
+      const audio = new Audio(url);
+      audio.onended = () => { revoke(url); resolve(true); };
+      audio.onerror = () => { revoke(url); resolve(false); };
+      audio.play().catch(() => { revoke(url); resolve(false); });
+      currentAudio = audio;
+    });
+  } catch (error) {
+    console.warn("trySpeakServer:", error);
+    return false;
+  }
+
+  function revoke(u) {
+    try { URL.revokeObjectURL(u); } catch {}
+  }
+}
+
+/* Fallback suara browser */
+function speakBrowser(text, emotion) {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window) || !text) return resolve();
+    try { speechSynthesis.cancel(); } catch {}
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = speechLanguage;
+    u.rate = speechRate;
+    // pitch sedikit naik kalau sedang memberi semangat
+    u.pitch = emotion === "celebrating" || emotion === "happy"
+      ? Math.min(1.4, speechPitch + 0.06)
+      : speechPitch;
+    u.volume = 1;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      u.onend = null;
+      u.onerror = null;
       resolve();
     };
-    utter.onend = onDone;
-    utter.onerror = onDone;
-    speechSynthesis.speak(utter);
-    currentAudio = utter;
-
-    // Jaring pengaman
-    setTimeout(onDone, 25000);
+    u.onend = finish;
+    u.onerror = finish;
+    speechSynthesis.speak(u);
+    currentAudio = u;
+    setTimeout(finish, 30000);
   });
-
-  currentAudio = null;
 }
 
 function setState(name, label) {
@@ -750,6 +692,11 @@ function setState(name, label) {
   }
   const stateText = $("stateText");
   if (stateText) stateText.textContent = label;
+
+  // Ubah ekspresi avatar sesuai emotion saat speaking
+  if (name === "speaking") {
+    // avatar mulut menutup-buka (sudah ada animasi CSS .av-mouth)
+  }
 }
 
 async function finishConversation(lastData) {
@@ -762,16 +709,14 @@ async function finishConversation(lastData) {
 
   if (isStudentMode) {
     try {
-      const { data, error } = await window.db.rpc(
-        "submit_english_conversation_session", {
-          p_token: sessionToken,
-          p_level_id: levelId,
-          p_turn_count: turn,
-          p_relevant_count: relevantCount,
-          p_score: score,
-          p_duration_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000))
-        }
-      );
+      const { data, error } = await window.db.rpc("submit_english_conversation_session", {
+        p_token: sessionToken,
+        p_level_id: levelId,
+        p_turn_count: turn,
+        p_relevant_count: relevantCount,
+        p_score: score,
+        p_duration_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
+      });
       if (error) throw error;
       saved = Array.isArray(data) ? data[0] : data;
     } catch (error) {
@@ -788,31 +733,17 @@ async function finishConversation(lastData) {
 function showResult(score, saved, lastData) {
   conversationScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
-
-  const passed = typeof saved?.passed === "boolean"
-    ? saved.passed
-    : score >= passingScore;
-  const rs = $("resultScore");
-  const rr = $("resultRelevant");
-  const rt = $("resultTurns");
-  const rm = $("resultMessage");
-  const rf = $("resultFeedback");
-
-  if (rs) rs.textContent = `${score}%`;
-  if (rr) rr.textContent = `${relevantCount}/${maxTurns}`;
-  if (rt) rt.textContent = String(turn);
-  if (rm) {
-    rm.textContent = isAdminDemoMode
-      ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
-      : passed
-        ? "Percakapan selesai dengan baik."
-        : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
-  }
-  if (rf) {
-    rf.textContent =
-      clean(lastData?.session_feedback) ||
-      "Gunakan jawaban pendek, jelas, dan sederhana.";
-  }
+  const passed = typeof saved?.passed === "boolean" ? saved.passed : score >= passingScore;
+  $("resultScore").textContent = `${score}%`;
+  $("resultRelevant").textContent = `${relevantCount}/${maxTurns}`;
+  $("resultTurns").textContent = String(turn);
+  $("resultMessage").textContent = isAdminDemoMode
+    ? "Demo admin selesai. Hasil ini tidak disimpan ke progres siswa."
+    : passed
+      ? "Percakapan selesai dengan baik."
+      : `Skor belum mencapai target ${passingScore}%. Ulangi dan jawab lebih sesuai dengan pertanyaan.`;
+  $("resultFeedback").textContent =
+    clean(lastData?.session_feedback) || "Gunakan jawaban pendek, jelas, dan sederhana.";
 }
 
 function stopMedia() {
@@ -822,7 +753,9 @@ function stopMedia() {
   if (recognitionActive) {
     try { recognition.stop(); } catch {}
   }
-  if (currentAudio) { try { currentAudio.pause(); } catch {} }
+  if (currentAudio) {
+    try { currentAudio.pause(); } catch {}
+  }
   if ("speechSynthesis" in window) {
     try { speechSynthesis.cancel(); } catch {}
   }
