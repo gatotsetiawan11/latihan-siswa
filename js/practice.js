@@ -1014,8 +1014,8 @@ async function prepareQuestions() {
     }
 
 
-   if (type === "ipas") {
-    return await generateIPASQuestions(levelData);
+    if (type === "ipas") {
+        return generateIPASQuestions(levelData);
     }
 
 
@@ -1615,122 +1615,73 @@ function generateMultiDigitQuestions(
     return result;
 }
 
-// ====================================================== //
-// IPAS: NORMALIZER (array DB -> format renderer)
-// ====================================================== //
-function normalizeIPASQuestion(row) {
-    const options = Array.isArray(row.options)
-        ? {
-            a: row.options[0],
-            b: row.options[1],
-            c: row.options[2],
-            d: row.options[3]
-        }
-        : row.options;
 
-    return {
-        ...row,
-        question_text: row.question || row.question_text,
-        options: options,
-        answer: String(row.answer).trim().toLowerCase()
-    };
-}
 
 // ======================================================
-// IPAS NORMALIZER (array DB -> format renderer)
+// IPAS GENERATOR
 // ======================================================
-// Fungsi bantu: mengubah 1 baris soal dari tabel `questions`
-// menjadi format yang dipahami renderer (renderDirectQuestion).
-// DB:   options: ["Mata","Telinga",...] , answer: "A"
-// Aplikasi butuh: options:{a,b,c,d}       , answer: "a"
-// Hanya mengubah BUNGKUS format, tidak mengubah isi/urutan/jawaban.
-function normalizeIPASQuestion(row) {
-    const options = Array.isArray(row.options)
-        ? {
-            a: row.options[0],
-            b: row.options[1],
-            c: row.options[2],
-            d: row.options[3]
-        }
-        : row.options; // jika ternyata sudah objek
 
-    return {
-        ...row,
-        question_text: row.question || row.question_text,
-        options: options,
-        answer: String(row.answer).trim().toLowerCase()
-    };
-}
+function generateIPASQuestions(level) {
 
-// ======================================================
-// IPAS GENERATOR (Ambil dari tabel `questions` di Supabase)
-// ======================================================
-async function generateIPASQuestions(level) {
-    // --- Bank cadangan (dipakai hanya bila DB kosong utk level ini) ---
-    const fallbackBank = [
+    const bank = [
         {
-            question_text: "Bagian tubuh yang digunakan untuk melihat adalah…",
-            options:{a:"Mata",b:"Telinga",c:"Hidung",d:"Lidah"},
-            answer:"a",
-            explanation:"Mata adalah indra penglihatan."
+            question_text: "Organ yang berfungsi memompa darah adalah?",
+            options:{a:"Jantung",b:"Paru-paru",c:"Mata",d:"Telinga"},
+            answer:"a"
         },
         {
-            question_text: "Organ tubuh yang berfungsi mendengar suara adalah…",
-            options:{a:"Kulit",b:"Hidung",c:"Telinga",d:"Mata"},
-            answer:"c",
-            explanation:"Telinga adalah indra pendengaran."
+            question_text: "Manusia bernapas menggunakan?",
+            options:{a:"Tangan",b:"Paru-paru",c:"Kaki",d:"Rambut"},
+            answer:"b"
         },
         {
-            question_text: "Untuk mencium bau harum bunga, bagian tubuh yang dipakai adalah…",
-            options:{a:"Lidah",b:"Hidung",c:"Mata",d:"Telinga"},
-            answer:"b",
-            explanation:"Hidung adalah indra penciuman."
+            question_text: "Bagian tumbuhan yang menyerap air adalah?",
+            options:{a:"Bunga",b:"Daun",c:"Akar",d:"Buah"},
+            answer:"c"
         },
         {
-            question_text: "Agar mata tetap sehat saat membaca, sebaiknya…",
-            options:{a:"Membaca di tempat gelap",b:"Menjaga jarak aman",c:"Menatap matahari",d:"Mengucek mata keras-keras"},
-            answer:"b",
-            explanation:"Jaga jarak baca agar mata tidak cepat lelah."
+            question_text: "Air yang membeku berubah menjadi?",
+            options:{a:"Es",b:"Uap",c:"Asap",d:"Angin"},
+            answer:"a"
         },
         {
-            question_text: "Rasa manis pada makanan dirasakan oleh indra…",
-            options:{a:"Peraba",b:"Penciuman",c:"Penglihat",d:"Pengecap"},
-            answer:"d",
-            explanation:"Lidah adalah indra pengecap rasa."
+            question_text: "Hewan yang mengalami metamorfosis sempurna adalah?",
+            options:{a:"Kupu-kupu",b:"Kucing",c:"Sapi",d:"Ikan"},
+            answer:"a"
+        },
+        {
+            question_text: "Mata digunakan untuk?",
+            options:{a:"Mendengar",b:"Melihat",c:"Berjalan",d:"Bernapas"},
+            answer:"b"
+        },
+        {
+            question_text: "Sumber energi utama bagi bumi adalah?",
+            options:{a:"Bulan",b:"Bintang",c:"Matahari",d:"Batu"},
+            answer:"c"
+        },
+        {
+            question_text: "Benda yang bentuknya tetap disebut benda?",
+            options:{a:"Gas",b:"Cair",c:"Padat",d:"Uap"},
+            answer:"c"
+        },
+        {
+            question_text: "Contoh makhluk hidup adalah?",
+            options:{a:"Batu",b:"Air",c:"Kucing",d:"Meja"},
+            answer:"c"
+        },
+        {
+            question_text: "Telinga berfungsi untuk?",
+            options:{a:"Melihat",b:"Mendengar",c:"Mencium",d:"Merasa"},
+            answer:"b"
         }
     ];
 
-    try {
-        // 1) Ambil soal dari tabel questions untuk level yang dikerjakan
-        const { data: rows, error } = await window.db
-            .from("questions")
-            .select("question, options, answer, explanation")
-            .eq("level_id", level.id);
+    shuffleArray(bank);
 
-        if (error) {
-            console.error("Gagal ambil soal IPAS dari DB:", error);
-            return fallbackBank.slice(0, Number(level.question_count));
-        }
-
-        if (!rows || rows.length === 0) {
-            console.warn(
-                "Bank soal DB kosong utk level_id =",
-                level.id,
-                ". Pakai bank cadangan."
-            );
-            return fallbackBank.slice(0, Number(level.question_count));
-        }
-
-        // 2) Konversi format array -> {a,b,c,d}
-        const bank = rows.map(normalizeIPASQuestion);
-
-        // 3) Acak lalu ambil sesuai jumlah soal yg diminta level
-        shuffleArray(bank);
-        return bank.slice(0, Number(level.question_count));
-    } catch (err) {
-        console.error("Terjadi kesalahan saat generate soal IPAS:", err);
-        return fallbackBank.slice(0, Number(level.question_count));
-    }
+    return bank.slice(
+        0,
+        Number(level.question_count)
+    );
 }
 
 // ======================================================
